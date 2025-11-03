@@ -1,0 +1,15 @@
+meta {
+  name: DELETE Property
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{BASE_URL}}/property/delete/{id}
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

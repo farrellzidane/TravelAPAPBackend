@@ -1,0 +1,49 @@
+meta {
+  name: CREATE Property
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BASE_URL}}/property/create
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "propertyName": "Hotel Mawar",
+    "type": 1,
+    "address": "Jl. Melati No. 10, Jakarta",
+    "province": 31,
+    "description": "Hotel bintang 3 dengan fasilitas lengkap",
+    "totalRoom": 50,
+    "ownerName": "Budi Santoso",
+    "ownerID": "1234567890",
+    "roomTypes": [
+      {
+        "roomTypeName": "Deluxe",
+        "roomTypeDescription": "Kamar dengan fasilitas standar",
+        "capacity": 2,
+        "price": 500000,
+        "facility": "AC, TV, WiFi",
+        "unitCount": 20,
+        "floor": 2
+      },
+      {
+        "roomTypeName": "Suite",
+        "roomTypeDescription": "Kamar luas dengan ruang tamu",
+        "capacity": 4,
+        "price": 1200000,
+        "facility": "AC, TV, WiFi, Bathtub",
+        "unitCount": 5,
+        "floor": 5
+      }
+    ]
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
