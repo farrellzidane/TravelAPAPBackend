@@ -12,7 +12,6 @@ import apap.ti._5.accommodation_2306275600_be.restservice.BookingRestService;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingChartResponseDTO;
 
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -26,8 +25,11 @@ import java.util.List;
 @RequestMapping("/api")
 public class BookingRestController {
     
-    @Autowired
-    private BookingRestService bookingRestService;
+    private final BookingRestService bookingRestService;
+    
+    public BookingRestController(BookingRestService bookingRestService) {
+        this.bookingRestService = bookingRestService;
+    }
     
     public static final String BASE_URL = "/bookings";
     public static final String CREATE_BOOKING = BASE_URL + "/create";

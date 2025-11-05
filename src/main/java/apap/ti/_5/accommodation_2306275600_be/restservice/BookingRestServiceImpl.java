@@ -16,10 +16,12 @@ import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingUp
 import apap.ti._5.accommodation_2306275600_be.restdto.request.booking.ChangeBookingStatusRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingChartResponseDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.property.PropertyRevenueDTO;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import lombok.RequiredArgsConstructor;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
@@ -31,6 +33,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class BookingRestServiceImpl implements BookingRestService {
     
     @Autowired

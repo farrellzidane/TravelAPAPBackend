@@ -1,15 +1,22 @@
 meta {
-  name: UPDATE Booking Refund 
+  name: UPDATE Booking Refund
   type: http
   seq: 16
 }
 
 post {
   url: {{BASE_URL}}/bookings/status/refund
-  body: none
+  body: json
   auth: inherit
+}
+
+body:json {
+  {
+    "bookingID": "BOOK-001-204-2025-11-05-10:52:18"
+  }
 }
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

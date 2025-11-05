@@ -13,7 +13,6 @@ import apap.ti._5.accommodation_2306275600_be.restservice.RoomRestService;
 import apap.ti._5.accommodation_2306275600_be.restservice.RoomTypeRestService;
 import jakarta.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -24,19 +23,23 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
 public class PropertyRestController {
-    @Autowired
-    private PropertyRestService propertyRestService;
+    private final PropertyRestService propertyRestService;
+    private final RoomTypeRestService roomTypeRestService;
+    private final RoomRestService roomRestService;
 
-    @Autowired
-    private RoomTypeRestService roomTypeRestService;
-    
-    @Autowired
-    private RoomRestService roomRestService;
+    public PropertyRestController(
+        PropertyRestService propertyRestService,
+        RoomTypeRestService roomTypeRestService,
+        RoomRestService roomRestService
+    ) {
+        this.propertyRestService = propertyRestService;
+        this.roomTypeRestService = roomTypeRestService;
+        this.roomRestService = roomRestService;
+    }
 
     public static final String BASE_URL = "/property";
     public static final String VIEW_PROPERTY = BASE_URL + "/{id}";
@@ -154,10 +157,6 @@ public class PropertyRestController {
                 baseResponseDTO.setTimestamp(new Date()); 
                 return new ResponseEntity<>(baseResponseDTO, HttpStatus.NOT_FOUND);
             }
-            
-            // if (startDate != null && endDate != null) {
-            //     // TODO: Implementasi check booking conflicts untuk update availability
-            // }
             
             baseResponseDTO.setStatus(HttpStatus.OK.value());
             baseResponseDTO.setData(property);
@@ -290,10 +289,10 @@ public class PropertyRestController {
         }
     }
 
-    @PostMapping("/property/updateroom/{propertyID}")
+    // UBAH ENDPOINT INI - hapus path variable, ambil propertyId dari request body
+    @PostMapping("/property/updateroom")
     public ResponseEntity<BaseResponseDTO<String>> addRoomTypeWithRooms(
-            @PathVariable String propertyID,
-            @Valid @RequestBody List<CreateRoomTypeRequestDTO> roomTypesRequest,
+            @Valid @RequestBody AddRoomTypeRequestWrapper request,
             BindingResult bindingResult) {
         
         var baseResponseDTO = new BaseResponseDTO<String>();
@@ -312,6 +311,9 @@ public class PropertyRestController {
         }
         
         try {
+            String propertyID = request.getPropertyId();
+            List<CreateRoomTypeRequestDTO> roomTypesRequest = request.getRoomTypes();
+            
             PropertyResponseDTO property = propertyRestService.getPropertyById(propertyID);
             
             if (property == null) {
@@ -464,11 +466,8 @@ public class PropertyRestController {
         }
     }
 
-
-
     // ==== Helper Methods ==== //
     private boolean isValidRoomTypeName(Integer propertyType, String roomTypeName) {
-        // Convert room type name to uppercase and replace spaces with underscores
         String normalizedName = roomTypeName.trim().replace(" ", "_").toUpperCase();
         
         switch (propertyType) {
@@ -484,7 +483,7 @@ public class PropertyRestController {
                     normalizedName.equals("BEACHFRONT") || 
                     normalizedName.equals("MOUNTSIDE") || 
                     normalizedName.equals("ECO_FRIENDLY") ||
-                    normalizedName.equals("ECO-FRIENDLY") ||  // Support both
+                    normalizedName.equals("ECO-FRIENDLY") ||
                     normalizedName.equals("ROMANTIC");
             case 3: // Apartment
                 return normalizedName.equals("STUDIO") || 
@@ -500,5 +499,12 @@ public class PropertyRestController {
     private String generateRoomNameForAddRoomType(String propertyID, Integer floor, Integer unitNumber) {
         String floorUnit = String.format("%d%02d", floor, unitNumber);
         return propertyID + "-" + floorUnit;
+    }
+    
+    // Inner class untuk wrapper request
+    @lombok.Data
+    public static class AddRoomTypeRequestWrapper {
+        private String propertyId;
+        private List<CreateRoomTypeRequestDTO> roomTypes;
     }
 }

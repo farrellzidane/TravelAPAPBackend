@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import apap.ti._5.accommodation_2306275600_be.model.Property;
 import apap.ti._5.accommodation_2306275600_be.model.RoomType;
 import apap.ti._5.accommodation_2306275600_be.repository.PropertyRepository;
+import apap.ti._5.accommodation_2306275600_be.repository.RoomRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.RoomTypeRepository;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.roomtype.CreateRoomTypeRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.roomtype.UpdateRoomTypeRequestDTO;
@@ -23,6 +24,7 @@ public class RoomTypeRestServiceImpl implements RoomTypeRestService{
     
     private final RoomTypeRepository roomTypeRepository;
     private final PropertyRepository propertyRepository;
+    private final RoomRepository roomRepository;
 
     @Override
     public RoomTypeResponseDTO createRoomType(CreateRoomTypeRequestDTO dto) {
@@ -139,6 +141,7 @@ public class RoomTypeRestServiceImpl implements RoomTypeRestService{
         // Format: 003–Single_Room–2 (menggunakan em dash –)
         return propertyCounter + "–" + roomTypeName + "–" + floor;
     }
+    
 
 
     // Helper method untuk konversi Entity -> DTO

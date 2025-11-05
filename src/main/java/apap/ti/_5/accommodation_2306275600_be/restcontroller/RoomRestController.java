@@ -6,7 +6,6 @@ import apap.ti._5.accommodation_2306275600_be.restdto.response.room.RoomResponse
 import apap.ti._5.accommodation_2306275600_be.restservice.RoomRestService;
 import jakarta.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -20,8 +19,11 @@ import java.util.List;
 @RequestMapping("/api")
 public class RoomRestController {
     
-    @Autowired
-    private RoomRestService roomRestService;
+    private final RoomRestService roomRestService;
+
+    public RoomRestController(RoomRestService roomRestService) {
+        this.roomRestService = roomRestService;
+    }
 
     public static final String BASE_URL = "/property";
     public static final String MAINTENANCE_ROOM = BASE_URL + "/maintenance";
