@@ -1,11 +1,11 @@
 meta {
-  name: GET Detail Property
+  name: CREATE Booking without Room
   type: http
-  seq: 5
+  seq: 13
 }
 
-get {
-  url: {{BASE_URL}}/property/HOT-7e6f-001
+post {
+  url: {{BASE_URL}}/bookings/create
   body: none
   auth: inherit
 }

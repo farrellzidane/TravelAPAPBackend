@@ -1,0 +1,15 @@
+meta {
+  name: UPDATE Booking Refund 
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{BASE_URL}}/bookings/status/refund
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

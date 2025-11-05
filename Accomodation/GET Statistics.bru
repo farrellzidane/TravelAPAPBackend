@@ -1,16 +1,15 @@
 meta {
-  name: GET Detail Property
+  name: GET Statistics
   type: http
-  seq: 5
+  seq: 17
 }
 
 get {
-  url: {{BASE_URL}}/property/HOT-7e6f-001
+  url: {{BASE_URL}}/bookings/chart/tanggal
   body: none
   auth: inherit
 }
 
 settings {
   encodeUrl: true
-  timeout: 0
 }

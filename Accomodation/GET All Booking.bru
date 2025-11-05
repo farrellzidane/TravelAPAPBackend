@@ -1,12 +1,12 @@
 meta {
-  name: GET Detail Property
+  name: GET All Booking
   type: http
-  seq: 5
+  seq: 10
 }
 
 get {
-  url: {{BASE_URL}}/property/HOT-7e6f-001
-  body: none
+  url: {{BASE_URL}}/bookings
+  body: json
   auth: inherit
 }
 

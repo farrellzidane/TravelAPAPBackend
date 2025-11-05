@@ -1,0 +1,15 @@
+meta {
+  name: UPDATE Booking Payment Confirm
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{BASE_URL}}/bookings/status/pay
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

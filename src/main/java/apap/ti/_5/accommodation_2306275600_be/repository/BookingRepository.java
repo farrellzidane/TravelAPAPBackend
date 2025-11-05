@@ -2,8 +2,88 @@ package apap.ti._5.accommodation_2306275600_be.repository;
 
 import apap.ti._5.accommodation_2306275600_be.model.Booking;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, String> {
+    
+    // Check if there's any booking conflict for a room
+    @Query("SELECT b FROM Booking b WHERE b.room.roomID = :roomID " +
+           "AND b.status NOT IN (3, 4) " + // Exclude cancelled and completed bookings
+           "AND ((b.checkInDate <= :checkOut AND b.checkOutDate >= :checkIn))")
+    List<Booking> findConflictingBookings(
+        @Param("roomID") String roomID,
+        @Param("checkIn") LocalDateTime checkIn,
+        @Param("checkOut") LocalDateTime checkOut
+    );
+    
+    // Find all bookings ordered by booking ID
+    @Query("SELECT b FROM Booking b ORDER BY b.bookingID DESC")
+    List<Booking> findAllOrderedByBookingID();
+    
+    // Find bookings by status
+    @Query("SELECT b FROM Booking b WHERE b.status = :status ORDER BY b.bookingID DESC")
+    List<Booking> findByStatusOrderedByBookingID(@Param("status") int status);
+    
+    // Search bookings by property name or room number
+    @Query("SELECT b FROM Booking b WHERE " +
+           "LOWER(b.room.roomType.property.propertyName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(b.room.roomID) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "ORDER BY b.bookingID DESC")
+    List<Booking> searchByPropertyOrRoom(@Param("keyword") String keyword);
+    
+    // Perbaiki juga query ini
+    @Query("SELECT b FROM Booking b WHERE " +
+           "(LOWER(b.room.roomType.property.propertyName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(b.room.roomID) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "AND b.status = :status " +
+           "ORDER BY b.bookingID DESC")
+    List<Booking> searchByPropertyOrRoomAndStatus(
+        @Param("keyword") String keyword,
+        @Param("status") int status
+    );
+    
+    // Find bookings that need status update (auto check-in)
+    @Query("SELECT b FROM Booking b WHERE b.status = 1 " +
+           "AND b.checkInDate <= :currentDate")
+    List<Booking> findBookingsToAutoCheckIn(@Param("currentDate") LocalDateTime currentDate);
+    
+    // Find bookings that should be cancelled (status 0 or 2 past check-in date)
+    @Query("SELECT b FROM Booking b WHERE b.status IN (0, 2) " +
+           "AND b.checkInDate < :currentDate")
+    List<Booking> findBookingsToAutoCancel(@Param("currentDate") LocalDateTime currentDate);
+    
+    List<Booking> findByRoom_RoomID(String roomID);
+
+    /**
+     * Find all bookings with status DONE (4) for a specific month and year
+     * Used for statistics/chart
+     */
+    @Query("SELECT b FROM Booking b " +
+       "WHERE b.status IN (1, 2, 4) " +  // Include Payment Confirmed, Checked-in, Done
+       "AND MONTH(b.checkOutDate) = :month " +
+       "AND YEAR(b.checkOutDate) = :year")
+    List<Booking> findDoneBookingsByMonthAndYear(
+        @Param("month") int month, 
+        @Param("year") int year
+    );
+    
+    /**
+     * Count done bookings by property for a specific period
+     */
+    @Query("SELECT COUNT(b) FROM Booking b " +
+       "WHERE b.status IN (1, 2, 4) " +  // Include Payment Confirmed, Checked-in, Done
+       "AND b.room.roomType.property.propertyID = :propertyID " +
+       "AND MONTH(b.checkOutDate) = :month " +
+       "AND YEAR(b.checkOutDate) = :year")
+    long countDoneBookingsByPropertyAndPeriod(
+        @Param("propertyID") String propertyID,
+        @Param("month") int month,
+        @Param("year") int year
+    );
 }
