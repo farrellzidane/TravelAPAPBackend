@@ -15,6 +15,7 @@ import apap.ti._5.accommodation_2306275600_be.model.RoomType;
 import apap.ti._5.accommodation_2306275600_be.repository.RoomRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.RoomTypeRepository;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.room.AddRoomRequestDTO;
+import apap.ti._5.accommodation_2306275600_be.restdto.request.room.CreateMaintenanceRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.room.UpdateRoomRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.room.RoomResponseDTO;
 
@@ -111,47 +112,47 @@ public class RoomRestServiceImpl implements RoomRestService{
     }
 
    @Override
-public RoomResponseDTO updateRoom(String roomID, UpdateRoomRequestDTO dto) {
-    Room room = roomRepository.findById(roomID)
-            .orElseThrow(() -> new RuntimeException("Room not found with id: " + roomID));
-    
-    // Update fields (hanya yang tidak null)
-    if (dto.getName() != null) {
-        room.setName(dto.getName());
-    }
-    if (dto.getAvailabilityStatus() != null) {
-        room.setAvailabilityStatus(dto.getAvailabilityStatus());
-    }
-    if (dto.getActiveRoom() != null) {
-        room.setActiveRoom(dto.getActiveRoom());
-    }
-    
-    // REPLACE maintenance schedule (bukan append)
-    // Jika ada maintenance baru, replace yang lama
-    if (dto.getMaintenanceStart() != null || dto.getMaintenanceEnd() != null) {
+    public RoomResponseDTO updateRoom(String roomID, UpdateRoomRequestDTO dto) {
+        Room room = roomRepository.findById(roomID)
+                .orElseThrow(() -> new RuntimeException("Room not found with id: " + roomID));
         
-        // Log old maintenance (jika ada)
-        if (room.getMaintenanceStart() != null && room.getMaintenanceEnd() != null) {
-            System.out.println("⚠️ Replacing existing maintenance schedule:");
-            System.out.println("   Old: " + room.getMaintenanceStart() + " - " + room.getMaintenanceEnd());
-            System.out.println("   New: " + dto.getMaintenanceStart() + " - " + dto.getMaintenanceEnd());
+        // Update fields (hanya yang tidak null)
+        if (dto.getName() != null) {
+            room.setName(dto.getName());
+        }
+        if (dto.getAvailabilityStatus() != null) {
+            room.setAvailabilityStatus(dto.getAvailabilityStatus());
+        }
+        if (dto.getActiveRoom() != null) {
+            room.setActiveRoom(dto.getActiveRoom());
         }
         
-        // Set maintenance baru (REPLACE)
-        room.setMaintenanceStart(dto.getMaintenanceStart());
-        room.setMaintenanceEnd(dto.getMaintenanceEnd());
-        
-        // Set availability ke 0 (unavailable) saat ada maintenance
-        if (dto.getMaintenanceStart() != null && dto.getMaintenanceEnd() != null) {
-            room.setAvailabilityStatus(0);
+        // REPLACE maintenance schedule (bukan append)
+        // Jika ada maintenance baru, replace yang lama
+        if (dto.getMaintenanceStart() != null || dto.getMaintenanceEnd() != null) {
+            
+            // Log old maintenance (jika ada)
+            if (room.getMaintenanceStart() != null && room.getMaintenanceEnd() != null) {
+                System.out.println("⚠️ Replacing existing maintenance schedule:");
+                System.out.println("   Old: " + room.getMaintenanceStart() + " - " + room.getMaintenanceEnd());
+                System.out.println("   New: " + dto.getMaintenanceStart() + " - " + dto.getMaintenanceEnd());
+            }
+            
+            // Set maintenance baru (REPLACE)
+            room.setMaintenanceStart(dto.getMaintenanceStart());
+            room.setMaintenanceEnd(dto.getMaintenanceEnd());
+            
+            // Set availability ke 0 (unavailable) saat ada maintenance
+            if (dto.getMaintenanceStart() != null && dto.getMaintenanceEnd() != null) {
+                room.setAvailabilityStatus(0);
+            }
         }
+        
+        room.setUpdatedDate(LocalDateTime.now());
+        Room updatedRoom = roomRepository.save(room);
+        
+        return convertToResponseDTO(updatedRoom);
     }
-    
-    room.setUpdatedDate(LocalDateTime.now());
-    Room updatedRoom = roomRepository.save(room);
-    
-    return convertToResponseDTO(updatedRoom);
-}
 
     @Override
     public void deleteRoom(String roomID) {
@@ -161,6 +162,38 @@ public RoomResponseDTO updateRoom(String roomID, UpdateRoomRequestDTO dto) {
         roomRepository.deleteById(roomID);
     }
     
+    @Override
+    public RoomResponseDTO createMaintenance(CreateMaintenanceRequestDTO dto) {
+        Room room = roomRepository.findById(dto.getRoomID())
+                .orElseThrow(() -> new RuntimeException("Room not found with id: " + dto.getRoomID()));
+        
+        // Validasi tanggal
+        if (dto.getMaintenanceEnd().isBefore(dto.getMaintenanceStart())) {
+            throw new RuntimeException("Tanggal selesai tidak boleh lebih awal dari tanggal mulai");
+        }
+        
+        if (dto.getMaintenanceStart().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("Tanggal mulai tidak boleh sebelum hari ini");
+        }
+        
+        // Check apakah ada booking yang conflict
+        // TODO: Implementasi check booking conflict jika sudah ada BookingService
+        
+        // Set maintenance schedule (REPLACE existing)
+        room.setMaintenanceStart(dto.getMaintenanceStart());
+        room.setMaintenanceEnd(dto.getMaintenanceEnd());
+        room.setAvailabilityStatus(0); // Set unavailable
+        room.setUpdatedDate(LocalDateTime.now());
+        
+        Room updatedRoom = roomRepository.save(room);
+        
+        System.out.println("✅ Maintenance Created:");
+        System.out.println("   Room: " + updatedRoom.getRoomID());
+        System.out.println("   Start: " + updatedRoom.getMaintenanceStart());
+        System.out.println("   End: " + updatedRoom.getMaintenanceEnd());
+        
+        return convertToResponseDTO(updatedRoom);
+    }
      
 // ===== Helper Methods =====
     private String generateRoomID(RoomType roomType) {

@@ -30,12 +30,12 @@ public class RoomTypeRestServiceImpl implements RoomTypeRestService{
         Property property = propertyRepository.findById(dto.getPropertyID())
                 .orElseThrow(() -> new RuntimeException("Property not found with id: " + dto.getPropertyID()));
         
-        // ✅ Generate room type ID
+        // Generate room type ID
         String roomTypeID = generateRoomTypeID(dto);
         
         // Manual conversion DTO to Entity
         RoomType roomType = RoomType.builder()
-                .roomTypeID(roomTypeID) // ✅ Set generated ID
+                .roomTypeID(roomTypeID) // Set generated ID
                 .name(dto.getName())
                 .price(dto.getPrice())
                 .description(dto.getDescription())
@@ -71,37 +71,37 @@ public class RoomTypeRestServiceImpl implements RoomTypeRestService{
     }
 
     @Override
-public RoomTypeResponseDTO updateRoomType(String roomTypeID, UpdateRoomTypeRequestDTO dto) {
-    RoomType roomType = roomTypeRepository.findById(roomTypeID)
+    public RoomTypeResponseDTO updateRoomType(String roomTypeID, UpdateRoomTypeRequestDTO dto) {
+        RoomType roomType = roomTypeRepository.findById(roomTypeID)
             .orElseThrow(() -> new RuntimeException("Room type not found with id: " + roomTypeID));
     
     
-    if (dto.getCapacity() != null) {
-        roomType.setCapacity(dto.getCapacity());
-    }
-    if (dto.getPrice() != null) {
-        roomType.setPrice(dto.getPrice());
-    }
-    if (dto.getFacility() != null) {
-        roomType.setFacility(dto.getFacility());
-    }
-    if (dto.getDescription() != null) {
-        roomType.setDescription(dto.getDescription());
-    }
-    
-    RoomType updatedRoomType = roomTypeRepository.save(roomType);
-    
-    return RoomTypeResponseDTO.builder()
-            .roomTypeID(updatedRoomType.getRoomTypeID())
-            .name(updatedRoomType.getName())
-            .floor(updatedRoomType.getFloor())
-            .capacity(updatedRoomType.getCapacity())
-            .price(updatedRoomType.getPrice())
-            .facility(updatedRoomType.getFacility())
-            .description(updatedRoomType.getDescription())
-            .propertyID(updatedRoomType.getProperty() != null ? updatedRoomType.getProperty().getPropertyID() : null)
-            .build();
-}
+        if (dto.getCapacity() != null) {
+            roomType.setCapacity(dto.getCapacity());
+        }
+        if (dto.getPrice() != null) {
+            roomType.setPrice(dto.getPrice());
+        }
+        if (dto.getFacility() != null) {
+            roomType.setFacility(dto.getFacility());
+        }
+        if (dto.getDescription() != null) {
+            roomType.setDescription(dto.getDescription());
+        }
+        
+        RoomType updatedRoomType = roomTypeRepository.save(roomType);
+        
+        return RoomTypeResponseDTO.builder()
+                .roomTypeID(updatedRoomType.getRoomTypeID())
+                .name(updatedRoomType.getName())
+                .floor(updatedRoomType.getFloor())
+                .capacity(updatedRoomType.getCapacity())
+                .price(updatedRoomType.getPrice())
+                .facility(updatedRoomType.getFacility())
+                .description(updatedRoomType.getDescription())
+                .propertyID(updatedRoomType.getProperty() != null ? updatedRoomType.getProperty().getPropertyID() : null)
+                .build();
+        }
 
 
     @Override
@@ -136,7 +136,7 @@ public RoomTypeResponseDTO updateRoomType(String roomTypeID, UpdateRoomTypeReque
         // Nomor lantai kamar
         String floor = String.format("%d", dto.getFloor());
         
-        // ✅ Format: 003–Single_Room–2 (menggunakan em dash –)
+        // Format: 003–Single_Room–2 (menggunakan em dash –)
         return propertyCounter + "–" + roomTypeName + "–" + floor;
     }
 
