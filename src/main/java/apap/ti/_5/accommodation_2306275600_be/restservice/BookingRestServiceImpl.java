@@ -193,7 +193,15 @@ public class BookingRestServiceImpl implements BookingRestService {
             System.out.println("🔄 Auto Check-In: " + booking.getBookingID() + " -> Status 2 (Checked-In)");
         }
         
-        // 2. Auto Cancel: Status 0 (Pending) or Status 2 (Checked-In without confirmation) -> Status 3 (Cancelled)
+        // 2. Auto Complete: Status 2 (Checked-In) -> Status 4 (Completed/Done) when check-out date passed
+        List<Booking> bookingsToComplete = bookingRepository.findBookingsToAutoComplete(now);
+        for (Booking booking : bookingsToComplete) {
+            booking.setStatus(4); // Completed/Done
+            bookingRepository.save(booking);
+            System.out.println("🔄 Auto Complete: " + booking.getBookingID() + " -> Status 4 (Completed/Done)");
+        }
+        
+        // 3. Auto Cancel: Status 0 (Pending) -> Status 3 (Cancelled) when check-in date passed
         List<Booking> bookingsToCancel = bookingRepository.findBookingsToAutoCancel(now);
         for (Booking booking : bookingsToCancel) {
             // Calculate refund based on cancellation policy

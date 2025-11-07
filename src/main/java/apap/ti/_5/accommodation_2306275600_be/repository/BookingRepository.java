@@ -53,8 +53,13 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
            "AND b.checkInDate <= :currentDate")
     List<Booking> findBookingsToAutoCheckIn(@Param("currentDate") LocalDateTime currentDate);
     
-    // Find bookings that should be cancelled (status 0 or 2 past check-in date)
-    @Query("SELECT b FROM Booking b WHERE b.status IN (0, 2) " +
+    // Find bookings that should be completed (status 2 past check-out date)
+    @Query("SELECT b FROM Booking b WHERE b.status = 2 " +
+           "AND b.checkOutDate <= :currentDate")
+    List<Booking> findBookingsToAutoComplete(@Param("currentDate") LocalDateTime currentDate);
+    
+    // Find bookings that should be cancelled (only status 0 past check-in date)
+    @Query("SELECT b FROM Booking b WHERE b.status = 0 " +
            "AND b.checkInDate < :currentDate")
     List<Booking> findBookingsToAutoCancel(@Param("currentDate") LocalDateTime currentDate);
     
@@ -63,9 +68,10 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
     /**
      * Find all bookings with status DONE (4) for a specific month and year
      * Used for statistics/chart
+     * Only includes completed bookings (status = 4)
      */
     @Query("SELECT b FROM Booking b " +
-       "WHERE b.status IN (1, 2, 4) " +  // Include Payment Confirmed, Checked-in, Done
+       "WHERE b.status = 4 " +  // Only Completed/Done bookings
        "AND MONTH(b.checkOutDate) = :month " +
        "AND YEAR(b.checkOutDate) = :year")
     List<Booking> findDoneBookingsByMonthAndYear(
@@ -75,9 +81,10 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
     
     /**
      * Count done bookings by property for a specific period
+     * Only includes completed bookings (status = 4)
      */
     @Query("SELECT COUNT(b) FROM Booking b " +
-       "WHERE b.status IN (1, 2, 4) " +  // Include Payment Confirmed, Checked-in, Done
+       "WHERE b.status = 4 " +  // Only Completed/Done bookings
        "AND b.room.roomType.property.propertyID = :propertyID " +
        "AND MONTH(b.checkOutDate) = :month " +
        "AND YEAR(b.checkOutDate) = :year")
