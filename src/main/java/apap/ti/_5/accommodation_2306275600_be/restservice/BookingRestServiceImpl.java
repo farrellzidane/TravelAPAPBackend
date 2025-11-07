@@ -586,7 +586,7 @@ public class BookingRestServiceImpl implements BookingRestService {
         booking.setBreakfast(dto.getIsBreakfast());
         booking.setCapacity(dto.getCapacity());
         
-        // 11. ✅ Handle price difference - RESET previous extra pay/refund first
+        // 11. ✅ Handle price difference based on current status
         if (priceDifference > 0) {
             // Price increased → set extraPay, clear refund
             booking.setExtraPay(priceDifference);
@@ -594,11 +594,31 @@ public class BookingRestServiceImpl implements BookingRestService {
             System.out.println("⚠️ Price increased by Rp " + String.format("%,d", priceDifference));
             System.out.println("   Extra payment required: Rp " + String.format("%,d", priceDifference));
         } else if (priceDifference < 0) {
-            // Price decreased → set refund, clear extraPay
-            booking.setExtraPay(0);
-            booking.setRefund(Math.abs(priceDifference));
-            System.out.println("✅ Price decreased by Rp " + String.format("%,d", Math.abs(priceDifference)));
-            System.out.println("   Refund available: Rp " + String.format("%,d", Math.abs(priceDifference)));
+            // Price decreased
+            int refundAmount = Math.abs(priceDifference);
+            
+            if (booking.getStatus() == 1) {
+                // Status 1 (Payment Confirmed) → Customer already paid oldTotalPrice
+                // Set refund and update totalPrice to reflect net amount after refund
+                booking.setExtraPay(0);
+                booking.setRefund(refundAmount);
+                booking.setTotalPrice(newTotalPrice); // Update totalPrice to new amount
+                
+                System.out.println("✅ Price decreased by Rp " + String.format("%,d", refundAmount));
+                System.out.println("   Status: Payment Confirmed - Customer already paid");
+                System.out.println("   Total Price updated: Rp " + String.format("%,d", oldTotalPrice) + 
+                                 " → Rp " + String.format("%,d", newTotalPrice));
+                System.out.println("   Refund to customer: Rp " + String.format("%,d", refundAmount));
+            } else {
+                // Status 0 (Pending) → Customer hasn't paid yet
+                // Just set refund, totalPrice already updated above
+                booking.setExtraPay(0);
+                booking.setRefund(refundAmount);
+                
+                System.out.println("✅ Price decreased by Rp " + String.format("%,d", refundAmount));
+                System.out.println("   Status: Pending - No payment made yet");
+                System.out.println("   Refund available: Rp " + String.format("%,d", refundAmount));
+            }
         } else {
             // No price change → clear both
             booking.setExtraPay(0);
@@ -639,13 +659,21 @@ public class BookingRestServiceImpl implements BookingRestService {
         // Case 1: Status = 0 (First payment)
         if (booking.getStatus() == 0) {
             if (booking.getExtraPay() > 0) {
-                // Has extra pay → Add extra pay to income
-                int paymentAmount = booking.getExtraPay();
+                // Has extra pay → This is first payment after update
+                // Need to pay TOTAL (totalPrice + extraPay) because totalPrice was never paid
+                int paymentAmount = booking.getTotalPrice() + booking.getExtraPay();
                 property.setIncome(property.getIncome() + paymentAmount);
+                
+                System.out.println("💰 First Payment Processed (After Update):");
+                System.out.println("   Original Total Price: Rp " + String.format("%,d", booking.getTotalPrice()));
+                System.out.println("   Extra Pay: Rp " + String.format("%,d", booking.getExtraPay()));
+                System.out.println("   Payment Amount: Rp " + String.format("%,d", paymentAmount));
+                
+                // Update totalPrice to include extraPay for proper tracking
+                booking.setTotalPrice(paymentAmount);
                 booking.setExtraPay(0);
                 
-                System.out.println("💰 Extra Payment Processed:");
-                System.out.println("   Amount: Rp " + String.format("%,d", paymentAmount));
+                System.out.println("   New Total Price: Rp " + String.format("%,d", booking.getTotalPrice()));
                 System.out.println("   New Property Income: Rp " + String.format("%,d", property.getIncome()));
             } else {
                 // No extra pay → Add total price to income
