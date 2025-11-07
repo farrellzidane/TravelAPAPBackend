@@ -22,14 +22,18 @@ import java.util.stream.Collectors;
 
 @Service
 public class PropertyRestServiceImpl implements PropertyRestService {
-    @Autowired
-    private PropertyRepository propertyRepository;
+    private final PropertyRepository propertyRepository;
+    private final RoomTypeRestService roomTypeRestService;
+    private final RoomRestService roomRestService;
     
     @Autowired
-    private RoomTypeRestService roomTypeRestService;
-    
-    @Autowired
-    private RoomRestService roomRestService;
+    public PropertyRestServiceImpl(PropertyRepository propertyRepository, 
+                                    RoomTypeRestService roomTypeRestService,
+                                    RoomRestService roomRestService) {
+        this.propertyRepository = propertyRepository;
+        this.roomTypeRestService = roomTypeRestService;
+        this.roomRestService = roomRestService;
+    }
 
     @Override
     public List<PropertyResponseDTO> getAllProperties() {

@@ -36,14 +36,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BookingRestServiceImpl implements BookingRestService {
     
-    @Autowired
-    private BookingRepository bookingRepository;
-    
-    @Autowired
-    private RoomRepository roomRepository;
-
-    @Autowired
-    private PropertyRepository propertyRepository;
+    private final BookingRepository bookingRepository;
+    private final RoomRepository roomRepository;
+    private final PropertyRepository propertyRepository;
     
     private static final int BREAKFAST_PRICE = 50000;
     
