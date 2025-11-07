@@ -182,7 +182,8 @@ public class RoomRestServiceImpl implements RoomRestService{
         // Set maintenance schedule (REPLACE existing)
         room.setMaintenanceStart(dto.getMaintenanceStart());
         room.setMaintenanceEnd(dto.getMaintenanceEnd());
-        room.setAvailabilityStatus(0); // Set unavailable
+        // DO NOT change availability status - let frontend filter based on dates
+        // room.setAvailabilityStatus(0); // Removed - status stays as 1 (available)
         room.setUpdatedDate(LocalDateTime.now());
         
         Room updatedRoom = roomRepository.save(room);
@@ -191,6 +192,7 @@ public class RoomRestServiceImpl implements RoomRestService{
         System.out.println("   Room: " + updatedRoom.getRoomID());
         System.out.println("   Start: " + updatedRoom.getMaintenanceStart());
         System.out.println("   End: " + updatedRoom.getMaintenanceEnd());
+        System.out.println("   Status: " + updatedRoom.getAvailabilityStatus() + " (remains available, filtered by dates)");
         
         return convertToResponseDTO(updatedRoom);
     }
