@@ -19,4 +19,5 @@ public class BookingListItemDTO {
     private int totalPrice;
     private int status;
     private String statusText; // "Pending", "Confirmed", "Checked-In", "Cancelled", "Completed"
+    private int refund; // Refund amount for cancelled bookings
 }

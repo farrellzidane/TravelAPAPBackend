@@ -234,6 +234,7 @@ public class BookingRestServiceImpl implements BookingRestService {
             .totalPrice(booking.getTotalPrice())
             .status(booking.getStatus())
             .statusText(getStatusText(booking.getStatus()))
+            .refund(booking.getRefund())
             .build();
     }
     
@@ -692,6 +693,7 @@ public class BookingRestServiceImpl implements BookingRestService {
                 // Income -= totalPrice, Income += extraPay
                 int refundAmount = booking.getTotalPrice() - booking.getExtraPay();
                 property.setIncome(property.getIncome() - refundAmount);
+                booking.setRefund(refundAmount);
                 
                 System.out.println("❌ Cancelled (Status 0 with Extra Pay):");
                 System.out.println("   Total Price: Rp " + String.format("%,d", booking.getTotalPrice()));
@@ -700,17 +702,20 @@ public class BookingRestServiceImpl implements BookingRestService {
                 System.out.println("   Income Change: Rp " + String.format("%,d", oldIncome) + 
                                 " → Rp " + String.format("%,d", property.getIncome()));
             } else {
-                // No payment made yet → Just change status
+                // No payment made yet → Just change status, no refund
+                booking.setRefund(0);
                 System.out.println("❌ Cancelled (Status 0, No Payment Made)");
             }
         }
         // Case 2: Status = 1 (Payment Confirmed)
         else if (booking.getStatus() == 1) {
             // Full refund of total price
-            property.setIncome(property.getIncome() - booking.getTotalPrice());
+            int refundAmount = booking.getTotalPrice();
+            property.setIncome(property.getIncome() - refundAmount);
+            booking.setRefund(refundAmount);
             
             System.out.println("❌ Cancelled (Status 1 - Payment Confirmed):");
-            System.out.println("   Refund Amount: Rp " + String.format("%,d", booking.getTotalPrice()));
+            System.out.println("   Refund Amount: Rp " + String.format("%,d", refundAmount));
             System.out.println("   Income Change: Rp " + String.format("%,d", oldIncome) + 
                             " → Rp " + String.format("%,d", property.getIncome()));
         }
