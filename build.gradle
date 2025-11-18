@@ -7,7 +7,7 @@ plugins {
 
 group = 'apap.ti.2025'
 version = '0.0.1-SNAPSHOT'
-description = 'Tugas Individu APAP 2306275600 - Accomodation Back End'
+description = 'Tugas Individu APAP 2306275600 - accommodation Back End'
 
 java {
 	toolchain {

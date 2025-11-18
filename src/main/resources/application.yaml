@@ -1,6 +1,6 @@
 spring:
   application:
-    name : accomodation-be
+    name : accommodation-be
 
   mvc:
     hiddenmethod : 

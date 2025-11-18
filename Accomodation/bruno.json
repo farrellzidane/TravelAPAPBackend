@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "name": "Accomodation",
+  "name": "accommodation",
   "type": "collection",
   "ignore": [
     "node_modules",
