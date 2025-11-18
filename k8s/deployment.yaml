@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: accomodation-2306275600-be
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: accomodation-2306275600-be
+  template:
+    metadata:
+      labels:
+        app: accomodation-2306275600-be
+    spec:
+      containers:
+        - name: springboot-container
+          image: farrellzidanee/accomodation-2306275600-be:REPLACE_ME_TAG
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DATABASE_URL_PROD
+              valueFrom:
+                configMapKeyRef:
+                  name: accomodation-2306275600-be-config
+                  key: DATABASE_URL_PROD
+            - name: DATABASE_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: accomodation-2306275600-be-config
+                  key: DATABASE_USERNAME
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: accomodation-2306275600-be-secret
+                  key: DATABASE_PASSWORD
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: accomodation-2306275600-be-secret
+                  key: JWT_SECRET_KEY
+                  
