@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: springboot-container
-          image: farrellzidanee/accomodation-2306275600-be:REPLACE_ME_TAG
+          image: farrellzidanee/accomodation-2306275600:REPLACE_ME_TAG
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
