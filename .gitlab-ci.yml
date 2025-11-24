@@ -14,6 +14,8 @@ build:
     - chmod +x ./gradlew
     - ./gradlew clean build -x test
     - cp $(find build/libs -name "*.jar" | head -n 1) app.jar
+  only:
+    - main
   artifacts:
     paths:
       - app.jar

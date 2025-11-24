@@ -1,0 +1,115 @@
+package apap.ti._5.accommodation_2306275600_be.restservice.RBAC;
+
+import apap.ti._5.accommodation_2306275600_be.exceptions.AccessDeniedException;
+import apap.ti._5.accommodation_2306275600_be.external.AuthService;
+import apap.ti._5.accommodation_2306275600_be.external.AuthServiceMock;
+import apap.ti._5.accommodation_2306275600_be.repository.PaymentMethodRepository;
+import apap.ti._5.accommodation_2306275600_be.repository.TopUpTransactionRepository;
+import apap.ti._5.accommodation_2306275600_be.restdto.auth.UserProfileDTO;
+import apap.ti._5.accommodation_2306275600_be.restdto.request.topup.CreateTopUpRequestDTO;
+import apap.ti._5.accommodation_2306275600_be.restdto.request.topup.UpdateTopUpStatusRequestDTO;
+import apap.ti._5.accommodation_2306275600_be.restdto.response.topup.TopUpTransactionResponseDTO;
+import apap.ti._5.accommodation_2306275600_be.restservice.TopUpTransactionRestServiceImpl;
+
+import java.util.List;
+
+public class TopUpTransactionRestServiceRBACImpl extends TopUpTransactionRestServiceImpl implements TopUpTransactionRestServiceRBAC {
+
+    private final AuthService authService;
+    private final AuthServiceMock authServiceMock;
+
+    public TopUpTransactionRestServiceRBACImpl(
+            TopUpTransactionRepository topUpTransactionRepository,
+            PaymentMethodRepository paymentMethodRepository,
+            AuthService authService,
+            AuthServiceMock authServiceMock
+        ) {
+        super(topUpTransactionRepository, paymentMethodRepository);
+        this.authService = authService;
+        this.authServiceMock = authServiceMock;
+    }
+
+    // [POST] Create Top-Up Transaction - PBI-BE-TU3 - Customer
+    @Override
+    public TopUpTransactionResponseDTO createTopUpTransaction(CreateTopUpRequestDTO dto) throws AccessDeniedException {
+        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        
+        boolean hasAccess = authService.isCustomer(user);
+        
+        if (!hasAccess) {
+            throw new AccessDeniedException("Anda tidak memiliki akses ke resource ini, role : " + user.role());
+        }
+        
+        return super.createTopUpTransaction(dto);
+    }
+
+    // [GET] Get All Top-Up Transactions - PBI-BE-TU1 - Superadmin, Customer
+    @Override
+    public List<TopUpTransactionResponseDTO> getAllTopUpTransactions() throws AccessDeniedException {
+        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        
+        boolean hasAccess = authService.isSuperAdmin(user) || authService.isCustomer(user);
+        
+        if (!hasAccess) {
+            throw new AccessDeniedException("Anda tidak memiliki akses ke resource ini, role : " + user.role());
+        }
+        
+        return super.getAllTopUpTransactions();
+    }
+
+    // [GET] Get Top-Up Transactions by Customer ID - Customer (own transactions only)
+    @Override
+    public List<TopUpTransactionResponseDTO> getTopUpTransactionsByCustomerId(String customerId) throws AccessDeniedException {
+        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        
+        boolean hasAccess = authService.isCustomer(user);
+        
+        if (!hasAccess) {
+            throw new AccessDeniedException("Anda tidak memiliki akses ke resource ini, role : " + user.role());
+        }
+        
+        return super.getTopUpTransactionsByCustomerId(customerId);
+    }
+
+    // [GET] Get Top-Up Transaction by ID - PBI-BE-TU2 - Superadmin, Customer
+    @Override
+    public TopUpTransactionResponseDTO getTopUpTransactionById(String id) throws AccessDeniedException {
+        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        
+        boolean hasAccess = authService.isSuperAdmin(user) || authService.isCustomer(user);
+        
+        if (!hasAccess) {
+            throw new AccessDeniedException("Anda tidak memiliki akses ke resource ini, role : " + user.role());
+        }
+        
+        return super.getTopUpTransactionById(id);
+    }
+
+    // [PUT] Update Top-Up Status - PBI-BE-TU4 - Superadmin
+    @Override
+    public TopUpTransactionResponseDTO updateTopUpStatus(UpdateTopUpStatusRequestDTO dto) throws AccessDeniedException {
+        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        
+        boolean hasAccess = authService.isSuperAdmin(user);
+        
+        if (!hasAccess) {
+            throw new AccessDeniedException("Anda tidak memiliki akses ke resource ini, role : " + user.role());
+        }
+        
+        return super.updateTopUpStatus(dto);
+    }
+
+    // [DELETE] Delete Top-Up Transaction - PBI-BE-TU5 - Superadmin
+    @Override
+    public void deleteTopUpTransaction(String id) throws AccessDeniedException {
+        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        
+        boolean hasAccess = authService.isSuperAdmin(user);
+        
+        if (!hasAccess) {
+            throw new AccessDeniedException("Anda tidak memiliki akses ke resource ini, role : " + user.role());
+        }
+        
+        super.deleteTopUpTransaction(id);
+    }
+}
