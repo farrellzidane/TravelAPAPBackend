@@ -8,7 +8,8 @@ import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingRe
 import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingUpdateFormDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingListItemDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingDetailResponseDTO;
-import apap.ti._5.accommodation_2306275600_be.restservice.BookingRestService;
+// import apap.ti._5.accommodation_2306275600_be.restservice.BookingRestService;x
+import apap.ti._5.accommodation_2306275600_be.restservice.RBAC.BookingRestServiceRBAC;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingChartResponseDTO;
 
 import jakarta.validation.Valid;
@@ -25,9 +26,9 @@ import java.util.List;
 @RequestMapping("/api")
 public class BookingRestController {
     
-    private final BookingRestService bookingRestService;
+    private final BookingRestServiceRBAC bookingRestService;
     
-    public BookingRestController(BookingRestService bookingRestService) {
+    public BookingRestController(BookingRestServiceRBAC bookingRestService) {
         this.bookingRestService = bookingRestService;
     }
     

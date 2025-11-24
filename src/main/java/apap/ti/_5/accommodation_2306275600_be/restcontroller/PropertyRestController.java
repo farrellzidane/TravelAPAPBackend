@@ -8,9 +8,12 @@ import apap.ti._5.accommodation_2306275600_be.restdto.response.BaseResponseDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.property.PropertyResponseDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.room.RoomResponseDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.roomtype.RoomTypeResponseDTO;
-import apap.ti._5.accommodation_2306275600_be.restservice.PropertyRestService;
-import apap.ti._5.accommodation_2306275600_be.restservice.RoomRestService;
-import apap.ti._5.accommodation_2306275600_be.restservice.RoomTypeRestService;
+// import apap.ti._5.accommodation_2306275600_be.restservice.PropertyRestService;
+// import apap.ti._5.accommodation_2306275600_be.restservice.RoomRestService;
+// import apap.ti._5.accommodation_2306275600_be.restservice.RoomTypeRestService;
+import apap.ti._5.accommodation_2306275600_be.restservice.RBAC.PropertyRestServiceRBAC;
+import apap.ti._5.accommodation_2306275600_be.restservice.RBAC.RoomRestServiceRBAC;
+import apap.ti._5.accommodation_2306275600_be.restservice.RBAC.RoomTypeRestServiceRBAC;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
@@ -27,14 +30,14 @@ import java.util.Set;
 @RestController
 @RequestMapping("/api")
 public class PropertyRestController {
-    private final PropertyRestService propertyRestService;
-    private final RoomTypeRestService roomTypeRestService;
-    private final RoomRestService roomRestService;
+    private final PropertyRestServiceRBAC propertyRestService;
+    private final RoomTypeRestServiceRBAC roomTypeRestService;
+    private final RoomRestServiceRBAC roomRestService;
 
     public PropertyRestController(
-        PropertyRestService propertyRestService,
-        RoomTypeRestService roomTypeRestService,
-        RoomRestService roomRestService
+        PropertyRestServiceRBAC propertyRestService,
+        RoomTypeRestServiceRBAC roomTypeRestService,
+        RoomRestServiceRBAC roomRestService
     ) {
         this.propertyRestService = propertyRestService;
         this.roomTypeRestService = roomTypeRestService;

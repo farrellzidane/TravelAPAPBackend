@@ -3,7 +3,8 @@ package apap.ti._5.accommodation_2306275600_be.restcontroller;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.room.CreateMaintenanceRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.BaseResponseDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.room.RoomResponseDTO;
-import apap.ti._5.accommodation_2306275600_be.restservice.RoomRestService;
+// import apap.ti._5.accommodation_2306275600_be.restservice.RoomRestService;
+import apap.ti._5.accommodation_2306275600_be.restservice.RBAC.RoomRestServiceRBAC;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
@@ -19,9 +20,9 @@ import java.util.List;
 @RequestMapping("/api")
 public class RoomRestController {
     
-    private final RoomRestService roomRestService;
+    private final RoomRestServiceRBAC roomRestService;
 
-    public RoomRestController(RoomRestService roomRestService) {
+    public RoomRestController(RoomRestServiceRBAC roomRestService) {
         this.roomRestService = roomRestService;
     }
 

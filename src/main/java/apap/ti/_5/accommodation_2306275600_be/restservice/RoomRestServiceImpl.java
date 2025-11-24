@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,12 +21,13 @@ import apap.ti._5.accommodation_2306275600_be.restdto.request.room.UpdateRoomReq
 import apap.ti._5.accommodation_2306275600_be.restdto.response.room.RoomResponseDTO;
 
 @Service
+@Primary
 @Transactional
 @RequiredArgsConstructor
 public class RoomRestServiceImpl implements RoomRestService{
     
-    private final RoomRepository roomRepository;
-    private final RoomTypeRepository roomTypeRepository;
+    protected final RoomRepository roomRepository;
+    protected final RoomTypeRepository roomTypeRepository;
 
 
     @Override
@@ -251,5 +253,5 @@ public class RoomRestServiceImpl implements RoomRestService{
                 .createdDate(room.getCreatedDate())
                 .updatedDate(room.getUpdatedDate())
                 .build();
-    }    
+    }
 }

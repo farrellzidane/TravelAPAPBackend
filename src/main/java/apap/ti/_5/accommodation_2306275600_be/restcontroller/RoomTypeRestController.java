@@ -4,7 +4,8 @@ import apap.ti._5.accommodation_2306275600_be.restdto.request.roomtype.CreateRoo
 import apap.ti._5.accommodation_2306275600_be.restdto.request.roomtype.UpdateRoomTypeRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.BaseResponseDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.roomtype.RoomTypeResponseDTO;
-import apap.ti._5.accommodation_2306275600_be.restservice.RoomTypeRestService;
+// import apap.ti._5.accommodation_2306275600_be.restservice.RoomTypeRestService;
+import apap.ti._5.accommodation_2306275600_be.restservice.RBAC.RoomTypeRestServiceRBAC;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,7 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RoomTypeRestController {
     
-    private final RoomTypeRestService roomTypeRestService;
+    private final RoomTypeRestServiceRBAC roomTypeRestService;
     
     @PostMapping()
     public ResponseEntity<BaseResponseDTO<RoomTypeResponseDTO>> createRoomType(

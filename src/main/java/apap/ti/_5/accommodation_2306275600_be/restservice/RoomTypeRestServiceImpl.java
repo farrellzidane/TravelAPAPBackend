@@ -3,6 +3,7 @@ package apap.ti._5.accommodation_2306275600_be.restservice;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +19,13 @@ import apap.ti._5.accommodation_2306275600_be.restdto.response.roomtype.RoomType
 
 
 @Service
+@Primary
 @Transactional
 @RequiredArgsConstructor
 public class RoomTypeRestServiceImpl implements RoomTypeRestService{
     
-    private final RoomTypeRepository roomTypeRepository;
-    private final PropertyRepository propertyRepository;
+    protected final RoomTypeRepository roomTypeRepository;
+    protected final PropertyRepository propertyRepository;
     private final RoomRepository roomRepository;
 
     @Override

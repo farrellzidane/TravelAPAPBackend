@@ -13,6 +13,7 @@ import apap.ti._5.accommodation_2306275600_be.restdto.response.room.RoomResponse
 import apap.ti._5.accommodation_2306275600_be.restdto.response.roomtype.RoomTypeResponseDTO;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,10 +22,11 @@ import java.util.stream.Collectors;
 
 
 @Service
+@Primary
 public class PropertyRestServiceImpl implements PropertyRestService {
-    private final PropertyRepository propertyRepository;
-    private final RoomTypeRestService roomTypeRestService;
-    private final RoomRestService roomRestService;
+    protected final PropertyRepository propertyRepository;
+    protected final RoomTypeRestService roomTypeRestService;
+    protected final RoomRestService roomRestService;
     
     @Autowired
     public PropertyRestServiceImpl(PropertyRepository propertyRepository, 
