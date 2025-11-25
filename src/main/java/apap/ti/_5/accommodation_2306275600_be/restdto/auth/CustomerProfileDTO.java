@@ -3,7 +3,7 @@ package apap.ti._5.accommodation_2306275600_be.restdto.auth;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record CustomerProfileDTO (
+public record CustomerProfileDTO(
     UUID userId,
     String username,
     String name,

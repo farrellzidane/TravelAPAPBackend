@@ -159,7 +159,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public UserProfileDTO getAuthenticatedUser() throws AccessDeniedException {
-        String url = be1Url + "/api/auth/profuck";
+        String url = be1Url + "/api/auth/user";
 
         UserProfileDTO user;
         try {
@@ -265,5 +265,9 @@ public class AuthServiceImpl implements AuthService {
         } catch (Exception e) {
             throw new AccessDeniedException("An unexpected error occurred: " + e.getMessage());
         }
+    }
+
+    public boolean isCustomer(CustomerProfileDTO customerProfile) {
+        return customerProfile.role().equalsIgnoreCase(CUSTOMER);
     }
 }

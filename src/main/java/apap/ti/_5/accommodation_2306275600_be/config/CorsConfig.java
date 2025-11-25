@@ -22,10 +22,10 @@ public class CorsConfig {
                 registry
                     .addMapping("/**")
                     .allowedOrigins(origins)
-                    // .allowedOriginPatterns("*") // jangan lupa delete sebelum deploy ke production
+                    .allowedOriginPatterns("*") // jangan lupa delete sebelum deploy ke production
                     .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                     .allowedHeaders("*")
-                    .allowCredentials(true) 
+                    // .allowCredentials(true) 
                     .exposedHeaders("Authorization");
             }
         };

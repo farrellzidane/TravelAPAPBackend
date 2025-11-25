@@ -7,6 +7,8 @@ import apap.ti._5.accommodation_2306275600_be.restdto.request.paymentmethod.Upda
 import apap.ti._5.accommodation_2306275600_be.restdto.response.paymentmethod.PaymentMethodResponseDTO;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +18,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@Primary
 @Transactional
 @RequiredArgsConstructor
 public class PaymentMethodRestServiceImpl implements PaymentMethodRestService {

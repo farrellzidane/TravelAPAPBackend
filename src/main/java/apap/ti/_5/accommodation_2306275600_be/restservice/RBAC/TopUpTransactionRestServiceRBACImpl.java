@@ -13,6 +13,9 @@ import apap.ti._5.accommodation_2306275600_be.restservice.TopUpTransactionRestSe
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
+@Service
 public class TopUpTransactionRestServiceRBACImpl extends TopUpTransactionRestServiceImpl implements TopUpTransactionRestServiceRBAC {
 
     private final AuthService authService;
@@ -32,7 +35,7 @@ public class TopUpTransactionRestServiceRBACImpl extends TopUpTransactionRestSer
     // [POST] Create Top-Up Transaction - PBI-BE-TU3 - Customer
     @Override
     public TopUpTransactionResponseDTO createTopUpTransaction(CreateTopUpRequestDTO dto) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isCustomer(user);
         

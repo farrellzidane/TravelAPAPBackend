@@ -73,7 +73,7 @@ public class PaymentMethodRestController {
             List<PaymentMethodResponseDTO> result = paymentMethodRestService.getAllPaymentMethods();
             
             baseResponseDTO.setStatus(HttpStatus.OK.value());
-            baseResponseDTO.setMessage("Payment method terhapus tidak ditampilkan");
+            baseResponseDTO.setMessage("Payment Method berhasil ditampilkan");
             baseResponseDTO.setTimestamp(new Date());
             baseResponseDTO.setData(result);
             return new ResponseEntity<>(baseResponseDTO, HttpStatus.OK);

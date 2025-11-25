@@ -12,6 +12,9 @@ import apap.ti._5.accommodation_2306275600_be.restservice.PaymentMethodRestServi
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
+@Service
 public class PaymentMethodRestServiceRBACImpl extends PaymentMethodRestServiceImpl implements PaymentMethodRestServiceRBAC {
 
     private final AuthService authService;

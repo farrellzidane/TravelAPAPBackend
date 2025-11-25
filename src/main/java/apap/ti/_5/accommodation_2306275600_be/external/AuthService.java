@@ -17,6 +17,8 @@ public interface AuthService {
 
     public boolean isCustomer(UserProfileDTO userProfile);
 
+    public boolean isCustomer(CustomerProfileDTO customerProfile);
+
     public boolean isSuperAdmin(UUID userId);
 
     public boolean isAccommodationOwner(UUID userId);
