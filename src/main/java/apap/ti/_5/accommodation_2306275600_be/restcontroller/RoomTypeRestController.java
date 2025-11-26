@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
@@ -69,7 +70,7 @@ public class RoomTypeRestController {
     }
     
     @GetMapping("/room-types/{id}")
-    public ResponseEntity<BaseResponseDTO<RoomTypeResponseDTO>> getRoomType(@PathVariable String id) {
+    public ResponseEntity<BaseResponseDTO<RoomTypeResponseDTO>> getRoomType(@PathVariable UUID id) {
         var baseResponseDTO = new BaseResponseDTO<RoomTypeResponseDTO>();
         
         try {
@@ -120,7 +121,7 @@ public class RoomTypeRestController {
     
     @PutMapping("/room-types/{id}")
     public ResponseEntity<BaseResponseDTO<RoomTypeResponseDTO>> updateRoomType(
-            @PathVariable String id,
+            @PathVariable UUID id,
             @Valid @RequestBody UpdateRoomTypeRequestDTO request,
             BindingResult bindingResult) {
         
@@ -164,7 +165,7 @@ public class RoomTypeRestController {
     }
     
     @DeleteMapping("/room-types/{id}")
-    public ResponseEntity<BaseResponseDTO<Void>> deleteRoomType(@PathVariable String id) {
+    public ResponseEntity<BaseResponseDTO<Void>> deleteRoomType(@PathVariable UUID id) {
         var baseResponseDTO = new BaseResponseDTO<Void>();
         
         try {

@@ -10,6 +10,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
@@ -26,8 +28,8 @@ import java.util.UUID;
 public class Property {
 
     @Id
-    @Column(name = "property_id", nullable = false, length = 36)
-    private String propertyID;
+    @Column(name = "property_id", nullable = false, columnDefinition = "uuid")
+    private UUID propertyID;
 
     @Column(name = "property_name")
     private String propertyName;
@@ -67,4 +69,18 @@ public class Property {
 
     @Column(name = "updated_date")
     private LocalDateTime updatedDate;
+
+    @PrePersist
+    protected void onCreate() {
+        if (propertyID == null) {
+            propertyID = UUID.randomUUID();
+        }
+        createdDate = LocalDateTime.now();
+        updatedDate = createdDate;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedDate = LocalDateTime.now();
+    }
 }

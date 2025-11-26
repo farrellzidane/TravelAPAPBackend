@@ -1,6 +1,7 @@
 package apap.ti._5.accommodation_2306275600_be.restservice;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.context.annotation.Primary;
@@ -31,15 +32,16 @@ public class RoomTypeRestServiceImpl implements RoomTypeRestService{
     @Override
     public RoomTypeResponseDTO createRoomType(CreateRoomTypeRequestDTO dto) {
         // Find property
-        Property property = propertyRepository.findById(dto.getPropertyID())
+        Property property = propertyRepository.findById(UUID.fromString(dto.getPropertyID()))
                 .orElseThrow(() -> new RuntimeException("Property not found with id: " + dto.getPropertyID()));
         
-        // Generate room type ID
-        String roomTypeID = generateRoomTypeID(dto);
+        // ❌ COMMENTED: Old formatted ID generation
+        // String roomTypeID = generateRoomTypeID(dto);
         
+        // ✅ NEW: Let @PrePersist auto-generate UUID
         // Manual conversion DTO to Entity
         RoomType roomType = RoomType.builder()
-                .roomTypeID(roomTypeID) // Set generated ID
+                // .roomTypeID() is not set here - will be auto-generated
                 .name(dto.getName())
                 .price(dto.getPrice())
                 .description(dto.getDescription())
@@ -54,7 +56,7 @@ public class RoomTypeRestServiceImpl implements RoomTypeRestService{
     }
 
     @Override
-    public RoomTypeResponseDTO getRoomTypeById(String roomTypeID) {
+    public RoomTypeResponseDTO getRoomTypeById(UUID roomTypeID) {
         RoomType roomType = roomTypeRepository.findById(roomTypeID)
                 .orElseThrow(() -> new RuntimeException("Room type not found with id: " + roomTypeID));
         return convertToResponseDTO(roomType);
@@ -68,14 +70,14 @@ public class RoomTypeRestServiceImpl implements RoomTypeRestService{
     }
 
     @Override
-    public List<RoomTypeResponseDTO> getRoomTypesByProperty(String propertyID) {
+    public List<RoomTypeResponseDTO> getRoomTypesByProperty(UUID propertyID) {
         return roomTypeRepository.findByProperty_PropertyID(propertyID).stream()
                 .map(this::convertToResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public RoomTypeResponseDTO updateRoomType(String roomTypeID, UpdateRoomTypeRequestDTO dto) {
+    public RoomTypeResponseDTO updateRoomType(UUID roomTypeID, UpdateRoomTypeRequestDTO dto) {
         RoomType roomType = roomTypeRepository.findById(roomTypeID)
             .orElseThrow(() -> new RuntimeException("Room type not found with id: " + roomTypeID));
     
@@ -96,20 +98,20 @@ public class RoomTypeRestServiceImpl implements RoomTypeRestService{
         RoomType updatedRoomType = roomTypeRepository.save(roomType);
         
         return RoomTypeResponseDTO.builder()
-                .roomTypeID(updatedRoomType.getRoomTypeID())
+                .roomTypeID(updatedRoomType.getRoomTypeID().toString())
                 .name(updatedRoomType.getName())
                 .floor(updatedRoomType.getFloor())
                 .capacity(updatedRoomType.getCapacity())
                 .price(updatedRoomType.getPrice())
                 .facility(updatedRoomType.getFacility())
                 .description(updatedRoomType.getDescription())
-                .propertyID(updatedRoomType.getProperty() != null ? updatedRoomType.getProperty().getPropertyID() : null)
+                .propertyID(updatedRoomType.getProperty() != null ? updatedRoomType.getProperty().getPropertyID().toString() : null)
                 .build();
         }
 
 
     @Override
-    public void deleteRoomType(String roomTypeID) {
+    public void deleteRoomType(UUID roomTypeID) {
         if (!roomTypeRepository.existsById(roomTypeID)) {
             throw new RuntimeException("Room type not found with id: " + roomTypeID);
         }
@@ -117,7 +119,7 @@ public class RoomTypeRestServiceImpl implements RoomTypeRestService{
     }
     
     @Override
-    public boolean isDuplicateRoomTypeFloor(String propertyID, String roomTypeName, Integer floor) {
+    public boolean isDuplicateRoomTypeFloor(UUID propertyID, String roomTypeName, Integer floor) {
         if (floor == null) {
             return false;
         }
@@ -127,36 +129,37 @@ public class RoomTypeRestServiceImpl implements RoomTypeRestService{
                 .anyMatch(rt -> rt.getName().equals(roomTypeName) && rt.getFloor() == floor);
     }
 
-    private String generateRoomTypeID(CreateRoomTypeRequestDTO dto) {
-        // PropertyID format: PREFIX-4chars-3digits (contoh: APT-0000-004)
-        // Split by dash dan ambil bagian terakhir (counter)
-        String propertyID = dto.getPropertyID();
-        String[] parts = propertyID.split("-");
-        String propertyCounter = parts.length >= 3 ? parts[2] : "001";
-        
-        // Nama tipe kamar (replace space dengan underscore)
-        String roomTypeName = dto.getName().replace(" ", "_");
-        
-        // Nomor lantai kamar
-        String floor = String.format("%d", dto.getFloor());
-        
-        // Format: 003–Single_Room–2 (menggunakan em dash –)
-        return propertyCounter + "–" + roomTypeName + "–" + floor;
-    }
+    // ❌ COMMENTED: Old formatted ID generation - now using UUID auto-generation via @PrePersist
+    // private String generateRoomTypeID(CreateRoomTypeRequestDTO dto) {
+    //     // PropertyID format: PREFIX-4chars-3digits (contoh: APT-0000-004)
+    //     // Split by dash dan ambil bagian terakhir (counter)
+    //     String propertyID = dto.getPropertyID();
+    //     String[] parts = propertyID.split("-");
+    //     String propertyCounter = parts.length >= 3 ? parts[2] : "001";
+    //     
+    //     // Nama tipe kamar (replace space dengan underscore)
+    //     String roomTypeName = dto.getName().replace(" ", "_");
+    //     
+    //     // Nomor lantai kamar
+    //     String floor = String.format("%d", dto.getFloor());
+    //     
+    //     // Format: 003–Single_Room–2 (menggunakan em dash –)
+    //     return propertyCounter + "–" + roomTypeName + "–" + floor;
+    // }
     
 
 
     // Helper method untuk konversi Entity -> DTO
     private RoomTypeResponseDTO convertToResponseDTO(RoomType roomType) {
         return RoomTypeResponseDTO.builder()
-                .roomTypeID(roomType.getRoomTypeID())
+                .roomTypeID(roomType.getRoomTypeID().toString())
                 .name(roomType.getName())
                 .price(roomType.getPrice())
                 .description(roomType.getDescription())
                 .capacity(roomType.getCapacity())
                 .facility(roomType.getFacility())
                 .floor(roomType.getFloor())
-                .propertyID(roomType.getProperty() != null ? roomType.getProperty().getPropertyID() : null)
+                .propertyID(roomType.getProperty() != null ? roomType.getProperty().getPropertyID().toString() : null)
                 .propertyName(roomType.getProperty() != null ? roomType.getProperty().getPropertyName() : null)
                 .createdDate(roomType.getCreatedDate())
                 .updatedDate(roomType.getUpdatedDate())

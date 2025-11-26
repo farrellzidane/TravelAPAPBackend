@@ -49,7 +49,7 @@ public class BookingRestServiceImpl implements BookingRestService {
     @Override
     public BookingResponseDTO createBooking(CreateBookingRequestDTO dto) {
         // 1. Validasi Room exists
-        Room room = roomRepository.findById(dto.getRoomID())
+        Room room = roomRepository.findById(UUID.fromString(dto.getRoomID()))
             .orElseThrow(() -> new RuntimeException("Room not found with ID: " + dto.getRoomID()));
         
         // 2. Validasi tanggal
@@ -77,7 +77,7 @@ public class BookingRestServiceImpl implements BookingRestService {
         
         // 5. Check booking conflicts
         List<Booking> conflicts = bookingRepository.findConflictingBookings(
-            dto.getRoomID(), 
+            UUID.fromString(dto.getRoomID()), 
             dto.getCheckInDate(), 
             dto.getCheckOutDate()
         );
@@ -130,8 +130,8 @@ public class BookingRestServiceImpl implements BookingRestService {
         
         // 10. Log success
         System.out.println("✅ Booking Created Successfully:");
-        System.out.println("   Booking ID: " + savedBooking.getBookingID());
-        System.out.println("   Room ID: " + room.getRoomID());
+        System.out.println("   Booking ID: " + savedBooking.getBookingID().toString());
+        System.out.println("   Room ID: " + room.getRoomID().toString());
         System.out.println("   Customer: " + savedBooking.getCustomerName());
         System.out.println("   Check-in: " + savedBooking.getCheckInDate());
         System.out.println("   Check-out: " + savedBooking.getCheckOutDate());
@@ -194,7 +194,7 @@ public class BookingRestServiceImpl implements BookingRestService {
         for (Booking booking : bookingsToCheckIn) {
             booking.setStatus(2); // Checked-In
             bookingRepository.save(booking);
-            System.out.println("🔄 Auto Check-In: " + booking.getBookingID() + " -> Status 2 (Checked-In)");
+            System.out.println("🔄 Auto Check-In: " + booking.getBookingID().toString() + " -> Status 2 (Checked-In)");
         }
         
         // 2. Auto Complete: Status 2 (Checked-In) -> Status 4 (Completed/Done) when check-out date passed
@@ -202,7 +202,7 @@ public class BookingRestServiceImpl implements BookingRestService {
         for (Booking booking : bookingsToComplete) {
             booking.setStatus(4); // Completed/Done
             bookingRepository.save(booking);
-            System.out.println("🔄 Auto Complete: " + booking.getBookingID() + " -> Status 4 (Completed/Done)");
+            System.out.println("🔄 Auto Complete: " + booking.getBookingID().toString() + " -> Status 4 (Completed/Done)");
         }
         
         // 3. Auto Cancel: Status 0 (Pending) -> Status 3 (Cancelled) when check-in date passed
@@ -213,7 +213,7 @@ public class BookingRestServiceImpl implements BookingRestService {
             booking.setStatus(3); // Cancelled
             booking.setRefund(refundAmount);
             bookingRepository.save(booking);
-            System.out.println("🔄 Auto Cancel: " + booking.getBookingID() + " -> Status 3 (Cancelled) | Refund: Rp " + refundAmount);
+            System.out.println("🔄 Auto Cancel: " + booking.getBookingID().toString() + " -> Status 3 (Cancelled) | Refund: Rp " + refundAmount);
         }
     }
     
@@ -239,7 +239,7 @@ public class BookingRestServiceImpl implements BookingRestService {
     */
     
     private BookingListItemDTO convertToListItemDTO(Booking booking) {
-        String roomNumber = extractRoomNumber(booking.getRoom().getRoomID());
+        String roomNumber = extractRoomNumber(booking.getRoom().getRoomID().toString());
         StatusInfo statusInfo = getStatusInfo(booking.getStatus());
         
         return BookingListItemDTO.builder()
@@ -322,11 +322,11 @@ public class BookingRestServiceImpl implements BookingRestService {
     */
     
     private BookingResponseDTO convertToResponseDTO(Booking booking) {
-        String roomNumberDisplay = extractRoomNumber(booking.getRoom().getRoomID());
+        String roomNumberDisplay = extractRoomNumber(booking.getRoom().getRoomID().toString());
         
         return BookingResponseDTO.builder()
             .bookingID(booking.getBookingID())
-            .roomID(booking.getRoom().getRoomID())
+            .roomID(booking.getRoom().getRoomID().toString())
             .roomNumber(roomNumberDisplay)
             .checkInDate(booking.getCheckInDate())
             .checkOutDate(booking.getCheckOutDate())
@@ -350,7 +350,7 @@ public class BookingRestServiceImpl implements BookingRestService {
     private BookingDetailResponseDTO convertToDetailResponseDTO(Booking booking) {
         // Get room type name
         String roomName = booking.getRoom().getRoomType().getName();
-        String roomNumber = extractRoomNumber(booking.getRoom().getRoomID());
+        String roomNumber = extractRoomNumber(booking.getRoom().getRoomID().toString());
         
         // Determine status text and color
         StatusInfo statusInfo = getStatusInfo(booking.getStatus());
@@ -487,15 +487,15 @@ public class BookingRestServiceImpl implements BookingRestService {
         }
         
         Room room = booking.getRoom();
-        String roomNumber = extractRoomNumber(room.getRoomID());
+        String roomNumber = extractRoomNumber(room.getRoomID().toString());
         
         return BookingUpdateFormDTO.builder()
             .bookingID(booking.getBookingID())
-            .propertyID(room.getRoomType().getProperty().getPropertyID())
+            .propertyID(room.getRoomType().getProperty().getPropertyID().toString())
             .propertyName(room.getRoomType().getProperty().getPropertyName())
-            .roomTypeID(room.getRoomType().getRoomTypeID())
+            .roomTypeID(room.getRoomType().getRoomTypeID().toString())
             .roomTypeName(room.getRoomType().getName())
-            .roomID(room.getRoomID())
+            .roomID(room.getRoomID().toString())
             .roomNumber(roomNumber)
             .checkInDate(booking.getCheckInDate())
             .checkOutDate(booking.getCheckOutDate())
@@ -527,7 +527,7 @@ public class BookingRestServiceImpl implements BookingRestService {
         }
         
         // 3. Validate new room exists
-        Room newRoom = roomRepository.findById(dto.getRoomID())
+        Room newRoom = roomRepository.findById(UUID.fromString(dto.getRoomID()))
             .orElseThrow(() -> new RuntimeException("Room not found with ID: " + dto.getRoomID()));
         
         // 4. Validate dates
@@ -555,7 +555,7 @@ public class BookingRestServiceImpl implements BookingRestService {
         
         // 7. Check booking conflicts (exclude current booking)
         List<Booking> conflicts = bookingRepository.findConflictingBookings(
-            dto.getRoomID(), 
+            UUID.fromString(dto.getRoomID()), 
             dto.getCheckInDate(), 
             dto.getCheckOutDate()
         );
@@ -784,7 +784,7 @@ public class BookingRestServiceImpl implements BookingRestService {
         // Group bookings by property and calculate revenue
         Map<String, List<Booking>> bookingsByProperty = doneBookings.stream()
             .collect(Collectors.groupingBy(
-                booking -> booking.getRoom().getRoomType().getProperty().getPropertyID()
+                booking -> booking.getRoom().getRoomType().getProperty().getPropertyID().toString()
             ));
         
         // Calculate revenue per property

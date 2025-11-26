@@ -1,6 +1,7 @@
 package apap.ti._5.accommodation_2306275600_be.restservice.RBAC; 
 
-import java.util.List; 
+import java.util.List;
+import java.util.UUID; 
 
 
 import apap.ti._5.accommodation_2306275600_be.exceptions.AccessDeniedException;
@@ -16,28 +17,28 @@ public interface RoomRestServiceRBAC extends RoomRestService {
     RoomResponseDTO createRoom(AddRoomRequestDTO dto) throws AccessDeniedException;
 
     @Override
-    RoomResponseDTO getRoomById(String roomID) throws AccessDeniedException;
+    RoomResponseDTO getRoomById(UUID roomID) throws AccessDeniedException;
     
     @Override
     List<RoomResponseDTO> getAllRooms() throws AccessDeniedException;
 
     @Override
-    List<RoomResponseDTO> getRoomsByRoomType(String roomTypeID) throws AccessDeniedException;
+    List<RoomResponseDTO> getRoomsByRoomType(UUID roomTypeID) throws AccessDeniedException;
 
     @Override
     List<RoomResponseDTO> getAvailableRooms() throws AccessDeniedException;
 
     @Override
-    RoomResponseDTO updateRoom(String roomID, UpdateRoomRequestDTO dto) throws AccessDeniedException;
+    RoomResponseDTO updateRoom(UUID roomID, UpdateRoomRequestDTO dto) throws AccessDeniedException;
 
     @Override
-    void deleteRoom(String roomID) throws AccessDeniedException;
+    void deleteRoom(UUID roomID) throws AccessDeniedException;
 
     @Override
-    List<RoomResponseDTO> getRoomsByPropertyAndFloor(String propertyID, Integer floor) throws AccessDeniedException;
+    List<RoomResponseDTO> getRoomsByPropertyAndFloor(UUID propertyID, Integer floor) throws AccessDeniedException;
 
     @Override
-    Room getRoomEntityById(String roomID) throws AccessDeniedException;
+    Room getRoomEntityById(UUID roomID) throws AccessDeniedException;
 
     @Override
     RoomResponseDTO createMaintenance(CreateMaintenanceRequestDTO dto) throws AccessDeniedException;

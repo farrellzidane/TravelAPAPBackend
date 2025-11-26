@@ -28,8 +28,8 @@ import lombok.NoArgsConstructor;
 public class RoomType {
 
     @Id
-    @Column(name = "room_type_id", nullable = false, length = 36)
-    private String roomTypeID; // Primary Key (UUID string)
+    @Column(name = "room_type_id", nullable = false, columnDefinition = "uuid")
+    private UUID roomTypeID; // Primary Key (UUID)
 
     @Column(name = "name")
     private String name;
@@ -65,8 +65,8 @@ public class RoomType {
 
     @PrePersist
     protected void onCreate() {
-        if (roomTypeID == null || roomTypeID.isBlank()) {
-            roomTypeID = UUID.randomUUID().toString();
+        if (roomTypeID == null) {
+            roomTypeID = UUID.randomUUID();
         }
         createdDate = LocalDateTime.now();
         updatedDate = createdDate;

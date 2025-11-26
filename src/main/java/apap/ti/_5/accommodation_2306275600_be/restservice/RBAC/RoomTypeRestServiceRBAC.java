@@ -1,6 +1,7 @@
 package apap.ti._5.accommodation_2306275600_be.restservice.RBAC;
 
 import java.util.List;
+import java.util.UUID;
 
 import apap.ti._5.accommodation_2306275600_be.exceptions.AccessDeniedException;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.roomtype.CreateRoomTypeRequestDTO;
@@ -13,20 +14,20 @@ public interface RoomTypeRestServiceRBAC extends RoomTypeRestService {
     RoomTypeResponseDTO createRoomType(CreateRoomTypeRequestDTO dto) throws AccessDeniedException;
 
     @Override
-    RoomTypeResponseDTO getRoomTypeById(String roomTypeID) throws AccessDeniedException;
+    RoomTypeResponseDTO getRoomTypeById(UUID roomTypeID) throws AccessDeniedException;
 
     @Override
     List<RoomTypeResponseDTO> getAllRoomTypes() throws AccessDeniedException;
 
     @Override
-    List<RoomTypeResponseDTO> getRoomTypesByProperty(String propertyID) throws AccessDeniedException;
+    List<RoomTypeResponseDTO> getRoomTypesByProperty(UUID propertyID) throws AccessDeniedException;
 
     @Override
-    RoomTypeResponseDTO updateRoomType(String roomTypeID, UpdateRoomTypeRequestDTO dto) throws AccessDeniedException;
+    RoomTypeResponseDTO updateRoomType(UUID roomTypeID, UpdateRoomTypeRequestDTO dto) throws AccessDeniedException;
 
     @Override
-    void deleteRoomType(String roomTypeID) throws AccessDeniedException;
+    void deleteRoomType(UUID roomTypeID) throws AccessDeniedException;
 
     @Override
-    boolean isDuplicateRoomTypeFloor(String propertyID, String roomTypeName, Integer floor) throws AccessDeniedException;
+    boolean isDuplicateRoomTypeFloor(UUID propertyID, String roomTypeName, Integer floor) throws AccessDeniedException;
 }

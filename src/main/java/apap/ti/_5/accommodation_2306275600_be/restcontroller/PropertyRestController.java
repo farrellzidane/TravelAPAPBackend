@@ -23,6 +23,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.UUID;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -122,17 +123,19 @@ public class PropertyRestController {
 
     @GetMapping(BASE_URL)
     public ResponseEntity<BaseResponseDTO<List<PropertyResponseDTO>>> getAllProperties(
-            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String name,
             @RequestParam(required = false) Integer type,
-            @RequestParam(required = false) Integer status) {
+            @RequestParam(required = false) Integer province) {
         
         var baseResponseDTO = new BaseResponseDTO<List<PropertyResponseDTO>>();
         
         List<PropertyResponseDTO> listProperty;
         
-        if (search != null || type != null || status != null) {
-            listProperty = propertyRestService.getAllProperties();
+        // If any filter is provided, use filtered search (only active properties)
+        if (name != null || type != null || province != null) {
+            listProperty = propertyRestService.getFilteredProperties(name, type, province);
         } else {
+            // No filter - get all active properties
             listProperty = propertyRestService.getAllProperties();
         }
         
@@ -145,7 +148,7 @@ public class PropertyRestController {
 
     @GetMapping(VIEW_PROPERTY)
     public ResponseEntity<BaseResponseDTO<PropertyResponseDTO>> getProperty(
-            @PathVariable String id,
+            @PathVariable UUID id,
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate) {
         
@@ -177,7 +180,7 @@ public class PropertyRestController {
 
     @GetMapping(PROPERTY_BY_OWNER)
     public ResponseEntity<BaseResponseDTO<List<PropertyResponseDTO>>> getPropertiesByOwner(
-        @PathVariable String ownerId) {
+        @PathVariable UUID ownerId) {
         var baseResponseDTO = new BaseResponseDTO<List<PropertyResponseDTO>>();
         
         List<PropertyResponseDTO> listProperty = propertyRestService.getPropertiesByOwner(ownerId);
@@ -191,7 +194,7 @@ public class PropertyRestController {
 
     @GetMapping("/property/update/{id}")
     public ResponseEntity<BaseResponseDTO<PropertyResponseDTO>> getUpdatePropertyForm(
-        @PathVariable String id) {    
+        @PathVariable UUID id) {    
         var baseResponseDTO = new BaseResponseDTO<PropertyResponseDTO>();
         
         try {
@@ -220,7 +223,7 @@ public class PropertyRestController {
 
     @GetMapping("/property/updateroom/{idProperty}")
     public ResponseEntity<BaseResponseDTO<PropertyResponseDTO>> getAddRoomTypeForm(
-            @PathVariable String idProperty) {
+            @PathVariable UUID idProperty) {
         var baseResponseDTO = new BaseResponseDTO<PropertyResponseDTO>();
         
         PropertyResponseDTO property = propertyRestService.getPropertyById(idProperty);
@@ -248,7 +251,7 @@ public class PropertyRestController {
 
     @PutMapping(UPDATE_PROPERTY)
     public ResponseEntity<BaseResponseDTO<PropertyResponseDTO>> updateProperty(
-            @PathVariable String id,
+            @PathVariable UUID id,
             @Valid @RequestBody UpdatePropertyRequestDTO updatePropertyRequestDTO,
             BindingResult bindingResult) {
         
@@ -317,7 +320,7 @@ public class PropertyRestController {
             String propertyID = request.getPropertyId();
             List<CreateRoomTypeRequestDTO> roomTypesRequest = request.getRoomTypes();
             
-            PropertyResponseDTO property = propertyRestService.getPropertyById(propertyID);
+            PropertyResponseDTO property = propertyRestService.getPropertyById(UUID.fromString(propertyID));
             
             if (property == null) {
                 baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());
@@ -366,7 +369,7 @@ public class PropertyRestController {
                 }
             }
             
-            List<RoomTypeResponseDTO> existingRoomTypes = roomTypeRestService.getRoomTypesByProperty(propertyID);
+            List<RoomTypeResponseDTO> existingRoomTypes = roomTypeRestService.getRoomTypesByProperty(UUID.fromString(propertyID));
             
             for (CreateRoomTypeRequestDTO newRoomType : roomTypesRequest) {
                 for (RoomTypeResponseDTO existing : existingRoomTypes) {
@@ -392,7 +395,7 @@ public class PropertyRestController {
                 totalRoomTypesCreated++;
                 
                 List<RoomResponseDTO> existingRoomsOnFloor = roomRestService.getRoomsByPropertyAndFloor(
-                    propertyID, 
+                    UUID.fromString(propertyID), 
                     roomTypeDTO.getFloor()
                 );
                 
@@ -421,7 +424,7 @@ public class PropertyRestController {
                     .totalRoom(newTotalRoom)
                     .activeStatus(property.getActiveStatus())
                     .build();
-            propertyRestService.updateProperty(propertyID, updatePropertyDTO);
+            propertyRestService.updateProperty(UUID.fromString(propertyID), updatePropertyDTO);
             
             baseResponseDTO.setStatus(HttpStatus.CREATED.value());
             baseResponseDTO.setData("Success");
@@ -440,7 +443,7 @@ public class PropertyRestController {
     }
 
     @DeleteMapping(DELETE_PROPERTY)
-    public ResponseEntity<BaseResponseDTO<PropertyResponseDTO>> deleteProperty(@PathVariable String id) {
+    public ResponseEntity<BaseResponseDTO<PropertyResponseDTO>> deleteProperty(@PathVariable UUID id) {
         var baseResponseDTO = new BaseResponseDTO<PropertyResponseDTO>();
         
         try {

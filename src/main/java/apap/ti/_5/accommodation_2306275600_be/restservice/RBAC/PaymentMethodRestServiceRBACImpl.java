@@ -40,18 +40,29 @@ public class PaymentMethodRestServiceRBACImpl extends PaymentMethodRestServiceIm
         return super.createPaymentMethod(dto);
     }
 
-    // [GET] Get All Payment Methods - PBI-BE-TU6 - Superadmin
+    // [GET] Get All Payment Methods - PBI-BE-TU6
+    // - Superadmin: Dapat melihat semua payment methods
+    // - Customer: Dapat melihat payment methods yang aktif saja (untuk pilih saat top up)
     @Override
     public List<PaymentMethodResponseDTO> getAllPaymentMethods() throws AccessDeniedException {
         UserProfileDTO user = authService.getAuthenticatedUser();
         
-        boolean hasAccess = authService.isSuperAdmin(user);
+        boolean hasAccess = authService.isSuperAdmin(user) || authService.isCustomer(user);
         
         if (!hasAccess) {
-            throw new AccessDeniedException("Anda tidak memiliki akses ke resource ini, role : " + user.role());
+            throw new AccessDeniedException("Accommodation Owner tidak memiliki akses ke resource ini");
         }
         
-        return super.getAllPaymentMethods();
+        List<PaymentMethodResponseDTO> allMethods = super.getAllPaymentMethods();
+        
+        // Jika customer, filter hanya yang aktif
+        if (authService.isCustomer(user)) {
+            return allMethods.stream()
+                .filter(pm -> "Active".equals(pm.getStatus()))
+                .toList();
+        }
+        
+        return allMethods;
     }
 
     // [GET] Get Payment Method by ID - Superadmin

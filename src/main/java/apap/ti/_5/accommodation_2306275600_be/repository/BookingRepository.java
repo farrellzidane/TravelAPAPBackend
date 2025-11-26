@@ -18,7 +18,7 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
            "AND b.status NOT IN (3, 4) " + // Exclude cancelled and completed bookings
            "AND ((b.checkInDate <= :checkOut AND b.checkOutDate >= :checkIn))")
     List<Booking> findConflictingBookings(
-        @Param("roomID") String roomID,
+        @Param("roomID") UUID roomID,
         @Param("checkIn") LocalDateTime checkIn,
         @Param("checkOut") LocalDateTime checkOut
     );
@@ -34,14 +34,14 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     // Search bookings by property name or room number
     @Query("SELECT b FROM Booking b WHERE " +
            "LOWER(b.room.roomType.property.propertyName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(b.room.roomID) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
+           "LOWER(CAST(b.room.roomID AS string)) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
            "ORDER BY b.bookingID DESC")
     List<Booking> searchByPropertyOrRoom(@Param("keyword") String keyword);
     
     // Perbaiki juga query ini
     @Query("SELECT b FROM Booking b WHERE " +
            "(LOWER(b.room.roomType.property.propertyName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
-           "LOWER(b.room.roomID) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
+           "LOWER(CAST(b.room.roomID AS string)) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
            "AND b.status = :status " +
            "ORDER BY b.bookingID DESC")
     List<Booking> searchByPropertyOrRoomAndStatus(
@@ -64,7 +64,7 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
            "AND b.checkInDate < :currentDate")
     List<Booking> findBookingsToAutoCancel(@Param("currentDate") LocalDateTime currentDate);
     
-    List<Booking> findByRoom_RoomID(String roomID);
+    List<Booking> findByRoom_RoomID(UUID roomID);
 
     /**
      * Find all bookings with status DONE (4) for a specific month and year

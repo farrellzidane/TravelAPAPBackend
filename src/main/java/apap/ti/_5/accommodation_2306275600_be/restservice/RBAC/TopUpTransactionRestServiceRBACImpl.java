@@ -28,7 +28,7 @@ public class TopUpTransactionRestServiceRBACImpl extends TopUpTransactionRestSer
         this.authService = authService;
     }
 
-    // [POST] Create Top-Up Transaction - PBI-BE-TU3 - Customer
+    // [POST] Create Top-Up Transaction - PBI-BE-TU3 - Customer only
     @Override
     public TopUpTransactionResponseDTO createTopUpTransaction(CreateTopUpRequestDTO dto) throws AccessDeniedException {
         UserProfileDTO user = authService.getAuthenticatedUser();
@@ -36,6 +36,9 @@ public class TopUpTransactionRestServiceRBACImpl extends TopUpTransactionRestSer
         boolean hasAccess = authService.isCustomer(user);
         
         if (!hasAccess) {
+            if (authService.isSuperAdmin(user)) {
+                throw new AccessDeniedException("Superadmin tidak dapat membuat top-up transaction");
+            }
             throw new AccessDeniedException("Anda tidak memiliki akses ke resource ini, role : " + user.role());
         }
         
@@ -70,7 +73,9 @@ public class TopUpTransactionRestServiceRBACImpl extends TopUpTransactionRestSer
         return super.getTopUpTransactionsByCustomerId(customerId);
     }
 
-    // [GET] Get Top-Up Transaction by ID - PBI-BE-TU2 - Superadmin, Customer
+    // [GET] Get Top-Up Transaction by ID - PBI-BE-TU2
+    // - Superadmin: Dapat melihat semua top-up transaction
+    // - Customer: Hanya dapat melihat top-up transaction miliknya sendiri
     @Override
     public TopUpTransactionResponseDTO getTopUpTransactionById(String id) throws AccessDeniedException {
         UserProfileDTO user = authService.getAuthenticatedUser();
@@ -81,7 +86,16 @@ public class TopUpTransactionRestServiceRBACImpl extends TopUpTransactionRestSer
             throw new AccessDeniedException("Anda tidak memiliki akses ke resource ini, role : " + user.role());
         }
         
-        return super.getTopUpTransactionById(id);
+        TopUpTransactionResponseDTO topUp = super.getTopUpTransactionById(id);
+        
+        // Jika customer, validasi bahwa top-up transaction adalah miliknya
+        if (authService.isCustomer(user)) {
+            if (!topUp.getEndUserId().equals(user.userId().toString())) {
+                throw new AccessDeniedException("Customer hanya dapat melihat top-up transaction miliknya sendiri");
+            }
+        }
+        
+        return topUp;
     }
 
     // [PUT] Update Top-Up Status - PBI-BE-TU4 - Superadmin
