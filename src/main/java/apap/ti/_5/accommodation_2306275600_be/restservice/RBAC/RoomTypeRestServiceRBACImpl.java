@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 
 import apap.ti._5.accommodation_2306275600_be.exceptions.AccessDeniedException;
 import apap.ti._5.accommodation_2306275600_be.external.AuthService;
-import apap.ti._5.accommodation_2306275600_be.external.AuthServiceMock;
 import apap.ti._5.accommodation_2306275600_be.repository.PropertyRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.RoomRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.RoomTypeRepository;
@@ -20,24 +19,21 @@ import apap.ti._5.accommodation_2306275600_be.restservice.RoomTypeRestServiceImp
 public class RoomTypeRestServiceRBACImpl extends RoomTypeRestServiceImpl implements RoomTypeRestServiceRBAC {
 
     private final AuthService authService;
-    private final AuthServiceMock authServiceMock;
 
     public RoomTypeRestServiceRBACImpl(
             RoomTypeRepository roomTypeRepository,
             PropertyRepository propertyRepository,
             RoomRepository roomRepository,
-            AuthService authService,
-            AuthServiceMock authServiceMock
+            AuthService authService
         ) {
         super(roomTypeRepository, propertyRepository, roomRepository);
         this.authService = authService;
-        this.authServiceMock = authServiceMock;
     }
 
     // [POST] Create Room Type - Superadmin, Accommodation Owner
     @Override
     public RoomTypeResponseDTO createRoomType(CreateRoomTypeRequestDTO dto) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user);
         
@@ -51,7 +47,7 @@ public class RoomTypeRestServiceRBACImpl extends RoomTypeRestServiceImpl impleme
     // [GET] Get Room Type Details by Room Type ID - Superadmin, Accommodation Owner, Customer
     @Override
     public RoomTypeResponseDTO getRoomTypeById(String roomTypeID) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user) || authService.isCustomer(user);
         
@@ -65,7 +61,7 @@ public class RoomTypeRestServiceRBACImpl extends RoomTypeRestServiceImpl impleme
     // [GET] Get All Room Types - Superadmin, Accommodation Owner, Customer
     @Override
     public List<RoomTypeResponseDTO> getAllRoomTypes() throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user) || authService.isCustomer(user);
         
@@ -79,7 +75,7 @@ public class RoomTypeRestServiceRBACImpl extends RoomTypeRestServiceImpl impleme
     // [GET] Get Room Types by Property ID - Superadmin, Accommodation Owner, Customer
     @Override
     public List<RoomTypeResponseDTO> getRoomTypesByProperty(String propertyID) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user) || authService.isCustomer(user);
         
@@ -93,7 +89,7 @@ public class RoomTypeRestServiceRBACImpl extends RoomTypeRestServiceImpl impleme
     // [PUT] Update Room Type - Superadmin, Accommodation Owner
     @Override
     public RoomTypeResponseDTO updateRoomType(String roomTypeID, UpdateRoomTypeRequestDTO dto) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user);
         
@@ -107,7 +103,7 @@ public class RoomTypeRestServiceRBACImpl extends RoomTypeRestServiceImpl impleme
     // [DELETE] Delete Room Type - Superadmin, Accommodation Owner
     @Override
     public void deleteRoomType(String roomTypeID) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user);
         
@@ -121,7 +117,7 @@ public class RoomTypeRestServiceRBACImpl extends RoomTypeRestServiceImpl impleme
     // [UTIL] Check Duplicate Room Type Floor - Superadmin, Accommodation Owner
     @Override
     public boolean isDuplicateRoomTypeFloor(String propertyID, String roomTypeName, Integer floor) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user);
         

@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 
 import apap.ti._5.accommodation_2306275600_be.exceptions.AccessDeniedException;
 import apap.ti._5.accommodation_2306275600_be.external.AuthService;
-import apap.ti._5.accommodation_2306275600_be.external.AuthServiceMock;
 import apap.ti._5.accommodation_2306275600_be.repository.PropertyRepository;
 import apap.ti._5.accommodation_2306275600_be.restdto.auth.UserProfileDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.property.CreatePropertyRequestDTO;
@@ -20,18 +19,15 @@ import apap.ti._5.accommodation_2306275600_be.restservice.RoomTypeRestService;
 public class PropertyRestServiceRBACImpl extends PropertyRestServiceImpl implements PropertyRestServiceRBAC {
 
     private final AuthService authService;
-    private final AuthServiceMock authServiceMock;
 
     public PropertyRestServiceRBACImpl(
             PropertyRepository propertyRepository, 
             RoomTypeRestService roomTypeRestService,
             RoomRestService roomRestService,
-            AuthService authService,
-            AuthServiceMock authServiceMock
+            AuthService authService
         ) {
         super(propertyRepository, roomTypeRestService, roomRestService);
         this.authService = authService;
-        this.authServiceMock = authServiceMock;
     }
 
 
@@ -45,7 +41,7 @@ public class PropertyRestServiceRBACImpl extends PropertyRestServiceImpl impleme
     // [GET] Get All Property - Superadmin, Accommodation Owner, Customer
     @Override
     public List<PropertyResponseDTO> getAllProperties() throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user) || authService.isCustomer(user);
         
@@ -59,7 +55,7 @@ public class PropertyRestServiceRBACImpl extends PropertyRestServiceImpl impleme
     // [GET] Get Property Details by Property ID - Superadmin, Accommodation Owner, Customer
     @Override
     public PropertyResponseDTO getPropertyById(String propertyId) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user) || authService.isCustomer(user);
         
@@ -73,7 +69,7 @@ public class PropertyRestServiceRBACImpl extends PropertyRestServiceImpl impleme
     // [POST] Create Property - Superadmin, Accommodation Owner
     @Override
     public PropertyResponseDTO createProperty(CreatePropertyRequestDTO propertyDTO) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user);
         
@@ -87,7 +83,7 @@ public class PropertyRestServiceRBACImpl extends PropertyRestServiceImpl impleme
     // [PUT] Edit Property Details - Superadmin, Accommodation Owner
     @Override
     public PropertyResponseDTO updateProperty(String propertyId, UpdatePropertyRequestDTO propertyDTO) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user);
         
@@ -101,7 +97,7 @@ public class PropertyRestServiceRBACImpl extends PropertyRestServiceImpl impleme
     // [DELETE] Delete Property - Superadmin, Accommodation Owner
     @Override
     public PropertyResponseDTO deleteProperty(String propertyId) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user);
         

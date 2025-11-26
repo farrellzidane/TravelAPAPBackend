@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 
 import apap.ti._5.accommodation_2306275600_be.exceptions.AccessDeniedException;
 import apap.ti._5.accommodation_2306275600_be.external.AuthService;
-import apap.ti._5.accommodation_2306275600_be.external.AuthServiceMock;
 import apap.ti._5.accommodation_2306275600_be.repository.BookingRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.PropertyRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.RoomRepository;
@@ -25,24 +24,21 @@ import apap.ti._5.accommodation_2306275600_be.restservice.BookingRestServiceImpl
 public class BookingRestServiceRBACImpl extends BookingRestServiceImpl implements BookingRestServiceRBAC {
 
     private final AuthService authService;
-    private final AuthServiceMock authServiceMock;
 
     public BookingRestServiceRBACImpl(
             BookingRepository bookingRepository,
             RoomRepository roomRepository,
             PropertyRepository propertyRepository,
-            AuthService authService,
-            AuthServiceMock authServiceMock
+            AuthService authService
         ) {
         super(bookingRepository, roomRepository, propertyRepository);
         this.authService = authService;
-        this.authServiceMock = authServiceMock;
     }
 
     // [POST] Create Accommodation Booking - Customer
     @Override
     public BookingResponseDTO createBooking(CreateBookingRequestDTO dto) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isCustomer(user);
         
@@ -56,7 +52,7 @@ public class BookingRestServiceRBACImpl extends BookingRestServiceImpl implement
     // [GET] Get All Accommodation Booking - Superadmin, Accommodation Owner, Customer
     @Override
     public List<BookingListItemDTO> getAllBookings(Integer status, String search) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user) || authService.isCustomer(user);
         
@@ -70,7 +66,7 @@ public class BookingRestServiceRBACImpl extends BookingRestServiceImpl implement
     // [GET] Get Accommodation Booking Details - Superadmin, Accommodation Owner, Customer
     @Override
     public BookingDetailResponseDTO getBookingDetail(String bookingID) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user) || authService.isCustomer(user);
         
@@ -84,7 +80,7 @@ public class BookingRestServiceRBACImpl extends BookingRestServiceImpl implement
     // [GET] Get Booking For Update - Customer
     @Override
     public BookingUpdateFormDTO getBookingForUpdate(String bookingID) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isCustomer(user);
         
@@ -98,7 +94,7 @@ public class BookingRestServiceRBACImpl extends BookingRestServiceImpl implement
     // [PUT] Update Accommodation Booking Details - Customer
     @Override
     public BookingResponseDTO updateBooking(UpdateBookingRequestDTO dto) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isCustomer(user);
         
@@ -120,7 +116,7 @@ public class BookingRestServiceRBACImpl extends BookingRestServiceImpl implement
     // [PUT] Cancel Booking - Customer
     @Override
     public BookingResponseDTO cancelBooking(ChangeBookingStatusRequestDTO dto) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isCustomer(user);
         
@@ -134,7 +130,7 @@ public class BookingRestServiceRBACImpl extends BookingRestServiceImpl implement
     // [PUT] Refund Booking - Superadmin, Accommodation Owner
     @Override
     public BookingResponseDTO refundBooking(ChangeBookingStatusRequestDTO dto) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user);
         
@@ -148,7 +144,7 @@ public class BookingRestServiceRBACImpl extends BookingRestServiceImpl implement
     // [GET] Get Booking Statistics - Superadmin, Accommodation Owner
     @Override
     public BookingChartResponseDTO getBookingStatistics(Integer month, Integer year) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user);
         

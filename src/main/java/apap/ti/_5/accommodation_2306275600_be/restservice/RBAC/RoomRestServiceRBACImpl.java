@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 
 import apap.ti._5.accommodation_2306275600_be.exceptions.AccessDeniedException;
 import apap.ti._5.accommodation_2306275600_be.external.AuthService;
-import apap.ti._5.accommodation_2306275600_be.external.AuthServiceMock;
 import apap.ti._5.accommodation_2306275600_be.model.Room;
 import apap.ti._5.accommodation_2306275600_be.repository.RoomRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.RoomTypeRepository;
@@ -21,23 +20,20 @@ import apap.ti._5.accommodation_2306275600_be.restservice.RoomRestServiceImpl;
 public class RoomRestServiceRBACImpl extends RoomRestServiceImpl implements RoomRestServiceRBAC {
 
     private final AuthService authService;
-    private final AuthServiceMock authServiceMock;
 
     public RoomRestServiceRBACImpl(
             RoomRepository roomRepository,
             RoomTypeRepository roomTypeRepository,
-            AuthService authService,
-            AuthServiceMock authServiceMock
+            AuthService authService
         ) {
         super(roomRepository, roomTypeRepository);
         this.authService = authService;
-        this.authServiceMock = authServiceMock;
     }
 
     // [POST] Create Room - Superadmin, Accommodation Owner
     @Override
     public RoomResponseDTO createRoom(AddRoomRequestDTO dto) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user);
         
@@ -51,7 +47,7 @@ public class RoomRestServiceRBACImpl extends RoomRestServiceImpl implements Room
     // [GET] Get Room by ID - Superadmin, Accommodation Owner, Customer
     @Override
     public RoomResponseDTO getRoomById(String roomID) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user) || authService.isCustomer(user);
         
@@ -65,7 +61,7 @@ public class RoomRestServiceRBACImpl extends RoomRestServiceImpl implements Room
     // [GET] Get All Rooms - Superadmin, Accommodation Owner, Customer
     @Override
     public List<RoomResponseDTO> getAllRooms() throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user) || authService.isCustomer(user);
         
@@ -79,7 +75,7 @@ public class RoomRestServiceRBACImpl extends RoomRestServiceImpl implements Room
     // [GET] Get Rooms by Room Type - Superadmin, Accommodation Owner, Customer
     @Override
     public List<RoomResponseDTO> getRoomsByRoomType(String roomTypeID) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user) || authService.isCustomer(user);
         
@@ -93,7 +89,7 @@ public class RoomRestServiceRBACImpl extends RoomRestServiceImpl implements Room
     // [GET] Get Available Rooms - Superadmin, Accommodation Owner, Customer
     @Override
     public List<RoomResponseDTO> getAvailableRooms() throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user) || authService.isCustomer(user);
         
@@ -107,7 +103,7 @@ public class RoomRestServiceRBACImpl extends RoomRestServiceImpl implements Room
     // [PUT] Update Room - Superadmin, Accommodation Owner
     @Override
     public RoomResponseDTO updateRoom(String roomID, UpdateRoomRequestDTO dto) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user);
         
@@ -121,7 +117,7 @@ public class RoomRestServiceRBACImpl extends RoomRestServiceImpl implements Room
     // [DELETE] Delete Room - Superadmin, Accommodation Owner
     @Override
     public void deleteRoom(String roomID) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user);
         
@@ -135,7 +131,7 @@ public class RoomRestServiceRBACImpl extends RoomRestServiceImpl implements Room
     // [GET] Get Rooms by Property and Floor - Superadmin, Accommodation Owner, Customer
     @Override
     public List<RoomResponseDTO> getRoomsByPropertyAndFloor(String propertyID, Integer floor) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user) || authService.isCustomer(user);
         
@@ -149,7 +145,7 @@ public class RoomRestServiceRBACImpl extends RoomRestServiceImpl implements Room
     // [GET] Get Room Entity by ID - Superadmin, Accommodation Owner, Customer
     @Override
     public Room getRoomEntityById(String roomID) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user) || authService.isCustomer(user);
         
@@ -163,7 +159,7 @@ public class RoomRestServiceRBACImpl extends RoomRestServiceImpl implements Room
     // [PUT] Create Room Maintenance - Superadmin, Accommodation Owner
     @Override
     public RoomResponseDTO createMaintenance(CreateMaintenanceRequestDTO dto) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user);
         

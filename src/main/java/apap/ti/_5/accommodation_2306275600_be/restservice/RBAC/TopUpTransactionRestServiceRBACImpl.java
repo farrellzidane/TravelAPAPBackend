@@ -2,7 +2,6 @@ package apap.ti._5.accommodation_2306275600_be.restservice.RBAC;
 
 import apap.ti._5.accommodation_2306275600_be.exceptions.AccessDeniedException;
 import apap.ti._5.accommodation_2306275600_be.external.AuthService;
-import apap.ti._5.accommodation_2306275600_be.external.AuthServiceMock;
 import apap.ti._5.accommodation_2306275600_be.repository.PaymentMethodRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.TopUpTransactionRepository;
 import apap.ti._5.accommodation_2306275600_be.restdto.auth.UserProfileDTO;
@@ -19,17 +18,14 @@ import org.springframework.stereotype.Service;
 public class TopUpTransactionRestServiceRBACImpl extends TopUpTransactionRestServiceImpl implements TopUpTransactionRestServiceRBAC {
 
     private final AuthService authService;
-    private final AuthServiceMock authServiceMock;
 
     public TopUpTransactionRestServiceRBACImpl(
             TopUpTransactionRepository topUpTransactionRepository,
             PaymentMethodRepository paymentMethodRepository,
-            AuthService authService,
-            AuthServiceMock authServiceMock
+            AuthService authService
         ) {
         super(topUpTransactionRepository, paymentMethodRepository);
         this.authService = authService;
-        this.authServiceMock = authServiceMock;
     }
 
     // [POST] Create Top-Up Transaction - PBI-BE-TU3 - Customer
@@ -49,7 +45,7 @@ public class TopUpTransactionRestServiceRBACImpl extends TopUpTransactionRestSer
     // [GET] Get All Top-Up Transactions - PBI-BE-TU1 - Superadmin, Customer
     @Override
     public List<TopUpTransactionResponseDTO> getAllTopUpTransactions() throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isCustomer(user);
         
@@ -63,7 +59,7 @@ public class TopUpTransactionRestServiceRBACImpl extends TopUpTransactionRestSer
     // [GET] Get Top-Up Transactions by Customer ID - Customer (own transactions only)
     @Override
     public List<TopUpTransactionResponseDTO> getTopUpTransactionsByCustomerId(String customerId) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isCustomer(user);
         
@@ -77,7 +73,7 @@ public class TopUpTransactionRestServiceRBACImpl extends TopUpTransactionRestSer
     // [GET] Get Top-Up Transaction by ID - PBI-BE-TU2 - Superadmin, Customer
     @Override
     public TopUpTransactionResponseDTO getTopUpTransactionById(String id) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isCustomer(user);
         
@@ -91,7 +87,7 @@ public class TopUpTransactionRestServiceRBACImpl extends TopUpTransactionRestSer
     // [PUT] Update Top-Up Status - PBI-BE-TU4 - Superadmin
     @Override
     public TopUpTransactionResponseDTO updateTopUpStatus(UpdateTopUpStatusRequestDTO dto) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user);
         
@@ -105,7 +101,7 @@ public class TopUpTransactionRestServiceRBACImpl extends TopUpTransactionRestSer
     // [DELETE] Delete Top-Up Transaction - PBI-BE-TU5 - Superadmin
     @Override
     public void deleteTopUpTransaction(String id) throws AccessDeniedException {
-        UserProfileDTO user = authServiceMock.getSuperAdminUser();
+        UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user);
         
