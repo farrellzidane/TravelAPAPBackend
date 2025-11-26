@@ -1,5 +1,7 @@
 package apap.ti._5.accommodation_2306275600_be.restcontroller;
 
+import java.util.UUID;
+
 import apap.ti._5.accommodation_2306275600_be.restdto.request.booking.CreateBookingRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.booking.UpdateBookingRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.booking.ChangeBookingStatusRequestDTO;
@@ -69,7 +71,7 @@ public class BookingRestController {
     
     @GetMapping(DETAIL_BOOKING)
     public ResponseEntity<BaseResponseDTO<BookingDetailResponseDTO>> getBookingDetail(
-            @PathVariable("id") String bookingID) {
+            @PathVariable("id") UUID bookingID) {
         
         var baseResponseDTO = new BaseResponseDTO<BookingDetailResponseDTO>();
         
@@ -143,7 +145,7 @@ public class BookingRestController {
 
     @GetMapping(UPDATE_BOOKING_FORM)
     public ResponseEntity<BaseResponseDTO<BookingUpdateFormDTO>> getBookingForUpdate(
-            @PathVariable("id") String bookingID) {
+            @PathVariable("id") UUID bookingID) {
         
         var baseResponseDTO = new BaseResponseDTO<BookingUpdateFormDTO>();
         

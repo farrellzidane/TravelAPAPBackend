@@ -1,6 +1,8 @@
 package apap.ti._5.accommodation_2306275600_be.restdto.request.booking;
 
-import jakarta.validation.constraints.NotBlank;
+import java.util.UUID;
+
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,6 +14,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ChangeBookingStatusRequestDTO {
     
-    @NotBlank(message = "Booking ID is required")
-    private String bookingID;
+    @NotNull(message = "Booking ID is required")
+    private UUID bookingID;
 }

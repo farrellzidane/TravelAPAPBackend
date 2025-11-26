@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 public class UpdateBookingRequestDTO {
     
     @NotBlank(message = "Booking ID is required")
-    private String bookingID;
+    private UUID bookingID;
     
     @NotBlank(message = "Property ID is required")
     private String propertyID;

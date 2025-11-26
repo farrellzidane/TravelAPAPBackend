@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class BookingDetailResponseDTO {
     // Basic Info
-    private String bookingID;
+    private UUID bookingID;
     private String propertyName;
     private String roomName;
     private String roomNumber;

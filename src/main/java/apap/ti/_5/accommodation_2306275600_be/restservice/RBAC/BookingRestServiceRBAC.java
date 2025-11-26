@@ -1,6 +1,7 @@
 package apap.ti._5.accommodation_2306275600_be.restservice.RBAC;
 
 import java.util.List;
+import java.util.UUID;
 
 import apap.ti._5.accommodation_2306275600_be.exceptions.AccessDeniedException;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.booking.ChangeBookingStatusRequestDTO;
@@ -21,10 +22,10 @@ public interface BookingRestServiceRBAC extends BookingRestService {
     List<BookingListItemDTO> getAllBookings(Integer status, String search) throws AccessDeniedException;
 
     @Override
-    BookingDetailResponseDTO getBookingDetail(String bookingID) throws AccessDeniedException;
+    BookingDetailResponseDTO getBookingDetail(UUID bookingID) throws AccessDeniedException;
 
     @Override
-    BookingUpdateFormDTO getBookingForUpdate(String bookingID) throws AccessDeniedException;
+    BookingUpdateFormDTO getBookingForUpdate(UUID bookingID) throws AccessDeniedException;
 
     @Override
     BookingResponseDTO updateBooking(UpdateBookingRequestDTO dto) throws AccessDeniedException;

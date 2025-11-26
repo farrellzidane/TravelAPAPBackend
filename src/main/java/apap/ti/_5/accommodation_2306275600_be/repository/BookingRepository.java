@@ -8,9 +8,10 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface BookingRepository extends JpaRepository<Booking, String> {
+public interface BookingRepository extends JpaRepository<Booking, UUID> {
     
     // Check if there's any booking conflict for a room
     @Query("SELECT b FROM Booking b WHERE b.room.roomID = :roomID " +

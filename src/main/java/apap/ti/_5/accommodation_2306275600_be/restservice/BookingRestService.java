@@ -1,6 +1,7 @@
 package apap.ti._5.accommodation_2306275600_be.restservice;
 
 import java.util.List;
+import java.util.UUID;
 
 import apap.ti._5.accommodation_2306275600_be.restdto.request.booking.ChangeBookingStatusRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.booking.CreateBookingRequestDTO;
@@ -14,8 +15,8 @@ import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingUp
 public interface BookingRestService {
     BookingResponseDTO createBooking(CreateBookingRequestDTO dto);
     List<BookingListItemDTO> getAllBookings(Integer status, String search);
-    BookingDetailResponseDTO getBookingDetail(String bookingID);
-    BookingUpdateFormDTO getBookingForUpdate(String bookingID);
+    BookingDetailResponseDTO getBookingDetail(UUID bookingID);
+    BookingUpdateFormDTO getBookingForUpdate(UUID bookingID);
     BookingResponseDTO updateBooking(UpdateBookingRequestDTO dto);
     BookingResponseDTO payBooking(ChangeBookingStatusRequestDTO dto);
     BookingResponseDTO cancelBooking(ChangeBookingStatusRequestDTO dto);

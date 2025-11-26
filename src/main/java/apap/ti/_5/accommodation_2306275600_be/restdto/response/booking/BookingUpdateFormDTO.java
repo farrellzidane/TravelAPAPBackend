@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookingUpdateFormDTO {
-    private String bookingID;
+    private UUID bookingID;
     
     // Property & Room Info (for dropdowns)
     private String propertyID;

@@ -1,6 +1,7 @@
 package apap.ti._5.accommodation_2306275600_be.restservice.RBAC;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
@@ -65,7 +66,7 @@ public class BookingRestServiceRBACImpl extends BookingRestServiceImpl implement
 
     // [GET] Get Accommodation Booking Details - Superadmin, Accommodation Owner, Customer
     @Override
-    public BookingDetailResponseDTO getBookingDetail(String bookingID) throws AccessDeniedException {
+    public BookingDetailResponseDTO getBookingDetail(UUID bookingID) throws AccessDeniedException {
         UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user) || authService.isCustomer(user);
@@ -79,7 +80,7 @@ public class BookingRestServiceRBACImpl extends BookingRestServiceImpl implement
 
     // [GET] Get Booking For Update - Customer
     @Override
-    public BookingUpdateFormDTO getBookingForUpdate(String bookingID) throws AccessDeniedException {
+    public BookingUpdateFormDTO getBookingForUpdate(UUID bookingID) throws AccessDeniedException {
         UserProfileDTO user = authService.getAuthenticatedUser();
         
         boolean hasAccess = authService.isCustomer(user);

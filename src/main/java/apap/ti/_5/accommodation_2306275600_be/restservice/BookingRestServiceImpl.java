@@ -1,5 +1,7 @@
 package apap.ti._5.accommodation_2306275600_be.restservice;
 
+import java.util.UUID;
+
 import apap.ti._5.accommodation_2306275600_be.model.Booking;
 import apap.ti._5.accommodation_2306275600_be.model.Property;
 import apap.ti._5.accommodation_2306275600_be.model.Room;
@@ -169,7 +171,7 @@ public class BookingRestServiceImpl implements BookingRestService {
     }
 
     @Override
-    public BookingDetailResponseDTO getBookingDetail(String bookingID) {
+    public BookingDetailResponseDTO getBookingDetail(UUID bookingID) {
         // Commented out: Auto update statuses removed with simplified 3-status model
         // updateBookingStatuses();
         
@@ -474,7 +476,7 @@ public class BookingRestServiceImpl implements BookingRestService {
     }
 
     @Override
-    public BookingUpdateFormDTO getBookingForUpdate(String bookingID) {
+    public BookingUpdateFormDTO getBookingForUpdate(UUID bookingID) {
         // Find booking
         Booking booking = bookingRepository.findById(bookingID)
             .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + bookingID));

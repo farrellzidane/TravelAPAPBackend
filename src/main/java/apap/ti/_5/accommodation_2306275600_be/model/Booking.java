@@ -26,8 +26,8 @@ import lombok.NoArgsConstructor;
 public class Booking {
 
     @Id
-    @Column(name = "booking_id", nullable = false, length = 36)
-    private String bookingID; // Primary Key (UUID string)
+    @Column(name = "booking_id", nullable = false, columnDefinition = "uuid")
+    private UUID bookingID; // Primary Key (UUID)
 
     @Column(name = "check_in_date")
     private LocalDateTime checkInDate;
@@ -81,8 +81,8 @@ public class Booking {
 
     @PrePersist
     protected void onCreate() {
-        if (bookingID == null || bookingID.isBlank()) {
-            bookingID = UUID.randomUUID().toString();
+        if (bookingID == null) {
+            bookingID = UUID.randomUUID();
         }
         createdDate = LocalDateTime.now();
         updatedDate = createdDate;
