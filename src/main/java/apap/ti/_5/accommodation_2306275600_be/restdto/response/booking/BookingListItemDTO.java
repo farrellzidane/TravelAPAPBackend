@@ -18,6 +18,7 @@ public class BookingListItemDTO {
     private LocalDateTime checkOutDate;
     private int totalPrice;
     private int status;
-    private String statusText; // "Pending", "Confirmed", "Checked-In", "Cancelled", "Completed"
-    private int refund; // Refund amount for cancelled bookings
+    private String statusText; // "Waiting for Payment", "Payment Confirmed", "Cancelled"
+    // Removed: refund field as per updated requirements
+    // private int refund; // Refund amount for cancelled bookings
 }

@@ -103,29 +103,27 @@ public class BookingRestServiceImpl implements BookingRestService {
             totalPrice += BREAKFAST_PRICE * (int) totalDays;
         }
         
-        // 7. Generate Booking ID
-        String bookingID = generateBookingID(room.getRoomID());
-        
-        // 8. Create Booking entity
+        // 7. Create Booking entity with UUID
+        // Note: bookingID will be auto-generated as UUID in @PrePersist
         Booking booking = Booking.builder()
-            .bookingID(bookingID)
             .checkInDate(dto.getCheckInDate())
             .checkOutDate(dto.getCheckOutDate())
             .totalDays((int) totalDays)
             .totalPrice(totalPrice)
-            .status(0) // 0 = pending/new booking
+            .status(0) // 0 = Waiting for Payment
             .customerID(dto.getCustomerID())
             .customerName(dto.getCustomerName())
             .customerEmail(dto.getCustomerEmail())
             .customerPhone(dto.getCustomerPhone())
             .isBreakfast(dto.getIsBreakfast())
             .capacity(dto.getCapacity())
-            .refund(0)
-            .extraPay(0)
+            // Removed: refund and extraPay as per updated requirements
+            // .refund(0)
+            // .extraPay(0)
             .room(room)
             .build();
         
-        // 9. Save booking
+        // 8. Save booking
         Booking savedBooking = bookingRepository.save(booking);
         
         // 10. Log success
@@ -144,8 +142,8 @@ public class BookingRestServiceImpl implements BookingRestService {
     
     @Override
     public List<BookingListItemDTO> getAllBookings(Integer status, String search) {
-        // Auto update statuses before fetching
-        updateBookingStatuses();
+        // Commented out: Auto update statuses removed with simplified 3-status model
+        // updateBookingStatuses();
         
         List<Booking> bookings;
         
@@ -172,8 +170,8 @@ public class BookingRestServiceImpl implements BookingRestService {
 
     @Override
     public BookingDetailResponseDTO getBookingDetail(String bookingID) {
-        // Auto update statuses first
-        updateBookingStatuses();
+        // Commented out: Auto update statuses removed with simplified 3-status model
+        // updateBookingStatuses();
         
         // Find booking
         Booking booking = bookingRepository.findById(bookingID)
@@ -183,6 +181,8 @@ public class BookingRestServiceImpl implements BookingRestService {
         return convertToDetailResponseDTO(booking);
     }
     
+    // Commented out: updateBookingStatuses no longer needed with simplified 3-status model
+    /*
     @Override
     public void updateBookingStatuses() {
         LocalDateTime now = LocalDateTime.now();
@@ -220,7 +220,10 @@ public class BookingRestServiceImpl implements BookingRestService {
         // For now, return 0 (you can customize based on your business rules)
         return 0;
     }
+    */
     
+    // Commented out: getStatusText using old 5-status model, replaced by getStatusInfo
+    /*
     private String getStatusText(int status) {
         switch (status) {
             case 0: return "Pending";
@@ -231,9 +234,11 @@ public class BookingRestServiceImpl implements BookingRestService {
             default: return "Unknown";
         }
     }
+    */
     
     private BookingListItemDTO convertToListItemDTO(Booking booking) {
         String roomNumber = extractRoomNumber(booking.getRoom().getRoomID());
+        StatusInfo statusInfo = getStatusInfo(booking.getStatus());
         
         return BookingListItemDTO.builder()
             .bookingID(booking.getBookingID())
@@ -243,8 +248,9 @@ public class BookingRestServiceImpl implements BookingRestService {
             .checkOutDate(booking.getCheckOutDate())
             .totalPrice(booking.getTotalPrice())
             .status(booking.getStatus())
-            .statusText(getStatusText(booking.getStatus()))
-            .refund(booking.getRefund())
+            .statusText(statusInfo.text)
+            // Removed: refund field as per updated requirements
+            // .refund(booking.getRefund())
             .build();
     }
     
@@ -283,6 +289,8 @@ public class BookingRestServiceImpl implements BookingRestService {
         return start1.isBefore(end2) && start2.isBefore(end1);
     }
     
+    // Commented out: generateBookingID no longer used, replaced with UUID generation in entity @PrePersist
+    /*
     private String generateBookingID(String roomID) {
         if (roomID == null || roomID.isEmpty()) {
             throw new RuntimeException("Room ID is required for booking ID generation");
@@ -309,6 +317,7 @@ public class BookingRestServiceImpl implements BookingRestService {
         
         return String.format("BOOK-%s-%s-%s", propertyCode, roomNumber, datetime);
     }
+    */
     
     private BookingResponseDTO convertToResponseDTO(Booking booking) {
         String roomNumberDisplay = extractRoomNumber(booking.getRoom().getRoomID());
@@ -328,8 +337,9 @@ public class BookingRestServiceImpl implements BookingRestService {
             .customerPhone(booking.getCustomerPhone())
             .isBreakfast(booking.isBreakfast())
             .capacity(booking.getCapacity())
-            .extraPay(booking.getExtraPay())
-            .refund(booking.getRefund())
+            // Removed: extraPay and refund fields as per updated requirements
+            // .extraPay(booking.getExtraPay())
+            // .refund(booking.getRefund())
             .createdDate(booking.getCreatedDate())
             .updatedDate(booking.getUpdatedDate())
             .build();
@@ -346,7 +356,8 @@ public class BookingRestServiceImpl implements BookingRestService {
         // Determine action buttons availability
         boolean canPay = canPay(booking);
         boolean canUpdate = canUpdate(booking);
-        boolean canRefund = canRefund(booking);
+        // Removed: canRefund as refund feature removed
+        // boolean canRefund = canRefund(booking);
         boolean canCancel = canCancel(booking);
         
         return BookingDetailResponseDTO.builder()
@@ -371,8 +382,9 @@ public class BookingRestServiceImpl implements BookingRestService {
             
             // Pricing
             .totalPrice(booking.getTotalPrice())
-            .extraPay(booking.getExtraPay())
-            .refund(booking.getRefund())
+            // Removed: extraPay and refund fields as per updated requirements
+            // .extraPay(booking.getExtraPay())
+            // .refund(booking.getRefund())
             
             // Status
             .status(booking.getStatus())
@@ -386,12 +398,13 @@ public class BookingRestServiceImpl implements BookingRestService {
             // Action Buttons
             .canPay(canPay)
             .canUpdate(canUpdate)
-            .canRefund(canRefund)
+            // Removed: canRefund as refund feature removed
+            // .canRefund(canRefund)
             .canCancel(canCancel)
             .build();
     }
     
-    // Helper method to determine status info
+    // Helper method to determine status info (Updated to 3 statuses only)
     private StatusInfo getStatusInfo(int status) {
         StatusInfo info = new StatusInfo();
         switch (status) {
@@ -404,6 +417,12 @@ public class BookingRestServiceImpl implements BookingRestService {
                 info.color = "success"; // Green
                 break;
             case 2:
+                info.text = "Cancelled";
+                info.color = "danger"; // Red
+                break;
+            // Commented out: Old status codes removed as per updated requirements
+            /*
+            case 2:
                 info.text = "Checked-In";
                 info.color = "info"; // Blue
                 break;
@@ -415,6 +434,7 @@ public class BookingRestServiceImpl implements BookingRestService {
                 info.text = "Done";
                 info.color = "secondary"; // Gray
                 break;
+            */
             default:
                 info.text = "Unknown";
                 info.color = "default";
@@ -422,30 +442,29 @@ public class BookingRestServiceImpl implements BookingRestService {
         return info;
     }
     
-    // Action button logic
+    // Action button logic (Updated for 3 statuses)
     private boolean canPay(Booking booking) {
-        // Can pay if status = 0 (Waiting for Payment) OR has extra payment
-        return booking.getStatus() == 0 || booking.getExtraPay() > 0;
+        // Can pay only if status = 0 (Waiting for Payment)
+        return booking.getStatus() == 0;
     }
     
     private boolean canUpdate(Booking booking) {
-        // Can update if status = 0 (without extra pay) OR status = 1
-        if (booking.getStatus() == 0 && booking.getExtraPay() == 0) {
-            return true;
-        }
-        return booking.getStatus() == 1;
+        // Can update only if status = 0 (Waiting for Payment)
+        // After payment confirmation (status = 1), no updates allowed
+        return booking.getStatus() == 0;
     }
     
+    // Commented out: canRefund no longer needed with refund feature removed
+    /*
     private boolean canRefund(Booking booking) {
         // Can request refund if refund amount > 0
         return booking.getRefund() > 0;
     }
+    */
     
     private boolean canCancel(Booking booking) {
-        // Can cancel if status = 0, 1, or 3
-        return booking.getStatus() == 0 || 
-               booking.getStatus() == 1 || 
-               booking.getStatus() == 3;
+        // Can cancel only if status = 0 (Waiting for Payment)
+        return booking.getStatus() == 0;
     }
     
     // Inner class for status info
@@ -460,17 +479,9 @@ public class BookingRestServiceImpl implements BookingRestService {
         Booking booking = bookingRepository.findById(bookingID)
             .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + bookingID));
         
-        // ✅ Updated validation logic
-        // Can only update if:
-        // 1. Status = 0 (Pending) without extra pay, OR
-        // 2. Status = 1 (Confirmed)
-        if (booking.getStatus() != 0 && booking.getStatus() != 1) {
-            throw new RuntimeException("Can only update bookings with status 'Pending' (0) or 'Confirmed' (1)");
-        }
-        
-        // ✅ Only block if status = 0 AND has extra pay
-        if (booking.getStatus() == 0 && booking.getExtraPay() > 0) {
-            throw new RuntimeException("Cannot update booking with extra payment pending. Please pay first.");
+        // Validation: Can only update if status = 0 (Waiting for Payment)
+        if (booking.getStatus() != 0) {
+            throw new RuntimeException("Can only update bookings with status 'Waiting for Payment' (0)");
         }
         
         Room room = booking.getRoom();
@@ -503,14 +514,14 @@ public class BookingRestServiceImpl implements BookingRestService {
         Booking booking = bookingRepository.findById(dto.getBookingID())
             .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + dto.getBookingID()));
         
-        // 2. ✅ Updated validation logic
-        if (booking.getStatus() != 0 && booking.getStatus() != 1) {
-            throw new RuntimeException("Can only update bookings with status 'Pending' (0) or 'Confirmed' (1). Current status: " + booking.getStatus());
+        // 2. Validation: Prevent updates after payment confirmation (status = 1)
+        if (booking.getStatus() == 1) {
+            throw new RuntimeException("Cannot update booking after payment has been confirmed.");
         }
         
-        // ✅ Only block if status = 0 AND has extra pay
-        if (booking.getStatus() == 0 && booking.getExtraPay() > 0) {
-            throw new RuntimeException("Cannot update booking with extra payment pending. Please pay extra payment first.");
+        // Only allow updates for status = 0 (Waiting for Payment)
+        if (booking.getStatus() != 0) {
+            throw new RuntimeException("Can only update bookings with status 'Waiting for Payment' (0). Current status: " + booking.getStatus());
         }
         
         // 3. Validate new room exists
@@ -571,11 +582,7 @@ public class BookingRestServiceImpl implements BookingRestService {
             newTotalPrice += BREAKFAST_PRICE * (int) newTotalDays;
         }
         
-        // 9. Calculate price difference
-        int oldTotalPrice = booking.getTotalPrice();
-        int priceDifference = newTotalPrice - oldTotalPrice;
-        
-        // 10. Update booking fields
+        // 9. Update booking fields (no price difference calculation needed - refund/extraPay removed)
         booking.setRoom(newRoom);
         booking.setCheckInDate(dto.getCheckInDate());
         booking.setCheckOutDate(dto.getCheckOutDate());
@@ -588,6 +595,8 @@ public class BookingRestServiceImpl implements BookingRestService {
         booking.setBreakfast(dto.getIsBreakfast());
         booking.setCapacity(dto.getCapacity());
         
+        // Commented out: Price difference handling removed as refund/extraPay features removed
+        /*
         // 11. ✅ Handle price difference based on current status
         if (priceDifference > 0) {
             // Price increased → set extraPay, clear refund
@@ -627,21 +636,21 @@ public class BookingRestServiceImpl implements BookingRestService {
             booking.setRefund(0);
             System.out.println("➖ No price change");
         }
+        */
         
-        // 12. Save updated booking
+        // 10. Save updated booking
         Booking updatedBooking = bookingRepository.save(booking);
         
-        // 13. Log success
+        // 11. Log success
         System.out.println("✅ Booking Updated Successfully:");
         System.out.println("   Booking ID: " + updatedBooking.getBookingID());
-        System.out.println("   Old Room: " + booking.getRoom().getRoomID() + " → New Room: " + newRoom.getRoomID());
-        System.out.println("   Old Price: Rp " + String.format("%,d", oldTotalPrice) + 
-                           " → New Price: Rp " + String.format("%,d", newTotalPrice));
+        System.out.println("   New Room: " + newRoom.getRoomID());
+        System.out.println("   New Price: Rp " + String.format("%,d", newTotalPrice));
         System.out.println("   Check-in: " + updatedBooking.getCheckInDate());
         System.out.println("   Check-out: " + updatedBooking.getCheckOutDate());
         System.out.println("   Total Days: " + updatedBooking.getTotalDays());
         
-        // 14. Convert to DTO and return
+        // 12. Convert to DTO and return
         return convertToResponseDTO(updatedBooking);
     }
     
@@ -651,55 +660,22 @@ public class BookingRestServiceImpl implements BookingRestService {
         Booking booking = bookingRepository.findById(dto.getBookingID())
             .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + dto.getBookingID()));
         
-        // Validate: Can only pay if status = 0 OR has extra pay
-        if (booking.getStatus() != 0 && booking.getExtraPay() == 0) {
-            throw new RuntimeException("This booking does not require payment");
+        // Validate: Can only pay if status = 0 (Waiting for Payment)
+        if (booking.getStatus() != 0) {
+            throw new RuntimeException("This booking does not require payment or has already been paid");
         }
         
         Property property = booking.getRoom().getRoomType().getProperty();
         
-        // Case 1: Status = 0 (First payment)
-        if (booking.getStatus() == 0) {
-            if (booking.getExtraPay() > 0) {
-                // Has extra pay → This is first payment after update
-                // Need to pay TOTAL (totalPrice + extraPay) because totalPrice was never paid
-                int paymentAmount = booking.getTotalPrice() + booking.getExtraPay();
-                property.setIncome(property.getIncome() + paymentAmount);
-                
-                System.out.println("💰 First Payment Processed (After Update):");
-                System.out.println("   Original Total Price: Rp " + String.format("%,d", booking.getTotalPrice()));
-                System.out.println("   Extra Pay: Rp " + String.format("%,d", booking.getExtraPay()));
-                System.out.println("   Payment Amount: Rp " + String.format("%,d", paymentAmount));
-                
-                // Update totalPrice to include extraPay for proper tracking
-                booking.setTotalPrice(paymentAmount);
-                booking.setExtraPay(0);
-                
-                System.out.println("   New Total Price: Rp " + String.format("%,d", booking.getTotalPrice()));
-                System.out.println("   New Property Income: Rp " + String.format("%,d", property.getIncome()));
-            } else {
-                // No extra pay → Add total price to income
-                property.setIncome(property.getIncome() + booking.getTotalPrice());
-                
-                System.out.println("💰 Initial Payment Processed:");
-                System.out.println("   Amount: Rp " + String.format("%,d", booking.getTotalPrice()));
-                System.out.println("   New Property Income: Rp " + String.format("%,d", property.getIncome()));
-            }
-            
-            // Change status to Payment Confirmed
-            booking.setStatus(1);
-            
-        } 
-        // Case 2: Has extra pay (regardless of status)
-        else if (booking.getExtraPay() > 0) {
-            int paymentAmount = booking.getExtraPay();
-            property.setIncome(property.getIncome() + paymentAmount);
-            booking.setExtraPay(0);
-            
-            System.out.println("💰 Extra Payment Processed:");
-            System.out.println("   Amount: Rp " + String.format("%,d", paymentAmount));
-            System.out.println("   New Property Income: Rp " + String.format("%,d", property.getIncome()));
-        }
+        // Add total price to property income
+        property.setIncome(property.getIncome() + booking.getTotalPrice());
+        
+        System.out.println("💰 Payment Processed:");
+        System.out.println("   Amount: Rp " + String.format("%,d", booking.getTotalPrice()));
+        System.out.println("   New Property Income: Rp " + String.format("%,d", property.getIncome()));
+        
+        // Change status to Payment Confirmed (1)
+        booking.setStatus(1);
         
         // Save changes
         propertyRepository.save(property);
@@ -716,73 +692,24 @@ public class BookingRestServiceImpl implements BookingRestService {
         Booking booking = bookingRepository.findById(dto.getBookingID())
             .orElseThrow(() -> new RuntimeException("Booking not found with ID: " + dto.getBookingID()));
         
-        // Validate: Can only cancel if status = 0, 1, or 3
-        if (booking.getStatus() != 0 && booking.getStatus() != 1 && booking.getStatus() != 3) {
-            throw new RuntimeException("Cannot cancel booking with current status");
+        // Validate: Can only cancel if status = 0 (Waiting for Payment)
+        if (booking.getStatus() != 0) {
+            throw new RuntimeException("Cannot cancel booking that has been paid or already cancelled");
         }
         
-        Property property = booking.getRoom().getRoomType().getProperty();
-        int oldIncome = property.getIncome();
-        
-        // Case 1: Status = 0 (Pending Payment)
-        if (booking.getStatus() == 0) {
-            if (booking.getExtraPay() > 0) {
-                // Has extra pay → Refund = (totalPrice - extraPay)
-                // Income -= totalPrice, Income += extraPay
-                int refundAmount = booking.getTotalPrice() - booking.getExtraPay();
-                property.setIncome(property.getIncome() - refundAmount);
-                booking.setRefund(refundAmount);
-                
-                System.out.println("❌ Cancelled (Status 0 with Extra Pay):");
-                System.out.println("   Total Price: Rp " + String.format("%,d", booking.getTotalPrice()));
-                System.out.println("   Extra Pay: Rp " + String.format("%,d", booking.getExtraPay()));
-                System.out.println("   Refund to Customer: Rp " + String.format("%,d", refundAmount));
-                System.out.println("   Income Change: Rp " + String.format("%,d", oldIncome) + 
-                                " → Rp " + String.format("%,d", property.getIncome()));
-            } else {
-                // No payment made yet → Just change status, no refund
-                booking.setRefund(0);
-                System.out.println("❌ Cancelled (Status 0, No Payment Made)");
-            }
-        }
-        // Case 2: Status = 1 (Payment Confirmed)
-        else if (booking.getStatus() == 1) {
-            // Full refund of total price
-            int refundAmount = booking.getTotalPrice();
-            property.setIncome(property.getIncome() - refundAmount);
-            booking.setRefund(refundAmount);
-            
-            System.out.println("❌ Cancelled (Status 1 - Payment Confirmed):");
-            System.out.println("   Refund Amount: Rp " + String.format("%,d", refundAmount));
-            System.out.println("   Income Change: Rp " + String.format("%,d", oldIncome) + 
-                            " → Rp " + String.format("%,d", property.getIncome()));
-        }
-        // Case 3: Status = 3 (Request Refund)
-        else if (booking.getStatus() == 3) {
-            // Deduct (totalPrice - refund) from income
-            int deductAmount = booking.getTotalPrice() - booking.getRefund();
-            property.setIncome(property.getIncome() - deductAmount);
-            
-            System.out.println("❌ Cancelled (Status 3 - Request Refund):");
-            System.out.println("   Total Price: Rp " + String.format("%,d", booking.getTotalPrice()));
-            System.out.println("   Refund Amount: Rp " + String.format("%,d", booking.getRefund()));
-            System.out.println("   Income Deduction: Rp " + String.format("%,d", deductAmount));
-            System.out.println("   Income Change: Rp " + String.format("%,d", oldIncome) + 
-                            " → Rp " + String.format("%,d", property.getIncome()));
-        }
-        
-        // Change status to Cancelled (3)
-        booking.setStatus(3);
+        // Change status to Cancelled (2)
+        booking.setStatus(2);
         
         // Save changes
-        propertyRepository.save(property);
         Booking updatedBooking = bookingRepository.save(booking);
         
-        System.out.println("✅ Booking Cancelled: " + updatedBooking.getBookingID());
+        System.out.println("❌ Booking Cancelled: " + updatedBooking.getBookingID());
         
         return convertToResponseDTO(updatedBooking);
     }
 
+    // Commented out: refundBooking no longer needed with refund feature removed
+    /*
     @Override
     public BookingResponseDTO refundBooking(ChangeBookingStatusRequestDTO dto) {
         // Find booking
@@ -817,6 +744,12 @@ public class BookingRestServiceImpl implements BookingRestService {
         System.out.println("✅ Refund Successful for Booking: " + updatedBooking.getBookingID());
         
         return convertToResponseDTO(updatedBooking);
+    }
+    */
+    
+    @Override
+    public BookingResponseDTO refundBooking(ChangeBookingStatusRequestDTO dto) {
+        throw new RuntimeException("Refund feature has been removed as per updated requirements");
     }
 
     @Override

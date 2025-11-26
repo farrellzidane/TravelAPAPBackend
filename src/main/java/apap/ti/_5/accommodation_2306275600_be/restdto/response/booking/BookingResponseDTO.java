@@ -26,10 +26,11 @@ public class BookingResponseDTO {
     private String customerEmail;
     private String customerPhone;
     private boolean isBreakfast;
-    @Builder.Default
-    private int refund = 0;   
-    @Builder.Default
-    private int extraPay = 0;
+    // Removed: refund and extraPay fields as per updated requirements
+    // @Builder.Default
+    // private int refund = 0;   
+    // @Builder.Default
+    // private int extraPay = 0;
     private int capacity;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;

@@ -195,9 +195,11 @@ public class BookingRestController {
         try {
             BookingResponseDTO booking = bookingRestService.updateBooking(dto);
             
-            // ✅ Build success message with safe null handling
+            // Build success message
             String message = "Konfirmasi: Booking berhasil diubah dengan ID " + booking.getBookingID();
             
+            // Removed: extraPay and refund handling as features removed
+            /*
             // ✅ Safe check - handle both null and zero
             int extraPay = booking.getExtraPay();
             int refund = booking.getRefund();
@@ -207,6 +209,7 @@ public class BookingRestController {
             } else if (refund > 0) {
                 message += ". Refund tersedia: Rp " + String.format("%,d", refund);
             }
+            */
             
             baseResponseDTO.setStatus(HttpStatus.OK.value());
             baseResponseDTO.setData(booking);

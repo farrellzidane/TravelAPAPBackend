@@ -41,7 +41,8 @@ public interface BookingRestServiceRBAC extends BookingRestService {
     @Override
     BookingChartResponseDTO getBookingStatistics(Integer month, Integer year) throws AccessDeniedException;
 
-    @Override
-    void updateBookingStatuses() throws AccessDeniedException;
+    // Commented out: updateBookingStatuses no longer needed with simplified 3-status model
+    // @Override
+    // void updateBookingStatuses() throws AccessDeniedException;
 }
 

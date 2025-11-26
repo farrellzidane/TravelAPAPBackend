@@ -33,8 +33,9 @@ public class BookingDetailResponseDTO {
     
     // Pricing
     private int totalPrice;
-    private int extraPay;
-    private int refund;
+    // Removed: refund and extraPay fields as per updated requirements
+    // private int extraPay;
+    // private int refund;
     
     // Status
     private int status;
@@ -48,6 +49,7 @@ public class BookingDetailResponseDTO {
     // Action Buttons Flags
     private boolean canPay;
     private boolean canUpdate;
-    private boolean canRefund;
+    // Removed: canRefund as refund feature removed per updated requirements
+    // private boolean canRefund;
     private boolean canCancel;
 }

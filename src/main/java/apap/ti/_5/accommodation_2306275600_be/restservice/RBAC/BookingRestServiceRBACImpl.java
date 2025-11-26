@@ -155,10 +155,13 @@ public class BookingRestServiceRBACImpl extends BookingRestServiceImpl implement
         return super.getBookingStatistics(month, year);
     }
 
+    // Commented out: updateBookingStatuses no longer needed with simplified 3-status model
+    /*
     // [UTIL] Update Booking Statuses - System/Internal (No user-based access control)
     @Override
     public void updateBookingStatuses() throws AccessDeniedException {
         // This is a system/scheduled task, no user authentication required
         super.updateBookingStatuses();
     }
+    */
 }

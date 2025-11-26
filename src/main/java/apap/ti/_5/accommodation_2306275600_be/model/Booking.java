@@ -59,11 +59,12 @@ public class Booking {
     @Column(name = "is_breakfast")
     private boolean isBreakfast;
 
-    @Column(name = "refund_amount")
-    private int refund;
+    // Removed: refund and extraPay fields as per updated requirements
+    // @Column(name = "refund_amount")
+    // private int refund;
 
-    @Column(name = "extra_pay")
-    private int extraPay;
+    // @Column(name = "extra_pay")
+    // private int extraPay;
 
     @Column(name = "capacity")
     private int capacity;

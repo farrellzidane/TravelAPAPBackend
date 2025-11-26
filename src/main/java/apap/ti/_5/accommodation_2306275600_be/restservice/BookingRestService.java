@@ -22,5 +22,6 @@ public interface BookingRestService {
     BookingResponseDTO refundBooking(ChangeBookingStatusRequestDTO dto);
     BookingChartResponseDTO getBookingStatistics(Integer month, Integer year);
     
-    void updateBookingStatuses(); // Auto update statuses
+    // Commented out: updateBookingStatuses no longer needed with simplified 3-status model
+    // void updateBookingStatuses(); // Auto update statuses
 }
