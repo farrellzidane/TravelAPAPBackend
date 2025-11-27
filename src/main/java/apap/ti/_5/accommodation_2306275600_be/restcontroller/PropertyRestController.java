@@ -391,27 +391,13 @@ public class PropertyRestController {
             for (CreateRoomTypeRequestDTO roomTypeDTO : roomTypesRequest) {
                 roomTypeDTO.setPropertyID(propertyID);
                 
+                // ✅ createRoomType() already auto-generates rooms based on unitCount
+                // No need to manually create rooms here - it causes duplication!
                 RoomTypeResponseDTO createdRoomType = roomTypeRestService.createRoomType(roomTypeDTO);
                 totalRoomTypesCreated++;
                 
-                List<RoomResponseDTO> existingRoomsOnFloor = roomRestService.getRoomsByPropertyAndFloor(
-                    UUID.fromString(propertyID), 
-                    roomTypeDTO.getFloor()
-                );
-                
-                int startingUnit = existingRoomsOnFloor.size() + 1;
-                
-                for (int i = 0; i < roomTypeDTO.getUnitCount(); i++) {
-                    AddRoomRequestDTO createRoomDTO = AddRoomRequestDTO.builder()
-                            .name(generateRoomNameForAddRoomType(propertyID, roomTypeDTO.getFloor(), startingUnit + i))
-                            .roomTypeID(createdRoomType.getRoomTypeID())
-                            .availabilityStatus(1)
-                            .activeRoom(1)
-                            .build();
-                    
-                    roomRestService.createRoom(createRoomDTO);
-                    totalRoomsCreated++;
-                }
+                // Count rooms created by the service layer
+                totalRoomsCreated += roomTypeDTO.getUnitCount();
             }
             
             int newTotalRoom = property.getTotalRoom() + totalRoomsCreated;

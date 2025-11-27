@@ -1,5 +1,6 @@
 package apap.ti._5.accommodation_2306275600_be.restservice;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import apap.ti._5.accommodation_2306275600_be.model.Property;
+import apap.ti._5.accommodation_2306275600_be.model.Room;
 import apap.ti._5.accommodation_2306275600_be.model.RoomType;
 import apap.ti._5.accommodation_2306275600_be.repository.PropertyRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.RoomRepository;
@@ -35,13 +37,8 @@ public class RoomTypeRestServiceImpl implements RoomTypeRestService{
         Property property = propertyRepository.findById(UUID.fromString(dto.getPropertyID()))
                 .orElseThrow(() -> new RuntimeException("Property not found with id: " + dto.getPropertyID()));
         
-        // ❌ COMMENTED: Old formatted ID generation
-        // String roomTypeID = generateRoomTypeID(dto);
-        
-        // ✅ NEW: Let @PrePersist auto-generate UUID
-        // Manual conversion DTO to Entity
+        // ✅ Create RoomType with auto-generated UUID
         RoomType roomType = RoomType.builder()
-                // .roomTypeID() is not set here - will be auto-generated
                 .name(dto.getName())
                 .price(dto.getPrice())
                 .description(dto.getDescription())
@@ -52,7 +49,48 @@ public class RoomTypeRestServiceImpl implements RoomTypeRestService{
                 .build();
         
         RoomType savedRoomType = roomTypeRepository.save(roomType);
+        
+        // ✅ Generate Rooms for this RoomType based on unitCount
+        // Get existing room count on this floor for this property to determine room numbers
+        List<RoomType> roomTypesOnFloor = roomTypeRepository.findByProperty_PropertyID(property.getPropertyID())
+                .stream()
+                .filter(rt -> rt.getFloor() == dto.getFloor())
+                .collect(Collectors.toList());
+        
+        int existingRoomCount = 0;
+        for (RoomType rt : roomTypesOnFloor) {
+            if (!rt.getRoomTypeID().equals(savedRoomType.getRoomTypeID())) {
+                // Count rooms from other room types on same floor
+                existingRoomCount += roomRepository.findByRoomType_RoomTypeID(rt.getRoomTypeID()).size();
+            }
+        }
+        
+        List<Room> rooms = new ArrayList<>();
+        for (int i = 0; i < dto.getUnitCount(); i++) {
+            int roomNumber = existingRoomCount + i + 1;
+            String roomName = generateRoomName(dto.getFloor(), roomNumber);
+            
+            Room room = Room.builder()
+                    .roomID(UUID.randomUUID()) // Generate UUID for each room
+                    .name(roomName)
+                    .availabilityStatus(1) // 1 = Available
+                    .activeRoom(1) // 1 = Active
+                    .roomType(savedRoomType)
+                    .build();
+            
+            rooms.add(room);
+        }
+        
+        // Save all rooms
+        roomRepository.saveAll(rooms);
+        
         return convertToResponseDTO(savedRoomType);
+    }
+    
+    // Helper method to generate room name based on floor and room number
+    private String generateRoomName(Integer floor, int roomNumber) {
+        // Format: Floor-RoomNumber (e.g., "2-1", "2-2", "3-1")
+        return floor + "-" + roomNumber;
     }
 
     @Override

@@ -239,7 +239,7 @@ public class BookingRestServiceImpl implements BookingRestService {
     */
     
     private BookingListItemDTO convertToListItemDTO(Booking booking) {
-        String roomNumber = extractRoomNumber(booking.getRoom().getRoomID().toString());
+        String roomNumber = booking.getRoom().getName();
         StatusInfo statusInfo = getStatusInfo(booking.getStatus());
         
         return BookingListItemDTO.builder()
@@ -255,18 +255,6 @@ public class BookingRestServiceImpl implements BookingRestService {
             // .refund(booking.getRefund())
             .build();
     }
-    
-    private String extractRoomNumber(String roomID) {
-        if (roomID != null && !roomID.isEmpty()) {
-            String[] parts = roomID.split("-");
-            if (parts.length >= 1) {
-                return parts[parts.length - 1];
-            }
-        }
-        return roomID;
-    }
-
-    // ...existing code...
     
     private void validateBookingDates(LocalDateTime checkIn, LocalDateTime checkOut) {
         LocalDateTime now = LocalDateTime.now();
@@ -322,7 +310,7 @@ public class BookingRestServiceImpl implements BookingRestService {
     */
     
     private BookingResponseDTO convertToResponseDTO(Booking booking) {
-        String roomNumberDisplay = extractRoomNumber(booking.getRoom().getRoomID().toString());
+        String roomNumberDisplay = booking.getRoom().getName();
         
         return BookingResponseDTO.builder()
             .bookingID(booking.getBookingID())
@@ -350,7 +338,7 @@ public class BookingRestServiceImpl implements BookingRestService {
     private BookingDetailResponseDTO convertToDetailResponseDTO(Booking booking) {
         // Get room type name
         String roomName = booking.getRoom().getRoomType().getName();
-        String roomNumber = extractRoomNumber(booking.getRoom().getRoomID().toString());
+        String roomNumber = booking.getRoom().getName();
         
         // Determine status text and color
         StatusInfo statusInfo = getStatusInfo(booking.getStatus());
@@ -487,7 +475,7 @@ public class BookingRestServiceImpl implements BookingRestService {
         }
         
         Room room = booking.getRoom();
-        String roomNumber = extractRoomNumber(room.getRoomID().toString());
+        String roomNumber = room.getName();
         
         return BookingUpdateFormDTO.builder()
             .bookingID(booking.getBookingID())
