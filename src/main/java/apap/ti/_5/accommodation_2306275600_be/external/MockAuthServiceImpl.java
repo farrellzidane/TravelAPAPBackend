@@ -8,7 +8,6 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -28,7 +27,6 @@ import jakarta.servlet.http.HttpServletRequest;
  * Active only when spring profile is "dev".
  */
 @Service
-@Primary
 @Profile("dev")
 public class MockAuthServiceImpl implements AuthService {
 
@@ -61,7 +59,7 @@ public class MockAuthServiceImpl implements AuthService {
             JsonNode payloadJson = objectMapper.readTree(payload);
             
             // Extract userId and role from payload
-            String userIdStr = payloadJson.get("userId").asText();
+            String userIdStr = payloadJson.get("id").asText();
             String role = payloadJson.get("role").asText();
             UUID userId = UUID.fromString(userIdStr);
 
@@ -161,6 +159,10 @@ public class MockAuthServiceImpl implements AuthService {
         }
 
         HttpServletRequest request = attributes.getRequest();
+        if (Objects.isNull(request)) {
+            return null;
+        }
+        
         String authHeader = request.getHeader("Authorization");
         
         if (Objects.isNull(authHeader) || !authHeader.startsWith("Bearer ")) {
