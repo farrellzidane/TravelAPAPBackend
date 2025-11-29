@@ -35,6 +35,7 @@ public class MockAuthServiceImpl implements AuthService {
     
     private static final String SUPERADMIN = "Superadmin";
     private static final String ACCOMMODATION_OWNER = "Accommodation Owner";
+    private static final String ACCOMMODATION_OWNER_TYPO = "Accomodation Owner"; // Typo variant from SSO
     private static final String CUSTOMER = "Customer";
 
     @Override
@@ -93,7 +94,8 @@ public class MockAuthServiceImpl implements AuthService {
 
     @Override
     public boolean isAccommodationOwner(UserProfileDTO userProfile) {
-        return ACCOMMODATION_OWNER.equals(userProfile.role());
+        return ACCOMMODATION_OWNER.equals(userProfile.role()) || 
+               ACCOMMODATION_OWNER_TYPO.equals(userProfile.role());
     }
 
     @Override
