@@ -16,6 +16,7 @@ public class BookingResponseDTO {
     private UUID bookingID;
     private String roomID;
     private String roomNumber;
+    private String propertyName;
     private LocalDateTime checkInDate;
     private LocalDateTime checkOutDate;
     private int totalDays;
@@ -34,4 +35,5 @@ public class BookingResponseDTO {
     private int capacity;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private UUID reviewID; // ID of review if booking has been reviewed
 }

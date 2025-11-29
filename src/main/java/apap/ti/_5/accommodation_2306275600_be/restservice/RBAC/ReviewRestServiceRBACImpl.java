@@ -109,7 +109,7 @@ public class ReviewRestServiceRBACImpl extends ReviewRestServiceImpl implements 
             var reviewEntity = reviewRepository.findByReviewID(reviewID)
                     .orElseThrow(() -> new RuntimeException("Review not found"));
             
-            UUID propertyOwnerID = reviewEntity.getBooking().getRoom().getRoomType().getProperty().getOwnerID();
+            UUID propertyOwnerID = reviewEntity.getProperty().getOwnerID();
             
             if (!propertyOwnerID.equals(user.userId())) {
                 throw new AccessDeniedException("Anda tidak memiliki akses untuk melihat detail review ini");

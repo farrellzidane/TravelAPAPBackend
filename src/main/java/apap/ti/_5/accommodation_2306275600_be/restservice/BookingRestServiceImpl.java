@@ -311,11 +311,14 @@ public class BookingRestServiceImpl implements BookingRestService {
     
     private BookingResponseDTO convertToResponseDTO(Booking booking) {
         String roomNumberDisplay = booking.getRoom().getName();
+        String propertyName = booking.getRoom().getRoomType().getProperty().getPropertyName();
+        UUID reviewID = booking.getReview() != null ? booking.getReview().getReviewID() : null;
         
         return BookingResponseDTO.builder()
             .bookingID(booking.getBookingID())
             .roomID(booking.getRoom().getRoomID().toString())
             .roomNumber(roomNumberDisplay)
+            .propertyName(propertyName)
             .checkInDate(booking.getCheckInDate())
             .checkOutDate(booking.getCheckOutDate())
             .totalDays(booking.getTotalDays())
@@ -332,6 +335,7 @@ public class BookingRestServiceImpl implements BookingRestService {
             // .refund(booking.getRefund())
             .createdDate(booking.getCreatedDate())
             .updatedDate(booking.getUpdatedDate())
+            .reviewID(reviewID)
             .build();
     }
     

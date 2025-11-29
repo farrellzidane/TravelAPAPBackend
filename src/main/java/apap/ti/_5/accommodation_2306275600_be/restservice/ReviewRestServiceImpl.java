@@ -76,6 +76,7 @@ public class ReviewRestServiceImpl implements ReviewRestService {
         // Create new review
         AccommodationReview review = new AccommodationReview();
         review.setBooking(booking);
+        review.setProperty(booking.getRoom().getRoomType().getProperty());
         review.setCustomerID(booking.getCustomerID());
         review.setCleanlinessRating(dto.getCleanlinessRating());
         review.setFacilityRating(dto.getFacilityRating());

@@ -28,8 +28,14 @@ public class AccommodationReview {
     private UUID reviewID;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "booking_id", referencedColumnName = "booking_id", nullable = false)
+    @JoinColumn(name = "booking_id", referencedColumnName = "booking_id", nullable = false,
+                foreignKey = @ForeignKey(name = "fk_review_booking"))
     private Booking booking;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "property_id", referencedColumnName = "property_id", nullable = false,
+                foreignKey = @ForeignKey(name = "fk_review_property"))
+    private Property property;
 
     @Column(name = "customer_id", nullable = false)
     private UUID customerID;

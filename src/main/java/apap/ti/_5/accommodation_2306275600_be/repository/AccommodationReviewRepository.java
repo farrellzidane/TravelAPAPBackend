@@ -16,11 +16,7 @@ public interface AccommodationReviewRepository extends JpaRepository<Accommodati
     
     // Find all reviews by property ID
     @Query("SELECT ar FROM AccommodationReview ar " +
-           "JOIN ar.booking b " +
-           "JOIN b.room r " +
-           "JOIN r.roomType rt " +
-           "JOIN rt.property p " +
-           "WHERE p.propertyID = :propertyID " +
+           "WHERE ar.property.propertyID = :propertyID " +
            "ORDER BY ar.createdDate DESC")
     List<AccommodationReview> findByPropertyID(@Param("propertyID") UUID propertyID);
     
