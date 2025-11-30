@@ -5,3 +5,9 @@ spring:
     url: ${DATABASE_URL_DEV}
     username: ${DEV_USERNAME}
     password: ${DEV_PASSWORD}
+
+# Bill Service Configuration
+bill:
+  service:
+    url: ${BILL_SERVICE_URL:http://localhost:8081}
+    api-key: ${BILL_SERVICE_API_KEY:ACCOMMODATION_API_KEY_2306275600}

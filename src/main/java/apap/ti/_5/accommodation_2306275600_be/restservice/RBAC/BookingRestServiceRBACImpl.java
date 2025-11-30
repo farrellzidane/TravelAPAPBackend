@@ -20,6 +20,7 @@ import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingLi
 import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingResponseDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingUpdateFormDTO;
 import apap.ti._5.accommodation_2306275600_be.restservice.BookingRestServiceImpl;
+import apap.ti._5.accommodation_2306275600_be.service.BillIntegrationService;
 
 @Service
 public class BookingRestServiceRBACImpl extends BookingRestServiceImpl implements BookingRestServiceRBAC {
@@ -30,9 +31,10 @@ public class BookingRestServiceRBACImpl extends BookingRestServiceImpl implement
             BookingRepository bookingRepository,
             RoomRepository roomRepository,
             PropertyRepository propertyRepository,
+            BillIntegrationService billIntegrationService,
             AuthService authService
         ) {
-        super(bookingRepository, roomRepository, propertyRepository);
+        super(bookingRepository, roomRepository, propertyRepository, billIntegrationService);
         this.authService = authService;
     }
 

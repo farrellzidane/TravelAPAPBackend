@@ -18,6 +18,7 @@ import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingUp
 // import apap.ti._5.accommodation_2306275600_be.restdto.request.booking.ChangeBookingStatusRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingChartResponseDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.property.PropertyRevenueDTO;
+import apap.ti._5.accommodation_2306275600_be.service.BillIntegrationService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.context.annotation.Primary;
@@ -43,6 +44,7 @@ public class BookingRestServiceImpl implements BookingRestService {
     protected final BookingRepository bookingRepository;
     protected final RoomRepository roomRepository;
     protected final PropertyRepository propertyRepository;
+    protected final BillIntegrationService billIntegrationService;
     
     private static final int BREAKFAST_PRICE = 50000;
     
@@ -127,6 +129,14 @@ public class BookingRestServiceImpl implements BookingRestService {
         
         // 8. Save booking
         Booking savedBooking = bookingRepository.save(booking);
+        
+        // 9. Call Bill service to create bill (fire and forget)
+        try {
+            billIntegrationService.createBillForBooking(savedBooking);
+        } catch (Exception e) {
+            // Log error but don't fail the booking creation
+            System.err.println("⚠️ Non-critical: Failed to create bill, but booking was saved: " + e.getMessage());
+        }
         
         // 10. Log success
         System.out.println("✅ Booking Created Successfully:");

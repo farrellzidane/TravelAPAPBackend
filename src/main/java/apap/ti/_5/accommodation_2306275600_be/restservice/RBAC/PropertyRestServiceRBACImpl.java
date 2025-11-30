@@ -1,5 +1,6 @@
 package apap.ti._5.accommodation_2306275600_be.restservice.RBAC;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -108,6 +109,32 @@ public class PropertyRestServiceRBACImpl extends PropertyRestServiceImpl impleme
         }
         
         PropertyResponseDTO property = super.getPropertyById(propertyId);
+        
+        if (property == null) {
+            return null;
+        }
+        
+        // Accommodation Owner hanya dapat melihat property miliknya
+        if (authService.isAccommodationOwner(user) && !UUID.fromString(property.getOwnerID()).equals(user.userId())) {
+            throw new AccessDeniedException("Anda tidak memiliki akses ke property ini");
+        }
+        
+        return property;
+    }
+
+    // [GET] Get Property Details by Property ID with Date Filter
+    // - Same access rules as getPropertyById but with room availability filtering
+    @Override
+    public PropertyResponseDTO getPropertyById(UUID propertyId, LocalDateTime checkIn, LocalDateTime checkOut) throws AccessDeniedException {
+        UserProfileDTO user = authService.getAuthenticatedUser();
+        
+        boolean hasAccess = authService.isSuperAdmin(user) || authService.isAccommodationOwner(user) || authService.isCustomer(user);
+        
+        if (!hasAccess) {
+            throw new AccessDeniedException("Anda tidak memiliki akses ke resource ini, role : " + user.role());
+        }
+        
+        PropertyResponseDTO property = super.getPropertyById(propertyId, checkIn, checkOut);
         
         if (property == null) {
             return null;

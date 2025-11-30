@@ -1,5 +1,6 @@
 package apap.ti._5.accommodation_2306275600_be.restservice.RBAC; 
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID; 
 
@@ -22,6 +23,9 @@ public interface PropertyRestServiceRBAC extends PropertyRestService {
 
     @Override 
     PropertyResponseDTO getPropertyById(UUID propertyID) throws AccessDeniedException; 
+
+    @Override 
+    PropertyResponseDTO getPropertyById(UUID propertyID, LocalDateTime checkIn, LocalDateTime checkOut) throws AccessDeniedException;
 
     @Override 
     List<PropertyResponseDTO> getPropertiesByOwner(UUID ownerID) throws AccessDeniedException; 
