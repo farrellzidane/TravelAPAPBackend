@@ -2,180 +2,165 @@ package apap.ti._5.accommodation_2306275600_be.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 class RoomTypeTest {
 
     private RoomType roomType;
-    private Property property;
+    private UUID testRoomTypeId;
+    private Property testProperty;
 
     @BeforeEach
     void setUp() {
-        // Setup Property
-        property = Property.builder()
-                .propertyID("PROP-001")
-                .propertyName("Luxury Hotel")
+        testRoomTypeId = UUID.randomUUID();
+        
+        testProperty = Property.builder()
+                .propertyID(UUID.randomUUID())
+                .propertyName("Test Hotel")
                 .type(1)
-                .activeStatus(1)
-                .income(0)
-                .ownerName("Owner Name")
-                .ownerID(UUID.randomUUID())
                 .build();
-
-        // Setup RoomType
+        
         roomType = RoomType.builder()
-                .roomTypeID("RT-001")
+                .roomTypeID(testRoomTypeId)
                 .name("Deluxe Room")
-                .price(750000)
-                .description("Spacious room with king-size bed")
+                .price(500000)
+                .description("Spacious deluxe room with city view")
                 .capacity(2)
-                .facility("AC, TV, WiFi, Mini Bar, Safe")
-                .floor(5)
-                .property(property)
+                .facility("WiFi, AC, TV, Mini Bar")
+                .floor(3)
+                .property(testProperty)
                 .listRoom(new ArrayList<>())
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
                 .build();
-    }
-
-    @Test
-    void testRoomTypeCreation() {
-        assertNotNull(roomType);
-        assertEquals("RT-001", roomType.getRoomTypeID());
-        assertEquals("Deluxe Room", roomType.getName());
-        assertEquals(750000, roomType.getPrice());
-        assertEquals("Spacious room with king-size bed", roomType.getDescription());
-        assertEquals(2, roomType.getCapacity());
-        assertEquals("AC, TV, WiFi, Mini Bar, Safe", roomType.getFacility());
-        assertEquals(5, roomType.getFloor());
-        assertNotNull(roomType.getProperty());
-        assertNotNull(roomType.getListRoom());
     }
 
     @Test
     void testRoomTypeBuilder() {
-        LocalDateTime created = LocalDateTime.of(2025, 1, 1, 10, 0);
-        LocalDateTime updated = LocalDateTime.of(2025, 1, 2, 10, 0);
-
-        RoomType newRoomType = RoomType.builder()
-                .roomTypeID("RT-002")
-                .name("Presidential Suite")
-                .price(2500000)
-                .description("Luxurious presidential suite")
-                .capacity(4)
-                .facility("AC, TV, WiFi, Jacuzzi, Kitchen")
-                .floor(10)
-                .property(property)
-                .createdDate(created)
-                .updatedDate(updated)
-                .build();
-
-        assertEquals("RT-002", newRoomType.getRoomTypeID());
-        assertEquals("Presidential Suite", newRoomType.getName());
-        assertEquals(2500000, newRoomType.getPrice());
-        assertEquals("Luxurious presidential suite", newRoomType.getDescription());
-        assertEquals(4, newRoomType.getCapacity());
-        assertEquals("AC, TV, WiFi, Jacuzzi, Kitchen", newRoomType.getFacility());
-        assertEquals(10, newRoomType.getFloor());
-        assertEquals(property, newRoomType.getProperty());
-        assertEquals(created, newRoomType.getCreatedDate());
-        assertEquals(updated, newRoomType.getUpdatedDate());
+        assertNotNull(roomType);
+        assertEquals(testRoomTypeId, roomType.getRoomTypeID());
+        assertEquals("Deluxe Room", roomType.getName());
+        assertEquals(500000, roomType.getPrice());
+        assertEquals("Spacious deluxe room with city view", roomType.getDescription());
+        assertEquals(2, roomType.getCapacity());
+        assertEquals("WiFi, AC, TV, Mini Bar", roomType.getFacility());
+        assertEquals(3, roomType.getFloor());
+        assertEquals(testProperty, roomType.getProperty());
+        assertNotNull(roomType.getListRoom());
     }
 
     @Test
-    void testRoomTypeSettersAndGetters() {
-        roomType.setRoomTypeID("RT-UPDATE");
-        assertEquals("RT-UPDATE", roomType.getRoomTypeID());
-
-        roomType.setName("Updated Room Type");
-        assertEquals("Updated Room Type", roomType.getName());
-
-        roomType.setPrice(1000000);
-        assertEquals(1000000, roomType.getPrice());
-
-        roomType.setDescription("Updated description");
-        assertEquals("Updated description", roomType.getDescription());
-
-        roomType.setCapacity(3);
-        assertEquals(3, roomType.getCapacity());
-
-        roomType.setFacility("AC, TV, WiFi");
-        assertEquals("AC, TV, WiFi", roomType.getFacility());
-
-        roomType.setFloor(7);
-        assertEquals(7, roomType.getFloor());
-
-        Property newProperty = Property.builder()
-                .propertyID("PROP-002")
-                .build();
-        roomType.setProperty(newProperty);
-        assertEquals("PROP-002", roomType.getProperty().getPropertyID());
-
-        List<Room> rooms = new ArrayList<>();
-        roomType.setListRoom(rooms);
-        assertEquals(rooms, roomType.getListRoom());
-
-        LocalDateTime newCreated = LocalDateTime.now().minusDays(1);
-        roomType.setCreatedDate(newCreated);
-        assertEquals(newCreated, roomType.getCreatedDate());
-
-        LocalDateTime newUpdated = LocalDateTime.now();
-        roomType.setUpdatedDate(newUpdated);
-        assertEquals(newUpdated, roomType.getUpdatedDate());
-    }
-
-    @Test
-    void testRoomTypeNoArgsConstructor() {
+    void testNoArgsConstructor() {
         RoomType emptyRoomType = new RoomType();
         assertNotNull(emptyRoomType);
         assertNull(emptyRoomType.getRoomTypeID());
         assertNull(emptyRoomType.getName());
-        assertEquals(0, emptyRoomType.getPrice());
     }
 
     @Test
-    void testRoomTypeAllArgsConstructor() {
-        LocalDateTime created = LocalDateTime.now();
-        LocalDateTime updated = LocalDateTime.now();
+    void testAllArgsConstructor() {
+        LocalDateTime now = LocalDateTime.now();
         List<Room> rooms = new ArrayList<>();
-
-        RoomType newRoomType = new RoomType(
-            "RT-003",
-            "Standard Room",
-            350000,
-            "Comfortable standard room",
-            2,
-            "AC, TV",
-            3,
-            property,
-            rooms,
-            created,
-            updated
+        
+        RoomType fullRoomType = new RoomType(
+                testRoomTypeId,
+                "Suite Room",
+                1000000,
+                "Luxurious suite room",
+                4,
+                "WiFi, AC, TV, Mini Bar, Jacuzzi",
+                5,
+                testProperty,
+                rooms,
+                now,
+                now
         );
-
-        assertEquals("RT-003", newRoomType.getRoomTypeID());
-        assertEquals("Standard Room", newRoomType.getName());
-        assertEquals(350000, newRoomType.getPrice());
-        assertEquals("Comfortable standard room", newRoomType.getDescription());
-        assertEquals(2, newRoomType.getCapacity());
-        assertEquals("AC, TV", newRoomType.getFacility());
-        assertEquals(3, newRoomType.getFloor());
-        assertEquals(property, newRoomType.getProperty());
-        assertEquals(rooms, newRoomType.getListRoom());
-        assertEquals(created, newRoomType.getCreatedDate());
-        assertEquals(updated, newRoomType.getUpdatedDate());
+        
+        assertEquals(testRoomTypeId, fullRoomType.getRoomTypeID());
+        assertEquals("Suite Room", fullRoomType.getName());
+        assertEquals(1000000, fullRoomType.getPrice());
+        assertEquals("Luxurious suite room", fullRoomType.getDescription());
+        assertEquals(4, fullRoomType.getCapacity());
+        assertEquals("WiFi, AC, TV, Mini Bar, Jacuzzi", fullRoomType.getFacility());
+        assertEquals(5, fullRoomType.getFloor());
+        assertEquals(testProperty, fullRoomType.getProperty());
+        assertEquals(now, fullRoomType.getCreatedDate());
+        assertEquals(now, fullRoomType.getUpdatedDate());
     }
 
     @Test
-    void testRoomTypePrePersist() {
-        RoomType newRoomType = new RoomType();
-        newRoomType.onCreate();
+    void testSettersAndGetters() {
+        roomType.setName("Superior Room");
+        assertEquals("Superior Room", roomType.getName());
+        
+        roomType.setPrice(750000);
+        assertEquals(750000, roomType.getPrice());
+        
+        roomType.setDescription("Updated description");
+        assertEquals("Updated description", roomType.getDescription());
+        
+        roomType.setCapacity(3);
+        assertEquals(3, roomType.getCapacity());
+        
+        roomType.setFacility("WiFi, AC");
+        assertEquals("WiFi, AC", roomType.getFacility());
+        
+        roomType.setFloor(4);
+        assertEquals(4, roomType.getFloor());
+    }
 
+    @Test
+    void testPropertyRelationship() {
+        Property newProperty = Property.builder()
+                .propertyID(UUID.randomUUID())
+                .propertyName("New Hotel")
+                .build();
+        
+        roomType.setProperty(newProperty);
+        
+        assertNotNull(roomType.getProperty());
+        assertEquals("New Hotel", roomType.getProperty().getPropertyName());
+    }
+
+    @Test
+    void testRoomListRelationship() {
+        List<Room> rooms = new ArrayList<>();
+        Room room1 = Room.builder()
+                .roomID(UUID.randomUUID())
+                .name("Room-101")
+                .availabilityStatus(1)
+                .build();
+        Room room2 = Room.builder()
+                .roomID(UUID.randomUUID())
+                .name("Room-102")
+                .availabilityStatus(1)
+                .build();
+        
+        rooms.add(room1);
+        rooms.add(room2);
+        
+        roomType.setListRoom(rooms);
+        
+        assertNotNull(roomType.getListRoom());
+        assertEquals(2, roomType.getListRoom().size());
+        assertEquals("Room-101", roomType.getListRoom().get(0).getName());
+        assertEquals("Room-102", roomType.getListRoom().get(1).getName());
+    }
+
+    @Test
+    void testOnCreate() {
+        RoomType newRoomType = new RoomType();
+        assertNull(newRoomType.getRoomTypeID());
+        assertNull(newRoomType.getCreatedDate());
+        assertNull(newRoomType.getUpdatedDate());
+        
+        // Simulate @PrePersist
+        newRoomType.onCreate();
+        
         assertNotNull(newRoomType.getRoomTypeID());
         assertNotNull(newRoomType.getCreatedDate());
         assertNotNull(newRoomType.getUpdatedDate());
@@ -183,236 +168,194 @@ class RoomTypeTest {
     }
 
     @Test
-    void testRoomTypePrePersistWithExistingId() {
+    void testOnCreateWithExistingId() {
         RoomType newRoomType = new RoomType();
-        newRoomType.setRoomTypeID("EXISTING-RT-ID");
+        UUID existingId = UUID.randomUUID();
+        newRoomType.setRoomTypeID(existingId);
+        
         newRoomType.onCreate();
-
-        assertEquals("EXISTING-RT-ID", newRoomType.getRoomTypeID());
+        
+        // Should not change existing ID
+        assertEquals(existingId, newRoomType.getRoomTypeID());
         assertNotNull(newRoomType.getCreatedDate());
-        assertNotNull(newRoomType.getUpdatedDate());
     }
 
     @Test
-    void testRoomTypePreUpdate() throws InterruptedException {
-        LocalDateTime originalUpdated = roomType.getUpdatedDate();
-        Thread.sleep(10);
+    void testOnUpdate() {
+        roomType.onCreate();
+        LocalDateTime originalCreatedDate = roomType.getCreatedDate();
+        LocalDateTime originalUpdatedDate = roomType.getUpdatedDate();
+        
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         
         roomType.onUpdate();
         
-        assertNotNull(roomType.getUpdatedDate());
-        assertTrue(roomType.getUpdatedDate().isAfter(originalUpdated) || 
-                   roomType.getUpdatedDate().isEqual(originalUpdated));
+        assertEquals(originalCreatedDate, roomType.getCreatedDate());
+        assertNotEquals(originalUpdatedDate, roomType.getUpdatedDate());
+        assertTrue(roomType.getUpdatedDate().isAfter(originalUpdatedDate));
     }
 
     @Test
-    void testRoomTypePropertyRelationship() {
-        assertNotNull(roomType.getProperty());
-        assertEquals("PROP-001", roomType.getProperty().getPropertyID());
-        assertEquals("Luxury Hotel", roomType.getProperty().getPropertyName());
+    void testToBuilder() {
+        RoomType clonedRoomType = roomType.toBuilder()
+                .name("Premium Room")
+                .price(800000)
+                .build();
+        
+        assertEquals(testRoomTypeId, clonedRoomType.getRoomTypeID());
+        assertEquals("Premium Room", clonedRoomType.getName());
+        assertEquals(800000, clonedRoomType.getPrice());
+        assertEquals(roomType.getCapacity(), clonedRoomType.getCapacity());
     }
 
     @Test
-    void testRoomTypeRoomListRelationship() {
-        Room room1 = Room.builder()
-                .roomID("ROOM-001")
-                .name("Deluxe 501")
-                .roomType(roomType)
+    void testEqualsAndHashCode() {
+        RoomType sameRoomType = RoomType.builder()
+                .roomTypeID(testRoomTypeId)
+                .name("Deluxe Room")
+                .price(500000)
+                .description("Spacious deluxe room with city view")
+                .capacity(2)
+                .facility("WiFi, AC, TV, Mini Bar")
+                .floor(3)
+                .property(testProperty)
+                .listRoom(new ArrayList<>())
                 .build();
-
-        Room room2 = Room.builder()
-                .roomID("ROOM-002")
-                .name("Deluxe 502")
-                .roomType(roomType)
-                .build();
-
-        List<Room> rooms = new ArrayList<>();
-        rooms.add(room1);
-        rooms.add(room2);
-
-        roomType.setListRoom(rooms);
-
-        assertEquals(2, roomType.getListRoom().size());
-        assertEquals("Deluxe 501", roomType.getListRoom().get(0).getName());
-        assertEquals("Deluxe 502", roomType.getListRoom().get(1).getName());
+        
+        assertEquals(roomType, sameRoomType);
+        assertEquals(roomType.hashCode(), sameRoomType.hashCode());
     }
 
     @Test
-    void testRoomTypeToBuilder() {
-        RoomType modifiedRoomType = roomType.toBuilder()
-                .name("Modified Deluxe")
-                .price(850000)
+    void testNotEquals() {
+        RoomType differentRoomType = RoomType.builder()
+                .roomTypeID(UUID.randomUUID())
+                .name("Different Room")
                 .build();
-
-        assertEquals("Modified Deluxe", modifiedRoomType.getName());
-        assertEquals(850000, modifiedRoomType.getPrice());
-        assertEquals(roomType.getRoomTypeID(), modifiedRoomType.getRoomTypeID());
-        assertEquals(roomType.getCapacity(), modifiedRoomType.getCapacity());
+        
+        assertNotEquals(roomType, differentRoomType);
     }
 
     @Test
-    void testRoomTypeEqualsAndHashCode() {
-        RoomType roomType1 = RoomType.builder()
-                .roomTypeID("RT-SAME")
-                .name("Same Type")
-                .build();
-
-        RoomType roomType2 = RoomType.builder()
-                .roomTypeID("RT-SAME")
-                .name("Same Type")
-                .build();
-
-        RoomType roomType3 = RoomType.builder()
-                .roomTypeID("RT-DIFFERENT")
-                .name("Different Type")
-                .build();
-
-        assertEquals(roomType1, roomType2);
-        assertNotEquals(roomType1, roomType3);
-        assertEquals(roomType1.hashCode(), roomType2.hashCode());
-    }
-
-    @Test
-    void testRoomTypeToString() {
+    void testToString() {
         String roomTypeString = roomType.toString();
         assertNotNull(roomTypeString);
-        assertTrue(roomTypeString.contains("RT-001"));
         assertTrue(roomTypeString.contains("Deluxe Room"));
+        assertTrue(roomTypeString.contains(testRoomTypeId.toString()));
     }
 
     @Test
-    void testRoomTypePriceUpdate() {
-        roomType.setPrice(800000);
-        assertEquals(800000, roomType.getPrice());
-
-        // Price increase
-        roomType.setPrice(900000);
-        assertEquals(900000, roomType.getPrice());
-
-        // Price decrease (discount)
-        roomType.setPrice(700000);
-        assertEquals(700000, roomType.getPrice());
-    }
-
-    @Test
-    void testRoomTypeCapacityUpdate() {
-        roomType.setCapacity(2);
-        assertEquals(2, roomType.getCapacity());
-
-        roomType.setCapacity(4);
-        assertEquals(4, roomType.getCapacity());
-    }
-
-    @Test
-    void testRoomTypeFloorUpdate() {
-        roomType.setFloor(5);
-        assertEquals(5, roomType.getFloor());
-
-        roomType.setFloor(10);
-        assertEquals(10, roomType.getFloor());
-    }
-
-    @Test
-    void testRoomTypeFacilityUpdate() {
-        String facilities = "AC, TV, WiFi, Mini Bar, Safe, Balcony";
-        roomType.setFacility(facilities);
-        assertEquals(facilities, roomType.getFacility());
-    }
-
-    @Test
-    void testRoomTypeDescriptionUpdate() {
-        String longDescription = "This is a luxurious deluxe room featuring " +
-                "modern amenities, elegant design, and stunning city views. " +
-                "Perfect for business travelers and tourists alike.";
+    void testNullValues() {
+        RoomType nullRoomType = RoomType.builder().build();
         
+        assertNull(nullRoomType.getRoomTypeID());
+        assertNull(nullRoomType.getName());
+        assertNull(nullRoomType.getDescription());
+        assertNull(nullRoomType.getFacility());
+        assertNull(nullRoomType.getProperty());
+    }
+
+    @Test
+    void testDefaultListRoom() {
+        RoomType defaultRoomType = RoomType.builder()
+                .roomTypeID(UUID.randomUUID())
+                .name("Standard Room")
+                .build();
+        
+        // Should have default empty ArrayList
+        assertNotNull(defaultRoomType.getListRoom());
+        assertTrue(defaultRoomType.getListRoom().isEmpty());
+    }
+
+    @Test
+    void testPriceRange() {
+        int[] prices = {100000, 500000, 1000000, 2000000, 5000000};
+        for (int price : prices) {
+            roomType.setPrice(price);
+            assertEquals(price, roomType.getPrice());
+        }
+    }
+
+    @Test
+    void testCapacityRange() {
+        int[] capacities = {1, 2, 3, 4, 6, 8};
+        for (int capacity : capacities) {
+            roomType.setCapacity(capacity);
+            assertEquals(capacity, roomType.getCapacity());
+        }
+    }
+
+    @Test
+    void testFloorRange() {
+        int[] floors = {1, 2, 3, 5, 10, 15};
+        for (int floor : floors) {
+            roomType.setFloor(floor);
+            assertEquals(floor, roomType.getFloor());
+        }
+    }
+
+    @Test
+    void testDateTimeFields() {
+        LocalDateTime createdDate = LocalDateTime.now().minusDays(1);
+        LocalDateTime updatedDate = LocalDateTime.now();
+        
+        roomType.setCreatedDate(createdDate);
+        roomType.setUpdatedDate(updatedDate);
+        
+        assertEquals(createdDate, roomType.getCreatedDate());
+        assertEquals(updatedDate, roomType.getUpdatedDate());
+        assertTrue(roomType.getUpdatedDate().isAfter(roomType.getCreatedDate()));
+    }
+
+    @Test
+    void testLongDescription() {
+        String longDescription = "This is a very long description for the room type. ".repeat(10);
         roomType.setDescription(longDescription);
         assertEquals(longDescription, roomType.getDescription());
     }
 
     @Test
-    void testRoomTypeWithEmptyRoomList() {
+    void testMultipleFacilities() {
+        String facilities = "WiFi, AC, TV, Mini Bar, Safe Box, Hair Dryer, Bathtub, Shower, Balcony, City View";
+        roomType.setFacility(facilities);
+        assertEquals(facilities, roomType.getFacility());
+        assertTrue(roomType.getFacility().contains("WiFi"));
+        assertTrue(roomType.getFacility().contains("City View"));
+    }
+
+    @Test
+    void testEmptyRoomList() {
         roomType.setListRoom(new ArrayList<>());
         assertNotNull(roomType.getListRoom());
-        assertEquals(0, roomType.getListRoom().size());
+        assertTrue(roomType.getListRoom().isEmpty());
     }
 
     @Test
-    void testRoomTypeWithNullRoomList() {
-        roomType.setListRoom(null);
-        assertNull(roomType.getListRoom());
-    }
-
-    @Test
-    void testRoomTypeDefaultListRoomInitialization() {
-        RoomType newRoomType = RoomType.builder()
-                .roomTypeID("RT-DEFAULT")
-                .name("Test Type")
+    void testAddRoomToList() {
+        Room newRoom = Room.builder()
+                .roomID(UUID.randomUUID())
+                .name("Room-201")
+                .roomType(roomType)
                 .build();
-
-        assertNotNull(newRoomType.getListRoom());
-        assertEquals(0, newRoomType.getListRoom().size());
-    }
-
-    @Test
-    void testRoomTypeNullRoomTypeId() {
-        RoomType newRoomType = new RoomType();
-        newRoomType.setRoomTypeID(null);
-        newRoomType.onCreate();
         
-        assertNotNull(newRoomType.getRoomTypeID());
-        assertFalse(newRoomType.getRoomTypeID().isBlank());
-    }
-
-    @Test
-    void testRoomTypeBlankRoomTypeId() {
-        RoomType newRoomType = new RoomType();
-        newRoomType.setRoomTypeID("");
-        newRoomType.onCreate();
+        roomType.getListRoom().add(newRoom);
         
-        assertNotNull(newRoomType.getRoomTypeID());
-        assertFalse(newRoomType.getRoomTypeID().isBlank());
+        assertEquals(1, roomType.getListRoom().size());
+        assertEquals("Room-201", roomType.getListRoom().get(0).getName());
     }
 
     @Test
-    void testRoomTypeMultipleFloors() {
-        // Test rooms on different floors
-        roomType.setFloor(1); // Ground floor
-        assertEquals(1, roomType.getFloor());
-
-        roomType.setFloor(15); // High floor
-        assertEquals(15, roomType.getFloor());
-
-        roomType.setFloor(20); // Top floor
-        assertEquals(20, roomType.getFloor());
-    }
-
-    @Test
-    void testRoomTypeVariousCapacities() {
-        roomType.setCapacity(1); // Single
-        assertEquals(1, roomType.getCapacity());
-
-        roomType.setCapacity(2); // Double
-        assertEquals(2, roomType.getCapacity());
-
-        roomType.setCapacity(4); // Family
-        assertEquals(4, roomType.getCapacity());
-
-        roomType.setCapacity(6); // Large suite
-        assertEquals(6, roomType.getCapacity());
-    }
-
-    @Test
-    void testRoomTypePriceRange() {
-        // Budget room
-        roomType.setPrice(200000);
-        assertEquals(200000, roomType.getPrice());
-
-        // Mid-range room
-        roomType.setPrice(750000);
-        assertEquals(750000, roomType.getPrice());
-
-        // Luxury room
-        roomType.setPrice(2000000);
-        assertEquals(2000000, roomType.getPrice());
+    void testRoomTypeWithNoProperty() {
+        RoomType orphanRoomType = RoomType.builder()
+                .roomTypeID(UUID.randomUUID())
+                .name("Orphan Room Type")
+                .price(300000)
+                .build();
+        
+        assertNull(orphanRoomType.getProperty());
     }
 }

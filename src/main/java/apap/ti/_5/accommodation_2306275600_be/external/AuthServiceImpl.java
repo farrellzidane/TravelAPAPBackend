@@ -51,58 +51,58 @@
 
 //     private static final Pattern ERROR_DETAILS_PATTERN = Pattern.compile(": .*");
 
-//     private HttpHeaders getRequestAuthHeader() {
-//         HttpHeaders headers = new HttpHeaders();
+    // private HttpHeaders getRequestAuthHeader() {
+    //     HttpHeaders headers = new HttpHeaders();
 
-//         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-//         if (!Objects.isNull(attributes)) {
-//             HttpServletRequest request = attributes.getRequest();
-//             String authHeader = request.getHeader("Authorization");
-//             if (!Objects.isNull(authHeader) && authHeader.startsWith("Bearer ")) {
-//                 headers.set("Authorization", authHeader);
-//             }
-//         }
+    //     ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+    //     if (!Objects.isNull(attributes)) {
+    //         HttpServletRequest request = attributes.getRequest();
+    //         String authHeader = request.getHeader("Authorization");
+    //         if (!Objects.isNull(authHeader) && authHeader.startsWith("Bearer ")) {
+    //             headers.set("Authorization", authHeader);
+    //         }
+    //     }
 
-//         return headers;
-//     }
+    //     return headers;
+    // }
 
-//     private <T> T fetchAndExtractSpecificData(
-//             String url,
-//             String logContext,
-//             ParameterizedTypeReference<BaseResponseDTO<T>> responseType)
-//             throws NullPointerException, HttpClientErrorException,
-//             HttpServerErrorException, ResourceAccessException {
+    // private <T> T fetchAndExtractSpecificData(
+    //         String url,
+    //         String logContext,
+    //         ParameterizedTypeReference<BaseResponseDTO<T>> responseType)
+    //         throws NullPointerException, HttpClientErrorException,
+    //         HttpServerErrorException, ResourceAccessException {
 
-//         HttpHeaders extractedHeader = getRequestAuthHeader();
-//         Objects.requireNonNull(extractedHeader);
-//         HttpEntity<?> entity = new HttpEntity<>(extractedHeader);
+    //     HttpHeaders extractedHeader = getRequestAuthHeader();
+    //     Objects.requireNonNull(extractedHeader);
+    //     HttpEntity<?> entity = new HttpEntity<>(extractedHeader);
 
-//         Objects.requireNonNull(url);
-//         HttpMethod requestMethod = HttpMethod.GET;
-//         Objects.requireNonNull(requestMethod);
-//         Objects.requireNonNull(responseType);
-//         ResponseEntity<BaseResponseDTO<T>> response = restTemplate.exchange(
-//                 url,
-//                 requestMethod,
-//                 entity,
-//                 responseType);
+    //     Objects.requireNonNull(url);
+    //     HttpMethod requestMethod = HttpMethod.GET;
+    //     Objects.requireNonNull(requestMethod);
+    //     Objects.requireNonNull(responseType);
+    //     ResponseEntity<BaseResponseDTO<T>> response = restTemplate.exchange(
+    //             url,
+    //             requestMethod,
+    //             entity,
+    //             responseType);
 
-//         BaseResponseDTO<T> body = response.getBody();
+    //     BaseResponseDTO<T> body = response.getBody();
 
-//         if (Objects.isNull(body)) {
-//             logger.warn("{} response body is null", logContext);
-//             throw new NullPointerException(logContext + " response body is null");
-//         }
-//         Objects.requireNonNull(body);
+    //     if (Objects.isNull(body)) {
+    //         logger.warn("{} response body is null", logContext);
+    //         throw new NullPointerException(logContext + " response body is null");
+    //     }
+    //     Objects.requireNonNull(body);
 
-//         if (Objects.isNull(body.getData())) {
-//             logger.warn("{} response data is null", logContext);
-//             throw new NullPointerException(logContext + " response data is null");
-//         }
+    //     if (Objects.isNull(body.getData())) {
+    //         logger.warn("{} response data is null", logContext);
+    //         throw new NullPointerException(logContext + " response data is null");
+    //     }
 
-//         return body.getData();
+    //     return body.getData();
 
-//     }
+    // }
 
 //     private <T> T postAndExtractSpecificData(
 //             String url,
@@ -145,17 +145,17 @@
 //         return body.getData();
 //     }
 
-//     private String handleHttpException(HttpStatusCodeException e) {
-//         JsonNode jsonErrorBody = e.getResponseBodyAs(JsonNode.class);
+    // private String handleHttpException(HttpStatusCodeException e) {
+    //     JsonNode jsonErrorBody = e.getResponseBodyAs(JsonNode.class);
 
-//         if (e instanceof HttpClientErrorException.NotFound) {
-//             return "" + ERROR_DETAILS_PATTERN.matcher(e.getMessage()).replaceAll("");
-//         }  else if (!Objects.isNull(jsonErrorBody) && jsonErrorBody.has("message")) {
-//             return "" + jsonErrorBody.get("message").asText();
-//         } else {
-//             return "Unhandled Exception was thrown" + "HTTP Error " + e.getStatusCode() + ": " + e.getStatusText();
-//         }
-//     }
+    //     if (e instanceof HttpClientErrorException.NotFound) {
+    //         return "" + ERROR_DETAILS_PATTERN.matcher(e.getMessage()).replaceAll("");
+    //     }  else if (!Objects.isNull(jsonErrorBody) && jsonErrorBody.has("message")) {
+    //         return "" + jsonErrorBody.get("message").asText();
+    //     } else {
+    //         return "Unhandled Exception was thrown" + "HTTP Error " + e.getStatusCode() + ": " + e.getStatusText();
+    //     }
+    // }
 
 //     @Override
 //     public UserProfileDTO getAuthenticatedUser() throws AccessDeniedException {

@@ -1,476 +1,639 @@
 package apap.ti._5.accommodation_2306275600_be.restcontroller;
 
-import apap.ti._5.accommodation_2306275600_be.restdto.request.booking.ChangeBookingStatusRequestDTO;
-import apap.ti._5.accommodation_2306275600_be.restdto.request.booking.CreateBookingRequestDTO;
-import apap.ti._5.accommodation_2306275600_be.restdto.request.booking.UpdateBookingRequestDTO;
-import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingDetailResponseDTO;
-import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingListItemDTO;
-import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingResponseDTO;
-import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingChartResponseDTO;
-import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingUpdateFormDTO;
-import apap.ti._5.accommodation_2306275600_be.restservice.BookingRestService;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 
-@WebMvcTest(BookingRestController.class)
+import apap.ti._5.accommodation_2306275600_be.restdto.request.booking.ChangeBookingStatusRequestDTO;
+import apap.ti._5.accommodation_2306275600_be.restdto.request.booking.CreateBookingRequestDTO;
+import apap.ti._5.accommodation_2306275600_be.restdto.request.booking.UpdateBookingRequestDTO;
+import apap.ti._5.accommodation_2306275600_be.restdto.response.BaseResponseDTO;
+import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingChartResponseDTO;
+import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingDetailResponseDTO;
+import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingListItemDTO;
+import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingResponseDTO;
+import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingUpdateFormDTO;
+import apap.ti._5.accommodation_2306275600_be.restservice.RBAC.BookingRestServiceRBAC;
+
+@ExtendWith(MockitoExtension.class)
 class BookingRestControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    @Mock
+    private BookingRestServiceRBAC bookingRestService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @Mock
+    private BindingResult bindingResult;
 
-    @MockBean
-    private BookingRestService bookingRestService;
+    @InjectMocks
+    private BookingRestController bookingRestController;
 
-    @Test
-    void testGetAllBookings_Success() throws Exception {
-        BookingListItemDTO booking = new BookingListItemDTO();
-        booking.setBookingID("BOOK-001");
-        booking.setPropertyName("Test Hotel");
-        booking.setStatus(1);
+    private UUID testBookingId;
+    private BookingListItemDTO mockBookingListItem;
+    private BookingDetailResponseDTO mockBookingDetail;
+    private BookingResponseDTO mockBookingResponse;
+    private BookingUpdateFormDTO mockBookingUpdateForm;
+    private BookingChartResponseDTO mockBookingChart;
+
+    @BeforeEach
+    void setUp() {
+        testBookingId = UUID.randomUUID();
         
-        List<BookingListItemDTO> bookings = Arrays.asList(booking);
+        mockBookingListItem = new BookingListItemDTO();
+        mockBookingListItem.setBookingID(testBookingId);
         
-        when(bookingRestService.getAllBookings(any(), any())).thenReturn(bookings);
-
-        mockMvc.perform(get("/api/bookings"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.data[0].bookingID").value("BOOK-001"));
-    }
-
-    @Test
-    void testGetAllBookings_WithFilters() throws Exception {
-        List<BookingListItemDTO> bookings = Arrays.asList();
-        when(bookingRestService.getAllBookings(anyInt(), anyString())).thenReturn(bookings);
-
-        mockMvc.perform(get("/api/bookings")
-                .param("status", "1")
-                .param("search", "test"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(200));
-    }
-
-    @Test
-    void testGetBookingDetail_Success() throws Exception {
-        BookingDetailResponseDTO booking = new BookingDetailResponseDTO();
-        booking.setBookingID("BOOK-001");
-        booking.setCustomerName("John Doe");
+        mockBookingDetail = new BookingDetailResponseDTO();
+        mockBookingDetail.setBookingID(testBookingId);
         
-        when(bookingRestService.getBookingDetail("BOOK-001")).thenReturn(booking);
-
-        mockMvc.perform(get("/api/bookings/BOOK-001"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.data.bookingID").value("BOOK-001"));
-    }
-
-    @Test
-    void testGetBookingDetail_NotFound() throws Exception {
-        when(bookingRestService.getBookingDetail("INVALID")).thenThrow(new RuntimeException("Not found"));
-
-        mockMvc.perform(get("/api/bookings/INVALID"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.status").value(404));
-    }
-
-    @Test
-    void testCreateBooking_Success() throws Exception {
-        CreateBookingRequestDTO request = new CreateBookingRequestDTO();
-        request.setCustomerID(UUID.randomUUID());
-        request.setCustomerName("John Doe");
-        request.setCustomerEmail("john@example.com");
-        request.setCustomerPhone("081234567890");
-        request.setRoomID("ROOM-001");
-        request.setCheckInDate(LocalDateTime.now().plusDays(1));
-        request.setCheckOutDate(LocalDateTime.now().plusDays(3));
-        request.setIsBreakfast(true);
-        request.setCapacity(2);
-
-        BookingResponseDTO response = new BookingResponseDTO();
-        response.setBookingID("BOOK-001");
-        response.setCustomerName("John Doe");
+        mockBookingResponse = new BookingResponseDTO();
+        mockBookingResponse.setBookingID(testBookingId);
+        mockBookingResponse.setStatus(0);
         
-        when(bookingRestService.createBooking(any())).thenReturn(response);
-
-        mockMvc.perform(post("/api/bookings/create")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.status").value(201))
-                .andExpect(jsonPath("$.data.bookingID").value("BOOK-001"));
-    }
-
-    @Test
-    void testPayBooking_Success() throws Exception {
-        ChangeBookingStatusRequestDTO request = new ChangeBookingStatusRequestDTO();
-        request.setBookingID("BOOK-001");
-
-        BookingResponseDTO response = new BookingResponseDTO();
-        response.setBookingID("BOOK-001");
-        response.setStatus(1);
+        mockBookingUpdateForm = new BookingUpdateFormDTO();
+        mockBookingUpdateForm.setBookingID(testBookingId);
         
-        when(bookingRestService.payBooking(any())).thenReturn(response);
+        mockBookingChart = new BookingChartResponseDTO();
+        mockBookingChart.setPeriod("December 2025");
+    }
 
-        mockMvc.perform(post("/api/bookings/status/pay")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.data.bookingID").value("BOOK-001"));
+    // ========== GET ALL BOOKINGS TESTS ==========
+    
+    @Test
+    void testGetAllBookings_Success() {
+        // Arrange
+        List<BookingListItemDTO> bookings = Arrays.asList(mockBookingListItem);
+        when(bookingRestService.getAllBookings(null, null)).thenReturn(bookings);
+
+        // Act
+        ResponseEntity<BaseResponseDTO<List<BookingListItemDTO>>> response = 
+            bookingRestController.getAllBookings(null, null);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(HttpStatus.OK.value(), response.getBody().getStatus());
+        assertEquals(1, response.getBody().getData().size());
+        assertTrue(response.getBody().getMessage().contains("Successfully retrieved"));
+        verify(bookingRestService, times(1)).getAllBookings(null, null);
     }
 
     @Test
-    void testCancelBooking_Success() throws Exception {
-        ChangeBookingStatusRequestDTO request = new ChangeBookingStatusRequestDTO();
-        request.setBookingID("BOOK-001");
+    void testGetAllBookings_WithStatusFilter() {
+        // Arrange
+        List<BookingListItemDTO> bookings = Arrays.asList(mockBookingListItem);
+        when(bookingRestService.getAllBookings(1, null)).thenReturn(bookings);
 
-        BookingResponseDTO response = new BookingResponseDTO();
-        response.setBookingID("BOOK-001");
-        response.setStatus(3);
-        
-        when(bookingRestService.cancelBooking(any())).thenReturn(response);
+        // Act
+        ResponseEntity<BaseResponseDTO<List<BookingListItemDTO>>> response = 
+            bookingRestController.getAllBookings(1, null);
 
-        mockMvc.perform(post("/api/bookings/status/cancel")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(200));
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(bookingRestService, times(1)).getAllBookings(1, null);
     }
 
     @Test
-    void testGetChart_Success() throws Exception {
-        BookingChartResponseDTO chart = new BookingChartResponseDTO();
-        when(bookingRestService.getBookingStatistics(any(), any())).thenReturn(chart);
+    void testGetAllBookings_WithSearchFilter() {
+        // Arrange
+        List<BookingListItemDTO> bookings = Arrays.asList(mockBookingListItem);
+        when(bookingRestService.getAllBookings(null, "test")).thenReturn(bookings);
 
-        mockMvc.perform(get("/api/bookings/chart")
-                .param("month", "11")
-                .param("year", "2025"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(200));
+        // Act
+        ResponseEntity<BaseResponseDTO<List<BookingListItemDTO>>> response = 
+            bookingRestController.getAllBookings(null, "test");
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(bookingRestService, times(1)).getAllBookings(null, "test");
     }
 
     @Test
-    void testGetChart_Error() throws Exception {
-        when(bookingRestService.getBookingStatistics(any(), any())).thenThrow(new RuntimeException("Error"));
+    void testGetAllBookings_EmptyList() {
+        // Arrange
+        List<BookingListItemDTO> emptyList = new ArrayList<>();
+        when(bookingRestService.getAllBookings(null, null)).thenReturn(emptyList);
 
-        mockMvc.perform(get("/api/bookings/chart")
-                .param("month", "11")
-                .param("year", "2025"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
+        // Act
+        ResponseEntity<BaseResponseDTO<List<BookingListItemDTO>>> response = 
+            bookingRestController.getAllBookings(null, null);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(0, response.getBody().getData().size());
+        assertTrue(response.getBody().getMessage().contains("0 booking(s)"));
     }
 
     @Test
-    void testGetBookingForUpdate_Success() throws Exception {
-        BookingUpdateFormDTO formData = new BookingUpdateFormDTO();
-        formData.setBookingID("BOOK-001");
-        
-        when(bookingRestService.getBookingForUpdate("BOOK-001")).thenReturn(formData);
+    void testGetAllBookings_Exception() {
+        // Arrange
+        when(bookingRestService.getAllBookings(null, null))
+            .thenThrow(new RuntimeException("Database error"));
 
-        mockMvc.perform(get("/api/bookings/update/BOOK-001"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.data.bookingID").value("BOOK-001"));
+        // Act
+        ResponseEntity<BaseResponseDTO<List<BookingListItemDTO>>> response = 
+            bookingRestController.getAllBookings(null, null);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertTrue(response.getBody().getMessage().contains("Failed to retrieve bookings"));
+    }
+
+    // ========== GET BOOKING DETAIL TESTS ==========
+    
+    @Test
+    void testGetBookingDetail_Success() {
+        // Arrange
+        when(bookingRestService.getBookingDetail(testBookingId)).thenReturn(mockBookingDetail);
+
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingDetailResponseDTO>> response = 
+            bookingRestController.getBookingDetail(testBookingId);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody().getData());
+        assertEquals(testBookingId, response.getBody().getData().getBookingID());
+        assertTrue(response.getBody().getMessage().contains("Successfully retrieved booking detail"));
+        verify(bookingRestService, times(1)).getBookingDetail(testBookingId);
     }
 
     @Test
-    void testGetBookingForUpdate_Error() throws Exception {
-        when(bookingRestService.getBookingForUpdate("BOOK-001")).thenThrow(new RuntimeException("Cannot update"));
+    void testGetBookingDetail_NotFound() {
+        // Arrange
+        when(bookingRestService.getBookingDetail(testBookingId))
+            .thenThrow(new RuntimeException("Booking not found"));
 
-        mockMvc.perform(get("/api/bookings/update/BOOK-001"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingDetailResponseDTO>> response = 
+            bookingRestController.getBookingDetail(testBookingId);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertTrue(response.getBody().getMessage().contains("Booking not found"));
+    }
+
+    // ========== CREATE BOOKING TESTS ==========
+    
+    @Test
+    void testCreateBooking_Success() {
+        // Arrange
+        CreateBookingRequestDTO dto = new CreateBookingRequestDTO();
+        when(bindingResult.hasFieldErrors()).thenReturn(false);
+        when(bookingRestService.createBooking(dto)).thenReturn(mockBookingResponse);
+
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingResponseDTO>> response = 
+            bookingRestController.createBooking(dto, bindingResult);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertNotNull(response.getBody().getData());
+        assertTrue(response.getBody().getMessage().contains("Booking berhasil dibuat"));
+        verify(bookingRestService, times(1)).createBooking(dto);
     }
 
     @Test
-    void testUpdateBooking_Success() throws Exception {
-        UpdateBookingRequestDTO request = new UpdateBookingRequestDTO();
-        request.setBookingID("BOOK-001");
-        request.setPropertyID("PROP-001");
-        request.setRoomTypeID("RT-001");
-        request.setRoomID("ROOM-001");
-        request.setCustomerID(UUID.randomUUID());
-        request.setCustomerName("John Doe");
-        request.setCustomerEmail("john@example.com");
-        request.setCustomerPhone("081234567890");
-        request.setCheckInDate(LocalDateTime.now().plusDays(2));
-        request.setCheckOutDate(LocalDateTime.now().plusDays(4));
-        request.setIsBreakfast(true);
-        request.setCapacity(2);
+    void testCreateBooking_ValidationError() {
+        // Arrange
+        CreateBookingRequestDTO dto = new CreateBookingRequestDTO();
+        FieldError fieldError = new FieldError("dto", "field", "Field is required");
+        when(bindingResult.hasFieldErrors()).thenReturn(true);
+        when(bindingResult.getFieldErrors()).thenReturn(Arrays.asList(fieldError));
 
-        BookingResponseDTO response = new BookingResponseDTO();
-        response.setBookingID("BOOK-001");
-        response.setExtraPay(0);
-        response.setRefund(0);
-        
-        when(bookingRestService.updateBooking(any())).thenReturn(response);
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingResponseDTO>> response = 
+            bookingRestController.createBooking(dto, bindingResult);
 
-        mockMvc.perform(put("/api/bookings/update")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.data.bookingID").value("BOOK-001"));
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().getMessage().contains("Field is required"));
+        verify(bookingRestService, never()).createBooking(any());
     }
 
     @Test
-    void testUpdateBooking_WithExtraPay() throws Exception {
-        UpdateBookingRequestDTO request = new UpdateBookingRequestDTO();
-        request.setBookingID("BOOK-001");
-        request.setPropertyID("PROP-001");
-        request.setRoomTypeID("RT-001");
-        request.setRoomID("ROOM-001");
-        request.setCustomerID(UUID.randomUUID());
-        request.setCustomerName("John Doe");
-        request.setCustomerEmail("john@example.com");
-        request.setCustomerPhone("081234567890");
-        request.setCheckInDate(LocalDateTime.now().plusDays(2));
-        request.setCheckOutDate(LocalDateTime.now().plusDays(5));
-        request.setIsBreakfast(true);
-        request.setCapacity(3);
+    void testCreateBooking_MultipleValidationErrors() {
+        // Arrange
+        CreateBookingRequestDTO dto = new CreateBookingRequestDTO();
+        List<FieldError> errors = Arrays.asList(
+            new FieldError("dto", "field1", "Error 1"),
+            new FieldError("dto", "field2", "Error 2")
+        );
+        when(bindingResult.hasFieldErrors()).thenReturn(true);
+        when(bindingResult.getFieldErrors()).thenReturn(errors);
 
-        BookingResponseDTO response = new BookingResponseDTO();
-        response.setBookingID("BOOK-001");
-        response.setExtraPay(100000);
-        response.setRefund(0);
-        
-        when(bookingRestService.updateBooking(any())).thenReturn(response);
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingResponseDTO>> response = 
+            bookingRestController.createBooking(dto, bindingResult);
 
-        mockMvc.perform(put("/api/bookings/update")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("Pembayaran tambahan")));
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().getMessage().contains("Error 1"));
+        assertTrue(response.getBody().getMessage().contains("Error 2"));
     }
 
     @Test
-    void testUpdateBooking_WithRefund() throws Exception {
-        UpdateBookingRequestDTO request = new UpdateBookingRequestDTO();
-        request.setBookingID("BOOK-001");
-        request.setPropertyID("PROP-001");
-        request.setRoomTypeID("RT-001");
-        request.setRoomID("ROOM-001");
-        request.setCustomerID(UUID.randomUUID());
-        request.setCustomerName("John Doe");
-        request.setCustomerEmail("john@example.com");
-        request.setCustomerPhone("081234567890");
-        request.setCheckInDate(LocalDateTime.now().plusDays(2));
-        request.setCheckOutDate(LocalDateTime.now().plusDays(3));
-        request.setIsBreakfast(false);
-        request.setCapacity(1);
+    void testCreateBooking_RuntimeException() {
+        // Arrange
+        CreateBookingRequestDTO dto = new CreateBookingRequestDTO();
+        when(bindingResult.hasFieldErrors()).thenReturn(false);
+        when(bookingRestService.createBooking(dto))
+            .thenThrow(new RuntimeException("Invalid booking data"));
 
-        BookingResponseDTO response = new BookingResponseDTO();
-        response.setBookingID("BOOK-001");
-        response.setExtraPay(0);
-        response.setRefund(50000);
-        
-        when(bookingRestService.updateBooking(any())).thenReturn(response);
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingResponseDTO>> response = 
+            bookingRestController.createBooking(dto, bindingResult);
 
-        mockMvc.perform(put("/api/bookings/update")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("Refund tersedia")));
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().getMessage().contains("Booking gagal dibuat"));
+    }
+
+    // ========== GET BOOKING FOR UPDATE TESTS ==========
+    
+    @Test
+    void testGetBookingForUpdate_Success() {
+        // Arrange
+        when(bookingRestService.getBookingForUpdate(testBookingId))
+            .thenReturn(mockBookingUpdateForm);
+
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingUpdateFormDTO>> response = 
+            bookingRestController.getBookingForUpdate(testBookingId);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody().getData());
+        assertTrue(response.getBody().getMessage().contains("Successfully retrieved booking for update"));
+        verify(bookingRestService, times(1)).getBookingForUpdate(testBookingId);
     }
 
     @Test
-    void testUpdateBooking_Error() throws Exception {
-        UpdateBookingRequestDTO request = new UpdateBookingRequestDTO();
-        request.setBookingID("BOOK-001");
-        request.setPropertyID("PROP-001");
-        request.setRoomTypeID("RT-001");
-        request.setRoomID("ROOM-001");
-        request.setCustomerID(UUID.randomUUID());
-        request.setCustomerName("John Doe");
-        request.setCustomerEmail("john@example.com");
-        request.setCustomerPhone("081234567890");
-        request.setCheckInDate(LocalDateTime.now().plusDays(2));
-        request.setCheckOutDate(LocalDateTime.now().plusDays(4));
-        request.setIsBreakfast(true);
-        request.setCapacity(2);
+    void testGetBookingForUpdate_RuntimeException() {
+        // Arrange
+        when(bookingRestService.getBookingForUpdate(testBookingId))
+            .thenThrow(new RuntimeException("Cannot update paid booking"));
 
-        when(bookingRestService.updateBooking(any())).thenThrow(new RuntimeException("Update failed"));
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingUpdateFormDTO>> response = 
+            bookingRestController.getBookingForUpdate(testBookingId);
 
-        mockMvc.perform(put("/api/bookings/update")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().getMessage().contains("Cannot update booking"));
+    }
+
+    // ========== UPDATE BOOKING TESTS ==========
+    
+    @Test
+    void testUpdateBooking_Success() {
+        // Arrange
+        UpdateBookingRequestDTO dto = new UpdateBookingRequestDTO();
+        when(bindingResult.hasFieldErrors()).thenReturn(false);
+        when(bookingRestService.updateBooking(dto)).thenReturn(mockBookingResponse);
+
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingResponseDTO>> response = 
+            bookingRestController.updateBooking(dto, bindingResult);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().getMessage().contains("Booking berhasil diubah"));
+        verify(bookingRestService, times(1)).updateBooking(dto);
     }
 
     @Test
-    void testRefundBooking_Success() throws Exception {
-        ChangeBookingStatusRequestDTO request = new ChangeBookingStatusRequestDTO();
-        request.setBookingID("BOOK-001");
+    void testUpdateBooking_ValidationError() {
+        // Arrange
+        UpdateBookingRequestDTO dto = new UpdateBookingRequestDTO();
+        FieldError fieldError = new FieldError("dto", "checkInDate", "Invalid date");
+        when(bindingResult.hasFieldErrors()).thenReturn(true);
+        when(bindingResult.getFieldErrors()).thenReturn(Arrays.asList(fieldError));
 
-        BookingResponseDTO response = new BookingResponseDTO();
-        response.setBookingID("BOOK-001");
-        response.setStatus(4);
-        
-        when(bookingRestService.refundBooking(any())).thenReturn(response);
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingResponseDTO>> response = 
+            bookingRestController.updateBooking(dto, bindingResult);
 
-        mockMvc.perform(post("/api/bookings/status/refund")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.data.status").value(4));
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().getMessage().contains("Invalid date"));
+        verify(bookingRestService, never()).updateBooking(any());
     }
 
     @Test
-    void testRefundBooking_Error() throws Exception {
-        ChangeBookingStatusRequestDTO request = new ChangeBookingStatusRequestDTO();
-        request.setBookingID("BOOK-001");
+    void testUpdateBooking_RuntimeException() {
+        // Arrange
+        UpdateBookingRequestDTO dto = new UpdateBookingRequestDTO();
+        when(bindingResult.hasFieldErrors()).thenReturn(false);
+        when(bookingRestService.updateBooking(dto))
+            .thenThrow(new RuntimeException("Invalid update"));
 
-        when(bookingRestService.refundBooking(any())).thenThrow(new RuntimeException("Refund failed"));
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingResponseDTO>> response = 
+            bookingRestController.updateBooking(dto, bindingResult);
 
-        mockMvc.perform(post("/api/bookings/status/refund")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().getMessage().contains("Booking gagal diubah"));
+    }
+
+    // ========== PAY BOOKING TESTS ==========
+    
+    @Test
+    void testPayBooking_Success() {
+        // Arrange
+        ChangeBookingStatusRequestDTO dto = new ChangeBookingStatusRequestDTO();
+        mockBookingResponse.setStatus(1);
+        when(bindingResult.hasFieldErrors()).thenReturn(false);
+        when(bookingRestService.payBooking(dto)).thenReturn(mockBookingResponse);
+
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingResponseDTO>> response = 
+            bookingRestController.payBooking(dto, bindingResult);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().getMessage().contains("Pembayaran berhasil"));
+        assertTrue(response.getBody().getMessage().contains("Payment Confirmed"));
+        verify(bookingRestService, times(1)).payBooking(dto);
     }
 
     @Test
-    void testCreateBooking_ValidationError() throws Exception {
-        CreateBookingRequestDTO request = new CreateBookingRequestDTO();
-        // Missing required fields to trigger validation error
+    void testPayBooking_SuccessWithoutStatusChange() {
+        // Arrange
+        ChangeBookingStatusRequestDTO dto = new ChangeBookingStatusRequestDTO();
+        mockBookingResponse.setStatus(0);
+        when(bindingResult.hasFieldErrors()).thenReturn(false);
+        when(bookingRestService.payBooking(dto)).thenReturn(mockBookingResponse);
 
-        mockMvc.perform(post("/api/bookings/create")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingResponseDTO>> response = 
+            bookingRestController.payBooking(dto, bindingResult);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().getMessage().contains("Pembayaran berhasil"));
+        assertFalse(response.getBody().getMessage().contains("Payment Confirmed"));
     }
 
     @Test
-    void testCreateBooking_Error() throws Exception {
-        CreateBookingRequestDTO request = new CreateBookingRequestDTO();
-        request.setCustomerID(UUID.randomUUID());
-        request.setCustomerName("John Doe");
-        request.setCustomerEmail("john@example.com");
-        request.setCustomerPhone("081234567890");
-        request.setRoomID("ROOM-001");
-        request.setCheckInDate(LocalDateTime.now().plusDays(1));
-        request.setCheckOutDate(LocalDateTime.now().plusDays(3));
-        request.setIsBreakfast(true);
-        request.setCapacity(2);
+    void testPayBooking_ValidationError() {
+        // Arrange
+        ChangeBookingStatusRequestDTO dto = new ChangeBookingStatusRequestDTO();
+        FieldError fieldError = new FieldError("dto", "bookingId", "Required");
+        when(bindingResult.hasFieldErrors()).thenReturn(true);
+        when(bindingResult.getFieldErrors()).thenReturn(Arrays.asList(fieldError));
 
-        when(bookingRestService.createBooking(any())).thenThrow(new RuntimeException("Room not available"));
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingResponseDTO>> response = 
+            bookingRestController.payBooking(dto, bindingResult);
 
-        mockMvc.perform(post("/api/bookings/create")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verify(bookingRestService, never()).payBooking(any());
     }
 
     @Test
-    void testGetAllBookings_Error() throws Exception {
-        when(bookingRestService.getAllBookings(any(), any())).thenThrow(new RuntimeException("Database error"));
+    void testPayBooking_RuntimeException() {
+        // Arrange
+        ChangeBookingStatusRequestDTO dto = new ChangeBookingStatusRequestDTO();
+        when(bindingResult.hasFieldErrors()).thenReturn(false);
+        when(bookingRestService.payBooking(dto))
+            .thenThrow(new RuntimeException("Payment failed"));
 
-        mockMvc.perform(get("/api/bookings"))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.status").value(500));
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingResponseDTO>> response = 
+            bookingRestController.payBooking(dto, bindingResult);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().getMessage().contains("Pembayaran gagal"));
+    }
+
+    // ========== CANCEL BOOKING TESTS ==========
+    
+    @Test
+    void testCancelBooking_Success() {
+        // Arrange
+        ChangeBookingStatusRequestDTO dto = new ChangeBookingStatusRequestDTO();
+        when(bindingResult.hasFieldErrors()).thenReturn(false);
+        when(bookingRestService.cancelBooking(dto)).thenReturn(mockBookingResponse);
+
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingResponseDTO>> response = 
+            bookingRestController.cancelBooking(dto, bindingResult);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().getMessage().contains("berhasil dibatalkan"));
+        assertTrue(response.getBody().getMessage().contains("Cancelled"));
+        verify(bookingRestService, times(1)).cancelBooking(dto);
     }
 
     @Test
-    void testPayBooking_Error() throws Exception {
-        ChangeBookingStatusRequestDTO request = new ChangeBookingStatusRequestDTO();
-        request.setBookingID("BOOK-001");
+    void testCancelBooking_ValidationError() {
+        // Arrange
+        ChangeBookingStatusRequestDTO dto = new ChangeBookingStatusRequestDTO();
+        FieldError fieldError = new FieldError("dto", "bookingId", "Required");
+        when(bindingResult.hasFieldErrors()).thenReturn(true);
+        when(bindingResult.getFieldErrors()).thenReturn(Arrays.asList(fieldError));
 
-        when(bookingRestService.payBooking(any())).thenThrow(new RuntimeException("Payment failed"));
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingResponseDTO>> response = 
+            bookingRestController.cancelBooking(dto, bindingResult);
 
-        mockMvc.perform(post("/api/bookings/status/pay")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verify(bookingRestService, never()).cancelBooking(any());
     }
 
     @Test
-    void testCancelBooking_Error() throws Exception {
-        ChangeBookingStatusRequestDTO request = new ChangeBookingStatusRequestDTO();
-        request.setBookingID("BOOK-001");
+    void testCancelBooking_RuntimeException() {
+        // Arrange
+        ChangeBookingStatusRequestDTO dto = new ChangeBookingStatusRequestDTO();
+        when(bindingResult.hasFieldErrors()).thenReturn(false);
+        when(bookingRestService.cancelBooking(dto))
+            .thenThrow(new RuntimeException("Cannot cancel"));
 
-        when(bookingRestService.cancelBooking(any())).thenThrow(new RuntimeException("Cancel failed"));
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingResponseDTO>> response = 
+            bookingRestController.cancelBooking(dto, bindingResult);
 
-        mockMvc.perform(post("/api/bookings/status/cancel")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().getMessage().contains("Pembatalan gagal"));
+    }
+
+    // ========== REFUND BOOKING TESTS ==========
+    
+    @Test
+    void testRefundBooking_Success() {
+        // Arrange
+        ChangeBookingStatusRequestDTO dto = new ChangeBookingStatusRequestDTO();
+        when(bindingResult.hasFieldErrors()).thenReturn(false);
+        when(bookingRestService.refundBooking(dto)).thenReturn(mockBookingResponse);
+
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingResponseDTO>> response = 
+            bookingRestController.refundBooking(dto, bindingResult);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().getMessage().contains("Refund berhasil"));
+        verify(bookingRestService, times(1)).refundBooking(dto);
     }
 
     @Test
-    void testPayBooking_ValidationError() throws Exception {
-        ChangeBookingStatusRequestDTO request = new ChangeBookingStatusRequestDTO();
-        // Missing bookingID to trigger validation error
+    void testRefundBooking_ValidationError() {
+        // Arrange
+        ChangeBookingStatusRequestDTO dto = new ChangeBookingStatusRequestDTO();
+        FieldError fieldError = new FieldError("dto", "bookingId", "Required");
+        when(bindingResult.hasFieldErrors()).thenReturn(true);
+        when(bindingResult.getFieldErrors()).thenReturn(Arrays.asList(fieldError));
 
-        mockMvc.perform(post("/api/bookings/status/pay")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingResponseDTO>> response = 
+            bookingRestController.refundBooking(dto, bindingResult);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        verify(bookingRestService, never()).refundBooking(any());
     }
 
     @Test
-    void testCancelBooking_ValidationError() throws Exception {
-        ChangeBookingStatusRequestDTO request = new ChangeBookingStatusRequestDTO();
-        // Missing bookingID
+    void testRefundBooking_RuntimeException() {
+        // Arrange
+        ChangeBookingStatusRequestDTO dto = new ChangeBookingStatusRequestDTO();
+        when(bindingResult.hasFieldErrors()).thenReturn(false);
+        when(bookingRestService.refundBooking(dto))
+            .thenThrow(new RuntimeException("Refund failed"));
 
-        mockMvc.perform(post("/api/bookings/status/cancel")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingResponseDTO>> response = 
+            bookingRestController.refundBooking(dto, bindingResult);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().getMessage().contains("Refund gagal"));
+    }
+
+    // ========== GET BOOKING STATISTICS TESTS ==========
+    
+    @Test
+    void testGetBookingStatistics_Success() {
+        // Arrange
+        when(bookingRestService.getBookingStatistics(null, null))
+            .thenReturn(mockBookingChart);
+
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingChartResponseDTO>> response = 
+            bookingRestController.getBookingStatistics(null, null);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody().getData());
+        assertTrue(response.getBody().getMessage().contains("Successfully retrieved booking statistics"));
+        assertTrue(response.getBody().getMessage().contains("December 2025"));
+        verify(bookingRestService, times(1)).getBookingStatistics(null, null);
     }
 
     @Test
-    void testRefundBooking_ValidationError() throws Exception {
-        ChangeBookingStatusRequestDTO request = new ChangeBookingStatusRequestDTO();
-        // Missing bookingID
+    void testGetBookingStatistics_WithMonthAndYear() {
+        // Arrange
+        when(bookingRestService.getBookingStatistics(12, 2025))
+            .thenReturn(mockBookingChart);
 
-        mockMvc.perform(post("/api/bookings/status/refund")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingChartResponseDTO>> response = 
+            bookingRestController.getBookingStatistics(12, 2025);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(bookingRestService, times(1)).getBookingStatistics(12, 2025);
     }
 
     @Test
-    void testUpdateBooking_ValidationError() throws Exception {
-        UpdateBookingRequestDTO request = new UpdateBookingRequestDTO();
-        // Missing required fields
+    void testGetBookingStatistics_RuntimeException() {
+        // Arrange
+        when(bookingRestService.getBookingStatistics(null, null))
+            .thenThrow(new RuntimeException("Invalid parameters"));
 
-        mockMvc.perform(put("/api/bookings/update")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
+        // Act
+        ResponseEntity<BaseResponseDTO<BookingChartResponseDTO>> response = 
+            bookingRestController.getBookingStatistics(null, null);
+
+        // Assert
+        assertNotNull(response);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(response.getBody().getMessage().contains("Failed to generate statistics"));
+    }
+
+    // ========== CONSTRUCTOR TEST ==========
+    
+    @Test
+    void testConstructor() {
+        // Act
+        BookingRestController controller = new BookingRestController(bookingRestService);
+
+        // Assert
+        assertNotNull(controller);
+    }
+
+    // ========== CONSTANTS TESTS ==========
+    
+    @Test
+    void testConstants() {
+        // Assert
+        assertEquals("/bookings", BookingRestController.BASE_URL);
+        assertEquals("/bookings/create", BookingRestController.CREATE_BOOKING);
+        assertEquals("/bookings/{id}", BookingRestController.DETAIL_BOOKING);
+        assertEquals("/bookings/update/{id}", BookingRestController.UPDATE_BOOKING_FORM);
+        assertEquals("/bookings/update", BookingRestController.UPDATE_BOOKING_SUBMIT);
+        assertEquals("/bookings/status/pay", BookingRestController.PAY_BOOKING);
+        assertEquals("/bookings/status/cancel", BookingRestController.CANCEL_BOOKING);
+        assertEquals("/bookings/status/refund", BookingRestController.REFUND_BOOKING);
+        assertEquals("/bookings/chart", BookingRestController.CHART_BOOKING);
     }
 }
-

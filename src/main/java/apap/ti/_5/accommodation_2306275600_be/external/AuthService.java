@@ -1,6 +1,7 @@
 package apap.ti._5.accommodation_2306275600_be.external;
 
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -26,4 +27,6 @@ public interface AuthService {
     public boolean isCustomer(UUID userId);
 
     public CustomerProfileDTO getCustomerProfile(UUID userId) throws NoSuchElementException;
+
+    public List<UserProfileDTO> getAllAccommodationOwner();
 }

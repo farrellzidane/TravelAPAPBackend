@@ -3,8 +3,9 @@ package apap.ti._5.accommodation_2306275600_be.restcontroller;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.roomtype.CreateRoomTypeRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.roomtype.UpdateRoomTypeRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.roomtype.RoomTypeResponseDTO;
-import apap.ti._5.accommodation_2306275600_be.restservice.RoomTypeRestService;
+import apap.ti._5.accommodation_2306275600_be.restservice.RBAC.RoomTypeRestServiceRBAC;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -12,15 +13,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -34,315 +34,573 @@ class RoomTypeRestControllerTest {
     private ObjectMapper objectMapper;
 
     @MockBean
-    private RoomTypeRestService roomTypeRestService;
+    private RoomTypeRestServiceRBAC roomTypeRestService;
 
-    // ==================== CREATE ROOM TYPE TESTS ====================
-    
+    private CreateRoomTypeRequestDTO validCreateRequest;
+    private UpdateRoomTypeRequestDTO validUpdateRequest;
+    private RoomTypeResponseDTO expectedRoomTypeResponse;
+    private UUID testRoomTypeId;
+
+    @BeforeEach
+    void setUp() {
+        testRoomTypeId = UUID.randomUUID();
+        LocalDateTime now = LocalDateTime.now();
+
+        validCreateRequest = CreateRoomTypeRequestDTO.builder()
+                .name("Deluxe Suite")
+                .price(750000)
+                .description("Spacious deluxe suite with ocean view")
+                .capacity(3)
+                .facility("WiFi, TV, AC, Mini Bar")
+                .floor(5)
+                .propertyID("property-123")
+                .unitCount(10)
+                .build();
+
+        validUpdateRequest = UpdateRoomTypeRequestDTO.builder()
+                .roomTypeID(testRoomTypeId.toString())
+                .capacity(4)
+                .price(800000)
+                .facility("WiFi, TV, AC, Mini Bar, Jacuzzi")
+                .description("Updated deluxe suite description")
+                .build();
+
+        expectedRoomTypeResponse = RoomTypeResponseDTO.builder()
+                .roomTypeID(testRoomTypeId.toString())
+                .name("Deluxe Suite")
+                .price(750000)
+                .description("Spacious deluxe suite with ocean view")
+                .capacity(3)
+                .facility("WiFi, TV, AC, Mini Bar")
+                .floor(5)
+                .propertyID("property-123")
+                .propertyName("Grand Hotel")
+                .createdDate(now)
+                .updatedDate(now)
+                .roomIDs(Arrays.asList("room-1", "room-2", "room-3"))
+                .build();
+    }
+
+    // ============================================
+    // CREATE ROOM TYPE TESTS
+    // ============================================
+
     @Test
     void testCreateRoomType_Success() throws Exception {
-        CreateRoomTypeRequestDTO request = new CreateRoomTypeRequestDTO();
-        request.setName("DELUXE");
-        request.setPrice(1000000);
-        request.setCapacity(2);
-        request.setFloor(3);
-        request.setUnitCount(5);
-        request.setPropertyID("PROP-001");
-
-        RoomTypeResponseDTO response = new RoomTypeResponseDTO();
-        response.setRoomTypeID("RT-001");
-        response.setName("DELUXE");
-        response.setPrice(1000000);
-        response.setCapacity(2);
-        response.setFloor(3);
-
-        when(roomTypeRestService.createRoomType(any())).thenReturn(response);
+        when(roomTypeRestService.createRoomType(any(CreateRoomTypeRequestDTO.class)))
+                .thenReturn(expectedRoomTypeResponse);
 
         mockMvc.perform(post("/api")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validCreateRequest)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value(201))
                 .andExpect(jsonPath("$.message").value("Room type created successfully"))
-                .andExpect(jsonPath("$.data.roomTypeID").value("RT-001"))
-                .andExpect(jsonPath("$.data.name").value("DELUXE"))
-                .andExpect(jsonPath("$.timestamp").exists());
+                .andExpect(jsonPath("$.data.name").value("Deluxe Suite"))
+                .andExpect(jsonPath("$.data.price").value(750000))
+                .andExpect(jsonPath("$.data.capacity").value(3));
+
+        verify(roomTypeRestService, times(1)).createRoomType(any(CreateRoomTypeRequestDTO.class));
     }
 
     @Test
-    void testCreateRoomType_ValidationError() throws Exception {
-        CreateRoomTypeRequestDTO request = new CreateRoomTypeRequestDTO();
-        // Missing required fields
+    void testCreateRoomType_ValidationError_MissingName() throws Exception {
+        CreateRoomTypeRequestDTO invalidRequest = CreateRoomTypeRequestDTO.builder()
+                .name("")
+                .price(750000)
+                .capacity(3)
+                .floor(5)
+                .propertyID("property-123")
+                .unitCount(10)
+                .build();
 
         mockMvc.perform(post("/api")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").exists())
-                .andExpect(jsonPath("$.timestamp").exists());
+                .andExpect(jsonPath("$.message").value("Room type name is required; "));
+
+        verify(roomTypeRestService, never()).createRoomType(any(CreateRoomTypeRequestDTO.class));
+    }
+
+    @Test
+    void testCreateRoomType_ValidationError_NullPrice() throws Exception {
+        CreateRoomTypeRequestDTO invalidRequest = CreateRoomTypeRequestDTO.builder()
+                .name("Deluxe Suite")
+                .price(null)
+                .capacity(3)
+                .floor(5)
+                .propertyID("property-123")
+                .unitCount(10)
+                .build();
+
+        mockMvc.perform(post("/api")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Price is required; "));
+
+        verify(roomTypeRestService, never()).createRoomType(any(CreateRoomTypeRequestDTO.class));
+    }
+
+    @Test
+    void testCreateRoomType_ValidationError_NegativePrice() throws Exception {
+        CreateRoomTypeRequestDTO invalidRequest = CreateRoomTypeRequestDTO.builder()
+                .name("Deluxe Suite")
+                .price(-1000)
+                .capacity(3)
+                .floor(5)
+                .propertyID("property-123")
+                .unitCount(10)
+                .build();
+
+        mockMvc.perform(post("/api")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Price cannot be negative; "));
+
+        verify(roomTypeRestService, never()).createRoomType(any(CreateRoomTypeRequestDTO.class));
+    }
+
+    @Test
+    void testCreateRoomType_ValidationError_NullCapacity() throws Exception {
+        CreateRoomTypeRequestDTO invalidRequest = CreateRoomTypeRequestDTO.builder()
+                .name("Deluxe Suite")
+                .price(750000)
+                .capacity(null)
+                .floor(5)
+                .propertyID("property-123")
+                .unitCount(10)
+                .build();
+
+        mockMvc.perform(post("/api")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Capacity is required; "));
+
+        verify(roomTypeRestService, never()).createRoomType(any(CreateRoomTypeRequestDTO.class));
+    }
+
+    @Test
+    void testCreateRoomType_ValidationError_ZeroCapacity() throws Exception {
+        CreateRoomTypeRequestDTO invalidRequest = CreateRoomTypeRequestDTO.builder()
+                .name("Deluxe Suite")
+                .price(750000)
+                .capacity(0)
+                .floor(5)
+                .propertyID("property-123")
+                .unitCount(10)
+                .build();
+
+        mockMvc.perform(post("/api")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Capacity must be at least 1; "));
+
+        verify(roomTypeRestService, never()).createRoomType(any(CreateRoomTypeRequestDTO.class));
+    }
+
+    @Test
+    void testCreateRoomType_ValidationError_MissingPropertyID() throws Exception {
+        CreateRoomTypeRequestDTO invalidRequest = CreateRoomTypeRequestDTO.builder()
+                .name("Deluxe Suite")
+                .price(750000)
+                .capacity(3)
+                .floor(5)
+                .propertyID("")
+                .unitCount(10)
+                .build();
+
+        mockMvc.perform(post("/api")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Property ID is required; "));
+
+        verify(roomTypeRestService, never()).createRoomType(any(CreateRoomTypeRequestDTO.class));
+    }
+
+    @Test
+    void testCreateRoomType_ValidationError_ZeroUnitCount() throws Exception {
+        CreateRoomTypeRequestDTO invalidRequest = CreateRoomTypeRequestDTO.builder()
+                .name("Deluxe Suite")
+                .price(750000)
+                .capacity(3)
+                .floor(5)
+                .propertyID("property-123")
+                .unitCount(0)
+                .build();
+
+        mockMvc.perform(post("/api")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Unit count must be at least 1; "));
+
+        verify(roomTypeRestService, never()).createRoomType(any(CreateRoomTypeRequestDTO.class));
     }
 
     @Test
     void testCreateRoomType_RuntimeException() throws Exception {
-        CreateRoomTypeRequestDTO request = new CreateRoomTypeRequestDTO();
-        request.setName("DELUXE");
-        request.setPrice(1000000);
-        request.setCapacity(2);
-        request.setFloor(3);
-        request.setUnitCount(5);
-        request.setPropertyID("PROP-001");
-
-        when(roomTypeRestService.createRoomType(any())).thenThrow(new RuntimeException("Property not found"));
+        when(roomTypeRestService.createRoomType(any(CreateRoomTypeRequestDTO.class)))
+                .thenThrow(new RuntimeException("Property not found"));
 
         mockMvc.perform(post("/api")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validCreateRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value("Failed to create room type. Error: Property not found"))
-                .andExpect(jsonPath("$.timestamp").exists());
+                .andExpect(jsonPath("$.message").value("Failed to create room type. Error: Property not found"));
+
+        verify(roomTypeRestService, times(1)).createRoomType(any(CreateRoomTypeRequestDTO.class));
     }
 
-    // ==================== GET ROOM TYPE BY ID TESTS ====================
-    
+    @Test
+    void testCreateRoomType_GeneralException() throws Exception {
+        when(roomTypeRestService.createRoomType(any(CreateRoomTypeRequestDTO.class)))
+                .thenThrow(new IllegalStateException("Database connection error"));
+
+        mockMvc.perform(post("/api")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validCreateRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Failed to create room type. Error: Database connection error"));
+
+        verify(roomTypeRestService, times(1)).createRoomType(any(CreateRoomTypeRequestDTO.class));
+    }
+
+    // ============================================
+    // GET ROOM TYPE BY ID TESTS
+    // ============================================
+
     @Test
     void testGetRoomType_Success() throws Exception {
-        RoomTypeResponseDTO response = new RoomTypeResponseDTO();
-        response.setRoomTypeID("RT-001");
-        response.setName("DELUXE");
-        response.setPrice(1000000);
-        response.setCapacity(2);
-        response.setFloor(3);
+        when(roomTypeRestService.getRoomTypeById(eq(testRoomTypeId)))
+                .thenReturn(expectedRoomTypeResponse);
 
-        when(roomTypeRestService.getRoomTypeById("RT-001")).thenReturn(response);
-
-        mockMvc.perform(get("/api/room-types/RT-001"))
+        mockMvc.perform(get("/api/room-types/{id}", testRoomTypeId)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.message").value("Room type retrieved successfully"))
-                .andExpect(jsonPath("$.data.roomTypeID").value("RT-001"))
-                .andExpect(jsonPath("$.data.name").value("DELUXE"))
-                .andExpect(jsonPath("$.timestamp").exists());
+                .andExpect(jsonPath("$.data.roomTypeID").value(testRoomTypeId.toString()))
+                .andExpect(jsonPath("$.data.name").value("Deluxe Suite"));
+
+        verify(roomTypeRestService, times(1)).getRoomTypeById(eq(testRoomTypeId));
     }
 
     @Test
     void testGetRoomType_NotFound() throws Exception {
-        when(roomTypeRestService.getRoomTypeById("RT-999")).thenThrow(new RuntimeException("Room type not found"));
+        when(roomTypeRestService.getRoomTypeById(eq(testRoomTypeId)))
+                .thenThrow(new RuntimeException("Room type not found"));
 
-        mockMvc.perform(get("/api/room-types/RT-999"))
+        mockMvc.perform(get("/api/room-types/{id}", testRoomTypeId)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.message").value("Room type not found. Error: Room type not found"))
-                .andExpect(jsonPath("$.timestamp").exists());
+                .andExpect(jsonPath("$.message").value("Room type not found. Error: Room type not found"));
+
+        verify(roomTypeRestService, times(1)).getRoomTypeById(eq(testRoomTypeId));
     }
 
+    @Test
+    void testGetRoomType_GeneralException() throws Exception {
+        when(roomTypeRestService.getRoomTypeById(eq(testRoomTypeId)))
+                .thenThrow(new IllegalStateException("Database error"));
 
-    // ==================== GET ALL ROOM TYPES TESTS ====================
-    
+        mockMvc.perform(get("/api/room-types/{id}", testRoomTypeId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value("Room type not found. Error: Database error"));
+
+        verify(roomTypeRestService, times(1)).getRoomTypeById(eq(testRoomTypeId));
+    }
+
+    // ============================================
+    // GET ALL ROOM TYPES TESTS
+    // ============================================
+
     @Test
     void testGetAllRoomTypes_Success() throws Exception {
-        RoomTypeResponseDTO response1 = new RoomTypeResponseDTO();
-        response1.setRoomTypeID("RT-001");
-        response1.setName("DELUXE");
-        response1.setPrice(1000000);
+        RoomTypeResponseDTO roomType2 = RoomTypeResponseDTO.builder()
+                .roomTypeID(UUID.randomUUID().toString())
+                .name("Standard Room")
+                .price(500000)
+                .capacity(2)
+                .build();
 
-        RoomTypeResponseDTO response2 = new RoomTypeResponseDTO();
-        response2.setRoomTypeID("RT-002");
-        response2.setName("SUITE");
-        response2.setPrice(2000000);
+        List<RoomTypeResponseDTO> roomTypes = Arrays.asList(expectedRoomTypeResponse, roomType2);
 
-        List<RoomTypeResponseDTO> responses = Arrays.asList(response1, response2);
+        when(roomTypeRestService.getAllRoomTypes()).thenReturn(roomTypes);
 
-        when(roomTypeRestService.getAllRoomTypes()).thenReturn(responses);
-
-        mockMvc.perform(get("/api/room-types"))
+        mockMvc.perform(get("/api/room-types")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.message").value("Successfully retrieved 2 room type(s)"))
                 .andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.data.length()").value(2))
-                .andExpect(jsonPath("$.data[0].roomTypeID").value("RT-001"))
-                .andExpect(jsonPath("$.data[1].roomTypeID").value("RT-002"))
-                .andExpect(jsonPath("$.timestamp").exists());
+                .andExpect(jsonPath("$.data.length()").value(2));
+
+        verify(roomTypeRestService, times(1)).getAllRoomTypes();
     }
 
     @Test
     void testGetAllRoomTypes_EmptyList() throws Exception {
-        when(roomTypeRestService.getAllRoomTypes()).thenReturn(Collections.emptyList());
+        when(roomTypeRestService.getAllRoomTypes()).thenReturn(Arrays.asList());
 
-        mockMvc.perform(get("/api/room-types"))
+        mockMvc.perform(get("/api/room-types")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.message").value("Successfully retrieved 0 room type(s)"))
                 .andExpect(jsonPath("$.data").isArray())
-                .andExpect(jsonPath("$.data.length()").value(0))
-                .andExpect(jsonPath("$.timestamp").exists());
+                .andExpect(jsonPath("$.data.length()").value(0));
+
+        verify(roomTypeRestService, times(1)).getAllRoomTypes();
     }
 
     @Test
-    void testGetAllRoomTypes_InternalServerError() throws Exception {
-        when(roomTypeRestService.getAllRoomTypes()).thenThrow(new IllegalStateException("Database error"));
+    void testGetAllRoomTypes_Exception() throws Exception {
+        when(roomTypeRestService.getAllRoomTypes())
+                .thenThrow(new RuntimeException("Database connection error"));
 
-        mockMvc.perform(get("/api/room-types"))
+        mockMvc.perform(get("/api/room-types")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.status").value(500))
-                .andExpect(jsonPath("$.message").value("Failed to retrieve room types. Error: Database error"))
-                .andExpect(jsonPath("$.timestamp").exists());
+                .andExpect(jsonPath("$.message").value("Failed to retrieve room types. Error: Database connection error"));
+
+        verify(roomTypeRestService, times(1)).getAllRoomTypes();
     }
 
-    // ==================== UPDATE ROOM TYPE TESTS ====================
-    
+    // ============================================
+    // UPDATE ROOM TYPE TESTS
+    // ============================================
+
     @Test
     void testUpdateRoomType_Success() throws Exception {
-        UpdateRoomTypeRequestDTO request = new UpdateRoomTypeRequestDTO();
-        request.setRoomTypeID("RT-001");
-        request.setPrice(1200000);
-        request.setCapacity(3);
-        request.setFacility("AC, TV, Wifi, Mini Bar");
-        request.setDescription("Updated deluxe room");
+        RoomTypeResponseDTO updatedResponse = RoomTypeResponseDTO.builder()
+                .roomTypeID(testRoomTypeId.toString())
+                .name("Deluxe Suite")
+                .price(800000)
+                .capacity(4)
+                .facility("WiFi, TV, AC, Mini Bar, Jacuzzi")
+                .build();
 
-        RoomTypeResponseDTO response = new RoomTypeResponseDTO();
-        response.setRoomTypeID("RT-001");
-        response.setName("DELUXE");
-        response.setPrice(1200000);
-        response.setCapacity(3);
+        when(roomTypeRestService.updateRoomType(eq(testRoomTypeId), any(UpdateRoomTypeRequestDTO.class)))
+                .thenReturn(updatedResponse);
 
-        when(roomTypeRestService.updateRoomType(eq("RT-001"), any())).thenReturn(response);
-
-        mockMvc.perform(put("/api/room-types/RT-001")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(put("/api/room-types/{id}", testRoomTypeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validUpdateRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.message").value("Room type updated successfully"))
-                .andExpect(jsonPath("$.data.roomTypeID").value("RT-001"))
-                .andExpect(jsonPath("$.data.price").value(1200000))
-                .andExpect(jsonPath("$.timestamp").exists());
+                .andExpect(jsonPath("$.data.price").value(800000))
+                .andExpect(jsonPath("$.data.capacity").value(4));
+
+        verify(roomTypeRestService, times(1)).updateRoomType(eq(testRoomTypeId), any(UpdateRoomTypeRequestDTO.class));
     }
 
     @Test
-    void testUpdateRoomType_ValidationError() throws Exception {
-        UpdateRoomTypeRequestDTO request = new UpdateRoomTypeRequestDTO();
-        // Missing required fields
+    void testUpdateRoomType_ValidationError_MissingRoomTypeID() throws Exception {
+        UpdateRoomTypeRequestDTO invalidRequest = UpdateRoomTypeRequestDTO.builder()
+                .roomTypeID("")
+                .capacity(4)
+                .price(800000)
+                .facility("WiFi, TV, AC")
+                .build();
 
-        mockMvc.perform(put("/api/room-types/RT-001")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(put("/api/room-types/{id}", testRoomTypeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").exists())
-                .andExpect(jsonPath("$.timestamp").exists());
+                .andExpect(jsonPath("$.message").value("Room type ID is required; "));
+
+        verify(roomTypeRestService, never()).updateRoomType(any(UUID.class), any(UpdateRoomTypeRequestDTO.class));
+    }
+
+    @Test
+    void testUpdateRoomType_ValidationError_NullCapacity() throws Exception {
+        UpdateRoomTypeRequestDTO invalidRequest = UpdateRoomTypeRequestDTO.builder()
+                .roomTypeID(testRoomTypeId.toString())
+                .capacity(null)
+                .price(800000)
+                .facility("WiFi, TV, AC")
+                .build();
+
+        mockMvc.perform(put("/api/room-types/{id}", testRoomTypeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Capacity is required; "));
+
+        verify(roomTypeRestService, never()).updateRoomType(any(UUID.class), any(UpdateRoomTypeRequestDTO.class));
+    }
+
+    @Test
+    void testUpdateRoomType_ValidationError_ZeroCapacity() throws Exception {
+        UpdateRoomTypeRequestDTO invalidRequest = UpdateRoomTypeRequestDTO.builder()
+                .roomTypeID(testRoomTypeId.toString())
+                .capacity(0)
+                .price(800000)
+                .facility("WiFi, TV, AC")
+                .build();
+
+        mockMvc.perform(put("/api/room-types/{id}", testRoomTypeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Capacity must be at least 1; "));
+
+        verify(roomTypeRestService, never()).updateRoomType(any(UUID.class), any(UpdateRoomTypeRequestDTO.class));
+    }
+
+    @Test
+    void testUpdateRoomType_ValidationError_NullPrice() throws Exception {
+        UpdateRoomTypeRequestDTO invalidRequest = UpdateRoomTypeRequestDTO.builder()
+                .roomTypeID(testRoomTypeId.toString())
+                .capacity(4)
+                .price(null)
+                .facility("WiFi, TV, AC")
+                .build();
+
+        mockMvc.perform(put("/api/room-types/{id}", testRoomTypeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Price is required; "));
+
+        verify(roomTypeRestService, never()).updateRoomType(any(UUID.class), any(UpdateRoomTypeRequestDTO.class));
+    }
+
+    @Test
+    void testUpdateRoomType_ValidationError_NegativePrice() throws Exception {
+        UpdateRoomTypeRequestDTO invalidRequest = UpdateRoomTypeRequestDTO.builder()
+                .roomTypeID(testRoomTypeId.toString())
+                .capacity(4)
+                .price(-1000)
+                .facility("WiFi, TV, AC")
+                .build();
+
+        mockMvc.perform(put("/api/room-types/{id}", testRoomTypeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Price cannot be negative; "));
+
+        verify(roomTypeRestService, never()).updateRoomType(any(UUID.class), any(UpdateRoomTypeRequestDTO.class));
+    }
+
+    @Test
+    void testUpdateRoomType_ValidationError_MissingFacility() throws Exception {
+        UpdateRoomTypeRequestDTO invalidRequest = UpdateRoomTypeRequestDTO.builder()
+                .roomTypeID(testRoomTypeId.toString())
+                .capacity(4)
+                .price(800000)
+                .facility("")
+                .build();
+
+        mockMvc.perform(put("/api/room-types/{id}", testRoomTypeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Facility is required; "));
+
+        verify(roomTypeRestService, never()).updateRoomType(any(UUID.class), any(UpdateRoomTypeRequestDTO.class));
     }
 
     @Test
     void testUpdateRoomType_RuntimeException() throws Exception {
-        UpdateRoomTypeRequestDTO request = new UpdateRoomTypeRequestDTO();
-        request.setRoomTypeID("RT-999");
-        request.setPrice(1200000);
-        request.setCapacity(3);
-        request.setFacility("AC, TV");
+        when(roomTypeRestService.updateRoomType(eq(testRoomTypeId), any(UpdateRoomTypeRequestDTO.class)))
+                .thenThrow(new RuntimeException("Room type not found"));
 
-        when(roomTypeRestService.updateRoomType(eq("RT-999"), any())).thenThrow(new RuntimeException("Room type not found"));
-
-        mockMvc.perform(put("/api/room-types/RT-999")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(put("/api/room-types/{id}", testRoomTypeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validUpdateRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value("Failed to update room type. Error: Room type not found"))
-                .andExpect(jsonPath("$.timestamp").exists());
+                .andExpect(jsonPath("$.message").value("Failed to update room type. Error: Room type not found"));
+
+        verify(roomTypeRestService, times(1)).updateRoomType(eq(testRoomTypeId), any(UpdateRoomTypeRequestDTO.class));
     }
 
-    // ==================== DELETE ROOM TYPE TESTS ====================
-    
+    @Test
+    void testUpdateRoomType_GeneralException() throws Exception {
+        when(roomTypeRestService.updateRoomType(eq(testRoomTypeId), any(UpdateRoomTypeRequestDTO.class)))
+                .thenThrow(new IllegalStateException("Database error"));
+
+        mockMvc.perform(put("/api/room-types/{id}", testRoomTypeId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(validUpdateRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Failed to update room type. Error: Database error"));
+
+        verify(roomTypeRestService, times(1)).updateRoomType(eq(testRoomTypeId), any(UpdateRoomTypeRequestDTO.class));
+    }
+
+    // ============================================
+    // DELETE ROOM TYPE TESTS
+    // ============================================
+
     @Test
     void testDeleteRoomType_Success() throws Exception {
-        doNothing().when(roomTypeRestService).deleteRoomType("RT-001");
+        doNothing().when(roomTypeRestService).deleteRoomType(eq(testRoomTypeId));
 
-        mockMvc.perform(delete("/api/room-types/RT-001"))
+        mockMvc.perform(delete("/api/room-types/{id}", testRoomTypeId)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(200))
                 .andExpect(jsonPath("$.message").value("Room type deleted successfully"))
-                .andExpect(jsonPath("$.data").doesNotExist())
-                .andExpect(jsonPath("$.timestamp").exists());
+                .andExpect(jsonPath("$.data").isEmpty());
+
+        verify(roomTypeRestService, times(1)).deleteRoomType(eq(testRoomTypeId));
     }
 
     @Test
     void testDeleteRoomType_RuntimeException() throws Exception {
-        doThrow(new RuntimeException("Room type not found or has associated rooms"))
-                .when(roomTypeRestService).deleteRoomType("RT-999");
+        doThrow(new RuntimeException("Room type not found"))
+                .when(roomTypeRestService).deleteRoomType(eq(testRoomTypeId));
 
-        mockMvc.perform(delete("/api/room-types/RT-999"))
+        mockMvc.perform(delete("/api/room-types/{id}", testRoomTypeId)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value("Failed to delete room type. Error: Room type not found or has associated rooms"))
-                .andExpect(jsonPath("$.timestamp").exists());
-    }
+                .andExpect(jsonPath("$.message").value("Failed to delete room type. Error: Room type not found"));
 
-    // ==================== ADDITIONAL EDGE CASE TESTS ====================
-    
-    @Test
-    void testCreateRoomType_Success_WithMaxValues() throws Exception {
-        CreateRoomTypeRequestDTO request = new CreateRoomTypeRequestDTO();
-        request.setName("PRESIDENTIAL_SUITE");
-        request.setPrice(Integer.MAX_VALUE);
-        request.setCapacity(10);
-        request.setFloor(50);
-        request.setUnitCount(100);
-        request.setPropertyID("PROP-001");
-
-        RoomTypeResponseDTO response = new RoomTypeResponseDTO();
-        response.setRoomTypeID("RT-999");
-        response.setName("PRESIDENTIAL_SUITE");
-        response.setPrice(Integer.MAX_VALUE);
-
-        when(roomTypeRestService.createRoomType(any())).thenReturn(response);
-
-        mockMvc.perform(post("/api")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.status").value(201))
-                .andExpect(jsonPath("$.data.roomTypeID").value("RT-999"));
+        verify(roomTypeRestService, times(1)).deleteRoomType(eq(testRoomTypeId));
     }
 
     @Test
-    void testGetAllRoomTypes_Success_SingleItem() throws Exception {
-        RoomTypeResponseDTO response = new RoomTypeResponseDTO();
-        response.setRoomTypeID("RT-001");
-        response.setName("STANDARD");
-        response.setPrice(500000);
+    void testDeleteRoomType_GeneralException() throws Exception {
+        doThrow(new IllegalStateException("Database error"))
+                .when(roomTypeRestService).deleteRoomType(eq(testRoomTypeId));
 
-        when(roomTypeRestService.getAllRoomTypes()).thenReturn(Collections.singletonList(response));
+        mockMvc.perform(delete("/api/room-types/{id}", testRoomTypeId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("Failed to delete room type. Error: Database error"));
 
-        mockMvc.perform(get("/api/room-types"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.message").value("Successfully retrieved 1 room type(s)"))
-                .andExpect(jsonPath("$.data.length()").value(1));
-    }
-
-    @Test
-    void testUpdateRoomType_Success_PartialUpdate() throws Exception {
-        UpdateRoomTypeRequestDTO request = new UpdateRoomTypeRequestDTO();
-        request.setRoomTypeID("RT-001");
-        request.setPrice(1500000);
-        request.setCapacity(2);
-        request.setFacility("AC, TV");
-        // description is optional, not setting it
-
-        RoomTypeResponseDTO response = new RoomTypeResponseDTO();
-        response.setRoomTypeID("RT-001");
-        response.setName("DELUXE");
-        response.setPrice(1500000);
-
-        when(roomTypeRestService.updateRoomType(eq("RT-001"), any())).thenReturn(response);
-
-        mockMvc.perform(put("/api/room-types/RT-001")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.data.price").value(1500000));
+        verify(roomTypeRestService, times(1)).deleteRoomType(eq(testRoomTypeId));
     }
 }

@@ -6,8 +6,13 @@ spring:
     username: ${DEV_USERNAME}
     password: ${DEV_PASSWORD}
 
+# Auth Service Configuration
+auth:
+  service:
+    url: ${AUTH_SERVICE_URL:https://travel-apap-mock-server.vercel.app}
+
 # Bill Service Configuration
 bill:
   service:
     url: ${BILL_SERVICE_URL:http://localhost:8081}
-    api-key: ${BILL_SERVICE_API_KEY:ACCOMMODATION_API_KEY_2306275600}
+    api-key: ${BILL_SERVICE_API_KEY:lalaleen}

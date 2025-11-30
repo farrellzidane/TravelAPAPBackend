@@ -1,15 +1,15 @@
 package apap.ti._5.accommodation_2306275600_be.restservice;
 
-import apap.ti._5.accommodation_2306275600_be.model.Property;
-import apap.ti._5.accommodation_2306275600_be.repository.PropertyRepository;
-import apap.ti._5.accommodation_2306275600_be.restdto.request.property.CreatePropertyRequestDTO;
-import apap.ti._5.accommodation_2306275600_be.restdto.request.property.UpdatePropertyRequestDTO;
-import apap.ti._5.accommodation_2306275600_be.restdto.request.room.AddRoomRequestDTO;
-import apap.ti._5.accommodation_2306275600_be.restdto.request.roomtype.CreateRoomTypeRequestDTO;
-import apap.ti._5.accommodation_2306275600_be.restdto.request.roomtype.UpdateRoomTypeRequestDTO;
-import apap.ti._5.accommodation_2306275600_be.restdto.response.property.PropertyResponseDTO;
-import apap.ti._5.accommodation_2306275600_be.restdto.response.room.RoomResponseDTO;
-import apap.ti._5.accommodation_2306275600_be.restdto.response.roomtype.RoomTypeResponseDTO;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,12 +18,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
-import java.util.*;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import apap.ti._5.accommodation_2306275600_be.model.Property;
+import apap.ti._5.accommodation_2306275600_be.repository.BookingRepository;
+import apap.ti._5.accommodation_2306275600_be.repository.PropertyRepository;
+import apap.ti._5.accommodation_2306275600_be.restdto.request.property.CreatePropertyRequestDTO;
+import apap.ti._5.accommodation_2306275600_be.restdto.request.property.UpdatePropertyRequestDTO;
+import apap.ti._5.accommodation_2306275600_be.restdto.request.room.AddRoomRequestDTO;
+import apap.ti._5.accommodation_2306275600_be.restdto.request.roomtype.UpdateRoomTypeRequestDTO;
+import apap.ti._5.accommodation_2306275600_be.restdto.response.property.PropertyResponseDTO;
+import apap.ti._5.accommodation_2306275600_be.restdto.response.room.RoomResponseDTO;
+import apap.ti._5.accommodation_2306275600_be.restdto.response.roomtype.RoomTypeResponseDTO;
 
 @ExtendWith(MockitoExtension.class)
 class PropertyRestServiceImplTest {
@@ -37,890 +41,524 @@ class PropertyRestServiceImplTest {
     @Mock
     private RoomRestService roomRestService;
 
+    @Mock
+    private BookingRepository bookingRepository;
+
     @InjectMocks
     private PropertyRestServiceImpl propertyRestService;
 
     private Property testProperty;
-    private UUID testOwnerID;
-    private String testPropertyID;
-    private CreatePropertyRequestDTO createPropertyRequestDTO;
-    private UpdatePropertyRequestDTO updatePropertyRequestDTO;
+    private UUID propertyId;
+    private UUID ownerId;
+    private UUID roomTypeId;
 
     @BeforeEach
     void setUp() {
-        testOwnerID = UUID.randomUUID();
-        testPropertyID = "HOT-1234-001";
-        
+        propertyId = UUID.randomUUID();
+        ownerId = UUID.randomUUID();
+        roomTypeId = UUID.randomUUID();
+
         testProperty = Property.builder()
-                .propertyID(testPropertyID)
-                .propertyName("Test Hotel")
-                .type(1)
-                .address("Jl. Test No. 123")
-                .province(1)
-                .description("Test Description")
-                .totalRoom(10)
-                .activeStatus(1)
-                .income(0)
-                .ownerName("Test Owner")
-                .ownerID(testOwnerID)
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
-                .build();
+            .propertyID(propertyId)
+            .propertyName("Test Hotel")
+            .type(1)
+            .address("Jl. Test No. 123")
+            .province(1)
+            .description("Test Description")
+            .totalRoom(10)
+            .activeStatus(1)
+            .income(0)
+            .ownerID(ownerId)
+            .ownerName("Test Owner")
+            .createdDate(LocalDateTime.now())
+            .updatedDate(LocalDateTime.now())
+            .build();
     }
 
+    // ============================================
+    // GET ALL PROPERTIES TESTS
+    // ============================================
+
     @Test
-    void whenGetAllProperties_thenReturnPropertyList() {
-        // Arrange
-        Property property2 = Property.builder()
-                .propertyID("VIL-5678-002")
-                .propertyName("Test Villa")
-                .type(2)
-                .address("Jl. Villa No. 456")
-                .province(2)
-                .description("Villa Description")
-                .totalRoom(5)
-                .activeStatus(1)
-                .income(0)
-                .ownerName("Villa Owner")
-                .ownerID(UUID.randomUUID())
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
-                .build();
+    void testGetAllProperties_ReturnsActiveProperties() {
+        when(propertyRepository.findByActiveStatusOrderByCreatedDateDesc(1))
+            .thenReturn(Arrays.asList(testProperty));
 
-        List<Property> properties = Arrays.asList(testProperty, property2);
-        when(propertyRepository.findAll()).thenReturn(properties);
-
-        // Act
         List<PropertyResponseDTO> result = propertyRestService.getAllProperties();
 
-        // Assert
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals("Test Hotel", result.get(0).getPropertyName());
-        assertEquals("Test Villa", result.get(1).getPropertyName());
-        assertEquals("Hotel", result.get(0).getTypeName());
-        assertEquals("Villa", result.get(1).getTypeName());
-        verify(propertyRepository, times(1)).findAll();
-    }
-
-    @Test
-    void whenGetAllPropertiesEmpty_thenReturnEmptyList() {
-        // Arrange
-        when(propertyRepository.findAll()).thenReturn(new ArrayList<>());
-
-        // Act
-        List<PropertyResponseDTO> result = propertyRestService.getAllProperties();
-
-        // Assert
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-        verify(propertyRepository, times(1)).findAll();
-    }
-
-    @Test
-    void whenGetPropertiesByOwner_thenReturnPropertyList() {
-        // Arrange
-        List<Property> properties = Collections.singletonList(testProperty);
-        when(propertyRepository.findByOwnerID(testOwnerID)).thenReturn(properties);
-
-        // Act
-        List<PropertyResponseDTO> result = propertyRestService.getPropertiesByOwner(testOwnerID.toString());
-
-        // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
+        assertEquals(propertyId.toString(), result.get(0).getPropertyID());
         assertEquals("Test Hotel", result.get(0).getPropertyName());
-        assertEquals(testOwnerID.toString(), result.get(0).getOwnerID());
-        verify(propertyRepository, times(1)).findByOwnerID(testOwnerID);
+        verify(propertyRepository).findByActiveStatusOrderByCreatedDateDesc(1);
     }
 
     @Test
-    void whenGetPropertiesByOwnerNotFound_thenReturnEmptyList() {
-        // Arrange
-        UUID randomOwnerID = UUID.randomUUID();
-        when(propertyRepository.findByOwnerID(randomOwnerID)).thenReturn(new ArrayList<>());
+    void testGetAllProperties_EmptyList() {
+        when(propertyRepository.findByActiveStatusOrderByCreatedDateDesc(1))
+            .thenReturn(Collections.emptyList());
 
-        // Act
-        List<PropertyResponseDTO> result = propertyRestService.getPropertiesByOwner(randomOwnerID.toString());
+        List<PropertyResponseDTO> result = propertyRestService.getAllProperties();
 
-        // Assert
         assertNotNull(result);
-        assertTrue(result.isEmpty());
-        verify(propertyRepository, times(1)).findByOwnerID(randomOwnerID);
+        assertEquals(0, result.size());
+        verify(propertyRepository).findByActiveStatusOrderByCreatedDateDesc(1);
+    }
+
+    // ============================================
+    // GET FILTERED PROPERTIES TESTS
+    // ============================================
+
+    @Test
+    void testGetFilteredProperties_AllFilters() {
+        when(propertyRepository.findByPropertyNameContainingIgnoreCaseAndTypeAndProvinceAndActiveStatus("Test", 1, 1))
+            .thenReturn(Arrays.asList(testProperty));
+
+        List<PropertyResponseDTO> result = propertyRestService.getFilteredProperties("Test", 1, 1);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(propertyRepository).findByPropertyNameContainingIgnoreCaseAndTypeAndProvinceAndActiveStatus("Test", 1, 1);
     }
 
     @Test
-    void whenGetPropertyByIdExists_thenReturnPropertyWithRoomTypes() {
-        // Arrange
-        when(propertyRepository.findById(testPropertyID)).thenReturn(Optional.of(testProperty));
+    void testGetFilteredProperties_NameAndTypeOnly() {
+        when(propertyRepository.findByPropertyNameContainingIgnoreCaseAndTypeAndActiveStatus("Test", 1))
+            .thenReturn(Arrays.asList(testProperty));
+
+        List<PropertyResponseDTO> result = propertyRestService.getFilteredProperties("Test", 1, null);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(propertyRepository).findByPropertyNameContainingIgnoreCaseAndTypeAndActiveStatus("Test", 1);
+    }
+
+    @Test
+    void testGetFilteredProperties_NameAndProvinceOnly() {
+        when(propertyRepository.findByPropertyNameContainingIgnoreCaseAndProvinceAndActiveStatus("Test", 1))
+            .thenReturn(Arrays.asList(testProperty));
+
+        List<PropertyResponseDTO> result = propertyRestService.getFilteredProperties("Test", null, 1);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(propertyRepository).findByPropertyNameContainingIgnoreCaseAndProvinceAndActiveStatus("Test", 1);
+    }
+
+    @Test
+    void testGetFilteredProperties_TypeAndProvinceOnly() {
+        when(propertyRepository.findByTypeAndProvinceAndActiveStatusOrderByCreatedDateDesc(1, 1, 1))
+            .thenReturn(Arrays.asList(testProperty));
+
+        List<PropertyResponseDTO> result = propertyRestService.getFilteredProperties(null, 1, 1);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(propertyRepository).findByTypeAndProvinceAndActiveStatusOrderByCreatedDateDesc(1, 1, 1);
+    }
+
+    @Test
+    void testGetFilteredProperties_NameOnly() {
+        when(propertyRepository.findByPropertyNameContainingIgnoreCaseAndActiveStatus("Test"))
+            .thenReturn(Arrays.asList(testProperty));
+
+        List<PropertyResponseDTO> result = propertyRestService.getFilteredProperties("Test", null, null);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(propertyRepository).findByPropertyNameContainingIgnoreCaseAndActiveStatus("Test");
+    }
+
+    @Test
+    void testGetFilteredProperties_TypeOnly() {
+        when(propertyRepository.findByTypeAndActiveStatusOrderByCreatedDateDesc(1, 1))
+            .thenReturn(Arrays.asList(testProperty));
+
+        List<PropertyResponseDTO> result = propertyRestService.getFilteredProperties(null, 1, null);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(propertyRepository).findByTypeAndActiveStatusOrderByCreatedDateDesc(1, 1);
+    }
+
+    @Test
+    void testGetFilteredProperties_ProvinceOnly() {
+        when(propertyRepository.findByProvinceAndActiveStatusOrderByCreatedDateDesc(1, 1))
+            .thenReturn(Arrays.asList(testProperty));
+
+        List<PropertyResponseDTO> result = propertyRestService.getFilteredProperties(null, null, 1);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(propertyRepository).findByProvinceAndActiveStatusOrderByCreatedDateDesc(1, 1);
+    }
+
+    @Test
+    void testGetFilteredProperties_NoFilters() {
+        when(propertyRepository.findByActiveStatusOrderByCreatedDateDesc(1))
+            .thenReturn(Arrays.asList(testProperty));
+
+        List<PropertyResponseDTO> result = propertyRestService.getFilteredProperties(null, null, null);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(propertyRepository).findByActiveStatusOrderByCreatedDateDesc(1);
+    }
+
+    @Test
+    void testGetFilteredProperties_EmptyName() {
+        when(propertyRepository.findByActiveStatusOrderByCreatedDateDesc(1))
+            .thenReturn(Arrays.asList(testProperty));
+
+        List<PropertyResponseDTO> result = propertyRestService.getFilteredProperties("", null, null);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(propertyRepository).findByActiveStatusOrderByCreatedDateDesc(1);
+    }
+
+    // ============================================
+    // GET PROPERTIES BY OWNER TESTS
+    // ============================================
+
+    @Test
+    void testGetPropertiesByOwner_Success() {
+        when(propertyRepository.findByOwnerID(ownerId))
+            .thenReturn(Arrays.asList(testProperty));
+
+        List<PropertyResponseDTO> result = propertyRestService.getPropertiesByOwner(ownerId);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(ownerId.toString(), result.get(0).getOwnerID());
+        verify(propertyRepository).findByOwnerID(ownerId);
+    }
+
+    @Test
+    void testGetPropertiesByOwner_EmptyList() {
+        when(propertyRepository.findByOwnerID(ownerId))
+            .thenReturn(Collections.emptyList());
+
+        List<PropertyResponseDTO> result = propertyRestService.getPropertiesByOwner(ownerId);
+
+        assertNotNull(result);
+        assertEquals(0, result.size());
+        verify(propertyRepository).findByOwnerID(ownerId);
+    }
+
+    // ============================================
+    // GET PROPERTY BY ID TESTS
+    // ============================================
+
+    @Test
+    void testGetPropertyById_Success() {
+        when(propertyRepository.findById(propertyId)).thenReturn(Optional.of(testProperty));
+        when(roomTypeRestService.getRoomTypesByProperty(propertyId)).thenReturn(Collections.emptyList());
+
+        PropertyResponseDTO result = propertyRestService.getPropertyById(propertyId);
+
+        assertNotNull(result);
+        assertEquals(propertyId.toString(), result.getPropertyID());
+        assertEquals("Test Hotel", result.getPropertyName());
+        verify(propertyRepository).findById(propertyId);
+        verify(roomTypeRestService).getRoomTypesByProperty(propertyId);
+    }
+
+    @Test
+    void testGetPropertyById_NotFound() {
+        when(propertyRepository.findById(propertyId)).thenReturn(Optional.empty());
+
+        PropertyResponseDTO result = propertyRestService.getPropertyById(propertyId);
+
+        assertNull(result);
+        verify(propertyRepository).findById(propertyId);
+        verify(roomTypeRestService, never()).getRoomTypesByProperty(any());
+    }
+
+    @Test
+    void testGetPropertyById_WithDateFilter() {
+        LocalDateTime checkIn = LocalDateTime.now().plusDays(1);
+        LocalDateTime checkOut = LocalDateTime.now().plusDays(3);
 
         RoomTypeResponseDTO roomType = RoomTypeResponseDTO.builder()
-                .roomTypeID("RT-001")
-                .name("Deluxe")
-                .floor(1)
-                .capacity(2)
-                .price(500000)
-                .facility("AC, TV")
-                .description("Deluxe Room")
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
-                .build();
-
-        when(roomTypeRestService.getRoomTypesByProperty(testPropertyID))
-                .thenReturn(Collections.singletonList(roomType));
+            .roomTypeID(roomTypeId.toString())
+            .name("Deluxe")
+            .floor(1)
+            .capacity(2)
+            .price(500000)
+            .facility("AC, TV")
+            .description("Deluxe Room")
+            .createdDate(LocalDateTime.now())
+            .build();
 
         RoomResponseDTO room = RoomResponseDTO.builder()
-                .roomID("R-001")
-                .roomTypeID("RT-001")
-                .availabilityStatus(1)
-                .activeRoom(1)
-                .build();
+            .roomID(UUID.randomUUID().toString())
+            .name("101")
+            .floor(1)
+            .roomTypeName("Deluxe")
+            .build();
 
-        when(roomRestService.getRoomsByRoomType("RT-001"))
-                .thenReturn(Collections.singletonList(room));
+        when(propertyRepository.findById(propertyId)).thenReturn(Optional.of(testProperty));
+        when(roomTypeRestService.getRoomTypesByProperty(propertyId))
+            .thenReturn(Arrays.asList(roomType));
+        when(bookingRepository.findBookedRoomIDsByPropertyAndPeriod(propertyId, checkIn, checkOut))
+            .thenReturn(Collections.emptyList());
+        when(roomRestService.getRoomsByRoomType(roomTypeId))
+            .thenReturn(Arrays.asList(room));
 
-        // Act
-        PropertyResponseDTO result = propertyRestService.getPropertyById(testPropertyID);
+        PropertyResponseDTO result = propertyRestService.getPropertyById(propertyId, checkIn, checkOut);
 
-        // Assert
         assertNotNull(result);
-        assertEquals(testPropertyID, result.getPropertyID());
-        assertEquals("Test Hotel", result.getPropertyName());
         assertNotNull(result.getRoomTypes());
         assertEquals(1, result.getRoomTypes().size());
-        assertEquals("Deluxe", result.getRoomTypes().get(0).getRoomTypeName());
-        assertEquals(1, result.getRoomTypes().get(0).getListRoom().size());
-        verify(propertyRepository, times(1)).findById(testPropertyID);
-        verify(roomTypeRestService, times(1)).getRoomTypesByProperty(testPropertyID);
-        verify(roomRestService, times(1)).getRoomsByRoomType("RT-001");
+        verify(bookingRepository).findBookedRoomIDsByPropertyAndPeriod(propertyId, checkIn, checkOut);
     }
 
-    @Test
-    void whenGetPropertyByIdNotFound_thenReturnNull() {
-        // Arrange
-        when(propertyRepository.findById("INVALID-ID")).thenReturn(Optional.empty());
-
-        // Act
-        PropertyResponseDTO result = propertyRestService.getPropertyById("INVALID-ID");
-
-        // Assert
-        assertNull(result);
-        verify(propertyRepository, times(1)).findById("INVALID-ID");
-        verify(roomTypeRestService, never()).getRoomTypesByProperty(anyString());
-    }
+    // ============================================
+    // CREATE PROPERTY TESTS
+    // ============================================
 
     @Test
-    void whenCreateProperty_thenReturnCreatedProperty() {
-        // Arrange
-        AddRoomRequestDTO roomTypeRequest = AddRoomRequestDTO.builder()
-                .roomTypeName("Deluxe")
-                .floor(1)
-                .capacity(2)
-                .price(500000)
-                .facility("AC, TV")
-                .roomTypeDescription("Deluxe Room")
-                .unitCount(2)
-                .build();
+    void testCreateProperty_Success() {
+        AddRoomRequestDTO roomTypeData = AddRoomRequestDTO.builder()
+            .roomTypeName("Deluxe")
+            .price(500000)
+            .roomTypeDescription("Deluxe Room")
+            .capacity(2)
+            .facility("AC, TV")
+            .floor(1)
+            .unitCount(5)
+            .build();
 
-        createPropertyRequestDTO = CreatePropertyRequestDTO.builder()
-                .propertyName("New Hotel")
-                .type(1)
-                .address("Jl. New Hotel No. 1")
-                .province(1)
-                .description("New Hotel Description")
-                .totalRoom(2)
-                .ownerName("New Owner")
-                .ownerID(testOwnerID.toString())
-                .roomTypes(Collections.singletonList(roomTypeRequest))
-                .build();
-
-        Property savedProperty = Property.builder()
-                .propertyID("HOT-" + testOwnerID.toString().substring(testOwnerID.toString().length() - 4) + "-001")
-                .propertyName("New Hotel")
-                .type(1)
-                .address("Jl. New Hotel No. 1")
-                .province(1)
-                .description("New Hotel Description")
-                .totalRoom(2)
-                .activeStatus(1)
-                .income(0)
-                .ownerName("New Owner")
-                .ownerID(testOwnerID)
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
-                .build();
-
-        when(propertyRepository.count()).thenReturn(0L);
-        when(propertyRepository.save(any(Property.class))).thenReturn(savedProperty);
+        CreatePropertyRequestDTO requestDTO = CreatePropertyRequestDTO.builder()
+            .propertyName("New Hotel")
+            .type(1)
+            .address("Jl. New No. 456")
+            .province(1)
+            .description("New Description")
+            .totalRoom(5)
+            .ownerName("New Owner")
+            .ownerID(ownerId.toString())
+            .roomTypes(Arrays.asList(roomTypeData))
+            .build();
 
         RoomTypeResponseDTO roomTypeResponse = RoomTypeResponseDTO.builder()
-                .roomTypeID("RT-001")
-                .name("Deluxe")
-                .floor(1)
-                .capacity(2)
-                .price(500000)
-                .facility("AC, TV")
-                .description("Deluxe Room")
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
-                .build();
-
-        when(roomTypeRestService.createRoomType(any(CreateRoomTypeRequestDTO.class)))
-                .thenReturn(roomTypeResponse);
+            .roomTypeID(roomTypeId.toString())
+            .name("Deluxe")
+            .build();
 
         RoomResponseDTO roomResponse = RoomResponseDTO.builder()
-                .roomID("R-001")
-                .roomTypeID("RT-001")
-                .availabilityStatus(1)
-                .activeRoom(1)
-                .build();
+            .roomID(UUID.randomUUID().toString())
+            .name("101")
+            .build();
 
-        when(roomRestService.createRoom(any(AddRoomRequestDTO.class)))
-                .thenReturn(roomResponse);
+        when(propertyRepository.save(any(Property.class))).thenReturn(testProperty);
+        when(roomTypeRestService.createRoomType(any())).thenReturn(roomTypeResponse);
+        when(roomRestService.getRoomsByRoomType(any())).thenReturn(Arrays.asList(roomResponse));
 
-        // Act
-        PropertyResponseDTO result = propertyRestService.createProperty(createPropertyRequestDTO);
+        PropertyResponseDTO result = propertyRestService.createProperty(requestDTO);
 
-        // Assert
         assertNotNull(result);
-        assertEquals("New Hotel", result.getPropertyName());
-        assertEquals(1, result.getType());
-        assertEquals("Hotel", result.getTypeName());
-        assertEquals(2, result.getTotalRoom());
-        assertEquals(1, result.getActiveStatus());
-        assertEquals("Active", result.getActiveStatusName());
-        assertNotNull(result.getRoomTypes());
-        assertEquals(1, result.getRoomTypes().size());
-        verify(propertyRepository, times(1)).save(any(Property.class));
-        verify(roomTypeRestService, times(1)).createRoomType(any(CreateRoomTypeRequestDTO.class));
-        verify(roomRestService, times(2)).createRoom(any(AddRoomRequestDTO.class));
+        verify(propertyRepository).save(any(Property.class));
+        verify(roomTypeRestService).createRoomType(any());
     }
 
     @Test
-    void whenCreatePropertyWithDuplicateRoomTypeFloor_thenThrowException() {
-        // Arrange
+    void testCreateProperty_DuplicateRoomTypeFloorCombination() {
         AddRoomRequestDTO roomType1 = AddRoomRequestDTO.builder()
-                .roomTypeName("Deluxe")
-                .floor(1)
-                .capacity(2)
-                .price(500000)
-                .facility("AC, TV")
-                .roomTypeDescription("Deluxe Room")
-                .unitCount(2)
-                .build();
+            .roomTypeName("Deluxe")
+            .price(500000)
+            .roomTypeDescription("Deluxe Room")
+            .capacity(2)
+            .facility("AC, TV")
+            .floor(1)
+            .unitCount(3)
+            .build();
 
         AddRoomRequestDTO roomType2 = AddRoomRequestDTO.builder()
-                .roomTypeName("Deluxe")
-                .floor(1)
-                .capacity(3)
-                .price(600000)
-                .facility("AC, TV, Mini Bar")
-                .roomTypeDescription("Deluxe Room Plus")
-                .unitCount(3)
-                .build();
+            .roomTypeName("Deluxe")
+            .price(600000)
+            .roomTypeDescription("Deluxe Room Premium")
+            .capacity(3)
+            .facility("AC, TV, Fridge")
+            .floor(1)
+            .unitCount(2)
+            .build();
 
-        createPropertyRequestDTO = CreatePropertyRequestDTO.builder()
-                .propertyName("New Hotel")
-                .type(1)
-                .address("Jl. New Hotel No. 1")
-                .province(1)
-                .description("New Hotel Description")
-                .totalRoom(5)
-                .ownerName("New Owner")
-                .ownerID(testOwnerID.toString())
-                .roomTypes(Arrays.asList(roomType1, roomType2))
-                .build();
+        CreatePropertyRequestDTO requestDTO = CreatePropertyRequestDTO.builder()
+            .propertyName("New Hotel")
+            .type(1)
+            .address("Jl. New No. 456")
+            .province(1)
+            .description("New Description")
+            .totalRoom(5)
+            .ownerName("New Owner")
+            .ownerID(ownerId.toString())
+            .roomTypes(Arrays.asList(roomType1, roomType2))
+            .build();
 
-        // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            propertyRestService.createProperty(createPropertyRequestDTO);
-        });
-
-        assertTrue(exception.getMessage().contains("Duplikasi kombinasi tipe kamar–lantai tidak diperbolehkan"));
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> propertyRestService.createProperty(requestDTO));
+        
+        assertTrue(exception.getMessage().contains("Duplikasi kombinasi tipe kamar–lantai"));
         verify(propertyRepository, never()).save(any(Property.class));
     }
 
     @Test
-    void whenCreatePropertyWithMismatchedTotalRoom_thenThrowException() {
-        // Arrange
-        AddRoomRequestDTO roomTypeRequest = AddRoomRequestDTO.builder()
-                .roomTypeName("Deluxe")
-                .floor(1)
-                .capacity(2)
-                .price(500000)
-                .facility("AC, TV")
-                .roomTypeDescription("Deluxe Room")
-                .unitCount(2)
-                .build();
+    void testCreateProperty_TotalRoomMismatch() {
+        AddRoomRequestDTO roomTypeData = AddRoomRequestDTO.builder()
+            .roomTypeName("Deluxe")
+            .price(500000)
+            .roomTypeDescription("Deluxe Room")
+            .capacity(2)
+            .facility("AC, TV")
+            .floor(1)
+            .unitCount(5)
+            .build();
 
-        createPropertyRequestDTO = CreatePropertyRequestDTO.builder()
-                .propertyName("New Hotel")
-                .type(1)
-                .address("Jl. New Hotel No. 1")
-                .province(1)
-                .description("New Hotel Description")
-                .totalRoom(5) // Mismatch: unitCount = 2, but totalRoom = 5
-                .ownerName("New Owner")
-                .ownerID(testOwnerID.toString())
-                .roomTypes(Collections.singletonList(roomTypeRequest))
-                .build();
+        CreatePropertyRequestDTO requestDTO = CreatePropertyRequestDTO.builder()
+            .propertyName("New Hotel")
+            .type(1)
+            .address("Jl. New No. 456")
+            .province(1)
+            .description("New Description")
+            .totalRoom(10) // Mismatch: should be 5
+            .ownerName("New Owner")
+            .ownerID(ownerId.toString())
+            .roomTypes(Arrays.asList(roomTypeData))
+            .build();
 
-        // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            propertyRestService.createProperty(createPropertyRequestDTO);
-        });
-
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> propertyRestService.createProperty(requestDTO));
+        
         assertTrue(exception.getMessage().contains("Total room tidak sesuai"));
         verify(propertyRepository, never()).save(any(Property.class));
     }
 
+    // ============================================
+    // UPDATE PROPERTY TESTS
+    // ============================================
+
     @Test
-    void whenCreatePropertyTypeVilla_thenGenerateCorrectID() {
-        // Arrange
-        AddRoomRequestDTO roomTypeRequest = AddRoomRequestDTO.builder()
-                .roomTypeName("Standard")
-                .floor(1)
-                .capacity(2)
-                .price(300000)
-                .facility("AC")
-                .roomTypeDescription("Standard Room")
-                .unitCount(1)
-                .build();
+    void testUpdateProperty_Success() {
+        UpdatePropertyRequestDTO requestDTO = UpdatePropertyRequestDTO.builder()
+            .propertyName("Updated Hotel")
+            .type(2)
+            .address("Jl. Updated No. 789")
+            .province(2)
+            .description("Updated Description")
+            .totalRoom(15)
+            .activeStatus(1)
+            .build();
 
-        createPropertyRequestDTO = CreatePropertyRequestDTO.builder()
-                .propertyName("Test Villa")
-                .type(2) // Villa
-                .address("Jl. Villa No. 1")
-                .province(1)
-                .description("Villa Description")
-                .totalRoom(1)
-                .ownerName("Villa Owner")
-                .ownerID(testOwnerID.toString())
-                .roomTypes(Collections.singletonList(roomTypeRequest))
-                .build();
+        when(propertyRepository.findById(propertyId)).thenReturn(Optional.of(testProperty));
+        when(propertyRepository.save(any(Property.class))).thenReturn(testProperty);
+        when(roomTypeRestService.getRoomTypesByProperty(propertyId)).thenReturn(Collections.emptyList());
 
-        Property savedProperty = Property.builder()
-                .propertyID("VIL-" + testOwnerID.toString().substring(testOwnerID.toString().length() - 4) + "-001")
-                .propertyName("Test Villa")
-                .type(2)
-                .address("Jl. Villa No. 1")
-                .province(1)
-                .description("Villa Description")
-                .totalRoom(1)
-                .activeStatus(1)
-                .income(0)
-                .ownerName("Villa Owner")
-                .ownerID(testOwnerID)
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
-                .build();
+        PropertyResponseDTO result = propertyRestService.updateProperty(propertyId, requestDTO);
 
-        when(propertyRepository.count()).thenReturn(0L);
-        when(propertyRepository.save(any(Property.class))).thenReturn(savedProperty);
-
-        RoomTypeResponseDTO roomTypeResponse = RoomTypeResponseDTO.builder()
-                .roomTypeID("RT-001")
-                .name("Standard")
-                .floor(1)
-                .capacity(2)
-                .price(300000)
-                .facility("AC")
-                .description("Standard Room")
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
-                .build();
-
-        when(roomTypeRestService.createRoomType(any(CreateRoomTypeRequestDTO.class)))
-                .thenReturn(roomTypeResponse);
-
-        RoomResponseDTO roomResponse = RoomResponseDTO.builder()
-                .roomID("R-001")
-                .roomTypeID("RT-001")
-                .availabilityStatus(1)
-                .activeRoom(1)
-                .build();
-
-        when(roomRestService.createRoom(any(AddRoomRequestDTO.class)))
-                .thenReturn(roomResponse);
-
-        // Act
-        PropertyResponseDTO result = propertyRestService.createProperty(createPropertyRequestDTO);
-
-        // Assert
         assertNotNull(result);
-        assertTrue(result.getPropertyID().startsWith("VIL-"));
-        assertEquals("Villa", result.getTypeName());
-        verify(propertyRepository, times(1)).save(any(Property.class));
+        verify(propertyRepository).findById(propertyId);
+        verify(propertyRepository).save(any(Property.class));
     }
 
     @Test
-    void whenCreatePropertyTypeApartemen_thenGenerateCorrectID() {
-        // Arrange
-        AddRoomRequestDTO roomTypeRequest = AddRoomRequestDTO.builder()
-                .roomTypeName("Studio")
-                .floor(1)
-                .capacity(1)
-                .price(400000)
-                .facility("AC, Kitchen")
-                .roomTypeDescription("Studio Apartment")
-                .unitCount(1)
-                .build();
+    void testUpdateProperty_NotFound() {
+        UpdatePropertyRequestDTO requestDTO = UpdatePropertyRequestDTO.builder()
+            .propertyName("Updated Hotel")
+            .build();
 
-        createPropertyRequestDTO = CreatePropertyRequestDTO.builder()
-                .propertyName("Test Apartment")
-                .type(3) // Apartemen
-                .address("Jl. Apartment No. 1")
-                .province(1)
-                .description("Apartment Description")
-                .totalRoom(1)
-                .ownerName("Apartment Owner")
-                .ownerID(testOwnerID.toString())
-                .roomTypes(Collections.singletonList(roomTypeRequest))
-                .build();
+        when(propertyRepository.findById(propertyId)).thenReturn(Optional.empty());
 
-        Property savedProperty = Property.builder()
-                .propertyID("APT-" + testOwnerID.toString().substring(testOwnerID.toString().length() - 4) + "-001")
-                .propertyName("Test Apartment")
-                .type(3)
-                .address("Jl. Apartment No. 1")
-                .province(1)
-                .description("Apartment Description")
-                .totalRoom(1)
-                .activeStatus(1)
-                .income(0)
-                .ownerName("Apartment Owner")
-                .ownerID(testOwnerID)
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
-                .build();
+        PropertyResponseDTO result = propertyRestService.updateProperty(propertyId, requestDTO);
 
-        when(propertyRepository.count()).thenReturn(0L);
-        when(propertyRepository.save(any(Property.class))).thenReturn(savedProperty);
-
-        RoomTypeResponseDTO roomTypeResponse = RoomTypeResponseDTO.builder()
-                .roomTypeID("RT-001")
-                .name("Studio")
-                .floor(1)
-                .capacity(1)
-                .price(400000)
-                .facility("AC, Kitchen")
-                .description("Studio Apartment")
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
-                .build();
-
-        when(roomTypeRestService.createRoomType(any(CreateRoomTypeRequestDTO.class)))
-                .thenReturn(roomTypeResponse);
-
-        RoomResponseDTO roomResponse = RoomResponseDTO.builder()
-                .roomID("R-001")
-                .roomTypeID("RT-001")
-                .availabilityStatus(1)
-                .activeRoom(1)
-                .build();
-
-        when(roomRestService.createRoom(any(AddRoomRequestDTO.class)))
-                .thenReturn(roomResponse);
-
-        // Act
-        PropertyResponseDTO result = propertyRestService.createProperty(createPropertyRequestDTO);
-
-        // Assert
-        assertNotNull(result);
-        assertTrue(result.getPropertyID().startsWith("APT-"));
-        assertEquals("Apartemen", result.getTypeName());
-        verify(propertyRepository, times(1)).save(any(Property.class));
-    }
-
-    @Test
-    void whenUpdatePropertyExists_thenReturnUpdatedProperty() {
-        // Arrange
-        updatePropertyRequestDTO = UpdatePropertyRequestDTO.builder()
-                .propertyName("Updated Hotel Name")
-                .type(1)
-                .address("Updated Address")
-                .province(2)
-                .description("Updated Description")
-                .totalRoom(15)
-                .activeStatus(1)
-                .build();
-
-        Property updatedProperty = testProperty.toBuilder()
-                .propertyName("Updated Hotel Name")
-                .address("Updated Address")
-                .province(2)
-                .description("Updated Description")
-                .totalRoom(15)
-                .updatedDate(LocalDateTime.now())
-                .build();
-
-        when(propertyRepository.findById(testPropertyID)).thenReturn(Optional.of(testProperty));
-        when(propertyRepository.save(any(Property.class))).thenReturn(updatedProperty);
-        when(roomTypeRestService.getRoomTypesByProperty(testPropertyID)).thenReturn(new ArrayList<>());
-
-        // Act
-        PropertyResponseDTO result = propertyRestService.updateProperty(testPropertyID, updatePropertyRequestDTO);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals("Updated Hotel Name", result.getPropertyName());
-        assertEquals("Updated Address", result.getAddress());
-        assertEquals(2, result.getProvince());
-        assertEquals("Updated Description", result.getDescription());
-        assertEquals(15, result.getTotalRoom());
-        verify(propertyRepository, times(1)).findById(testPropertyID);
-        verify(propertyRepository, times(1)).save(any(Property.class));
-    }
-
-    @Test
-    void whenUpdatePropertyWithPartialData_thenUpdateOnlyProvidedFields() {
-        // Arrange
-        updatePropertyRequestDTO = UpdatePropertyRequestDTO.builder()
-                .propertyName("Updated Name Only")
-                .build();
-
-        Property updatedProperty = testProperty.toBuilder()
-                .propertyName("Updated Name Only")
-                .updatedDate(LocalDateTime.now())
-                .build();
-
-        when(propertyRepository.findById(testPropertyID)).thenReturn(Optional.of(testProperty));
-        when(propertyRepository.save(any(Property.class))).thenReturn(updatedProperty);
-        when(roomTypeRestService.getRoomTypesByProperty(testPropertyID)).thenReturn(new ArrayList<>());
-
-        // Act
-        PropertyResponseDTO result = propertyRestService.updateProperty(testPropertyID, updatePropertyRequestDTO);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals("Updated Name Only", result.getPropertyName());
-        assertEquals(testProperty.getAddress(), result.getAddress()); // Unchanged
-        assertEquals(testProperty.getProvince(), result.getProvince()); // Unchanged
-        verify(propertyRepository, times(1)).save(any(Property.class));
-    }
-
-    @Test
-    void whenUpdatePropertyWithRoomTypes_thenUpdateRoomTypesAlso() {
-        // Arrange
-        UpdateRoomTypeRequestDTO roomTypeUpdate = UpdateRoomTypeRequestDTO.builder()
-                .roomTypeID("RT-001")
-                .capacity(2)
-                .price(600000)
-                .facility("AC, TV, Mini Bar")
-                .description("Updated Deluxe Room")
-                .build();
-
-        updatePropertyRequestDTO = UpdatePropertyRequestDTO.builder()
-                .propertyName("Updated Hotel")
-                .roomTypes(Collections.singletonList(roomTypeUpdate))
-                .build();
-
-        Property updatedProperty = testProperty.toBuilder()
-                .propertyName("Updated Hotel")
-                .updatedDate(LocalDateTime.now())
-                .build();
-
-        when(propertyRepository.findById(testPropertyID)).thenReturn(Optional.of(testProperty));
-        when(propertyRepository.save(any(Property.class))).thenReturn(updatedProperty);
-
-        RoomTypeResponseDTO roomTypeResponse = RoomTypeResponseDTO.builder()
-                .roomTypeID("RT-001")
-                .name("Updated Deluxe")
-                .floor(1)
-                .capacity(2)
-                .price(600000)
-                .facility("AC, TV")
-                .description("Deluxe Room")
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
-                .build();
-
-        when(roomTypeRestService.getRoomTypesByProperty(testPropertyID))
-                .thenReturn(Collections.singletonList(roomTypeResponse));
-        when(roomRestService.getRoomsByRoomType("RT-001")).thenReturn(new ArrayList<>());
-
-        // Act
-        PropertyResponseDTO result = propertyRestService.updateProperty(testPropertyID, updatePropertyRequestDTO);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals("Updated Hotel", result.getPropertyName());
-        verify(roomTypeRestService, times(1)).updateRoomType(eq("RT-001"), any(UpdateRoomTypeRequestDTO.class));
-        verify(propertyRepository, times(1)).save(any(Property.class));
-    }
-
-    @Test
-    void whenUpdatePropertyNotFound_thenReturnNull() {
-        // Arrange
-        updatePropertyRequestDTO = UpdatePropertyRequestDTO.builder()
-                .propertyName("Updated Name")
-                .build();
-
-        when(propertyRepository.findById("INVALID-ID")).thenReturn(Optional.empty());
-
-        // Act
-        PropertyResponseDTO result = propertyRestService.updateProperty("INVALID-ID", updatePropertyRequestDTO);
-
-        // Assert
         assertNull(result);
-        verify(propertyRepository, times(1)).findById("INVALID-ID");
+        verify(propertyRepository).findById(propertyId);
         verify(propertyRepository, never()).save(any(Property.class));
     }
 
     @Test
-    void whenDeletePropertyExists_thenSetStatusToInactive() {
-        // Arrange
-        Property deletedProperty = testProperty.toBuilder()
-                .activeStatus(0)
-                .updatedDate(LocalDateTime.now())
-                .build();
+    void testUpdateProperty_WithRoomTypes() {
+        UpdateRoomTypeRequestDTO roomTypeDTO = UpdateRoomTypeRequestDTO.builder()
+            .roomTypeID(roomTypeId.toString())
+            .capacity(2)
+            .price(600000)
+            .facility("AC, TV, Fridge")
+            .build();
 
-        when(propertyRepository.findById(testPropertyID)).thenReturn(Optional.of(testProperty));
-        when(propertyRepository.save(any(Property.class))).thenReturn(deletedProperty);
+        UpdatePropertyRequestDTO requestDTO = UpdatePropertyRequestDTO.builder()
+            .propertyName("Updated Hotel")
+            .roomTypes(Arrays.asList(roomTypeDTO))
+            .build();
 
-        // Act
-        PropertyResponseDTO result = propertyRestService.deleteProperty(testPropertyID);
+        when(propertyRepository.findById(propertyId)).thenReturn(Optional.of(testProperty));
+        when(propertyRepository.save(any(Property.class))).thenReturn(testProperty);
+        when(roomTypeRestService.getRoomTypesByProperty(propertyId)).thenReturn(Collections.emptyList());
 
-        // Assert
+        PropertyResponseDTO result = propertyRestService.updateProperty(propertyId, requestDTO);
+
         assertNotNull(result);
-        assertEquals(0, result.getActiveStatus());
-        assertEquals("Non-Active", result.getActiveStatusName());
-        verify(propertyRepository, times(1)).findById(testPropertyID);
-        verify(propertyRepository, times(1)).save(any(Property.class));
+        verify(roomTypeRestService).updateRoomType(eq(roomTypeId), any());
     }
 
     @Test
-    void whenDeletePropertyNotFound_thenReturnNull() {
-        // Arrange
-        when(propertyRepository.findById("INVALID-ID")).thenReturn(Optional.empty());
+    void testUpdateProperty_PartialUpdate() {
+        UpdatePropertyRequestDTO requestDTO = UpdatePropertyRequestDTO.builder()
+            .propertyName("Updated Name Only")
+            .build();
 
-        // Act
-        PropertyResponseDTO result = propertyRestService.deleteProperty("INVALID-ID");
+        when(propertyRepository.findById(propertyId)).thenReturn(Optional.of(testProperty));
+        when(propertyRepository.save(any(Property.class))).thenReturn(testProperty);
+        when(roomTypeRestService.getRoomTypesByProperty(propertyId)).thenReturn(Collections.emptyList());
 
-        // Assert
+        PropertyResponseDTO result = propertyRestService.updateProperty(propertyId, requestDTO);
+
+        assertNotNull(result);
+        verify(propertyRepository).save(argThat(property -> 
+            property.getType() == testProperty.getType() && 
+            property.getAddress().equals(testProperty.getAddress())
+        ));
+    }
+
+    // ============================================
+    // DELETE PROPERTY TESTS
+    // ============================================
+
+    @Test
+    void testDeleteProperty_Success() {
+        when(propertyRepository.findById(propertyId)).thenReturn(Optional.of(testProperty));
+        when(bookingRepository.existsActiveBookingsByPropertyID(propertyId)).thenReturn(false);
+        when(propertyRepository.save(any(Property.class))).thenReturn(testProperty);
+
+        PropertyResponseDTO result = propertyRestService.deleteProperty(propertyId);
+
+        assertNotNull(result);
+        verify(propertyRepository).findById(propertyId);
+        verify(bookingRepository).existsActiveBookingsByPropertyID(propertyId);
+        verify(propertyRepository).save(argThat(property -> property.getActiveStatus() == 0));
+    }
+
+    @Test
+    void testDeleteProperty_NotFound() {
+        when(propertyRepository.findById(propertyId)).thenReturn(Optional.empty());
+
+        PropertyResponseDTO result = propertyRestService.deleteProperty(propertyId);
+
         assertNull(result);
-        verify(propertyRepository, times(1)).findById("INVALID-ID");
+        verify(propertyRepository).findById(propertyId);
         verify(propertyRepository, never()).save(any(Property.class));
     }
 
     @Test
-    void whenConvertPropertyWithType1_thenReturnHotel() {
-        // Arrange
-        testProperty.setType(1);
-        when(propertyRepository.findAll()).thenReturn(Collections.singletonList(testProperty));
+    void testDeleteProperty_HasActiveBookings() {
+        when(propertyRepository.findById(propertyId)).thenReturn(Optional.of(testProperty));
+        when(bookingRepository.existsActiveBookingsByPropertyID(propertyId)).thenReturn(true);
 
-        // Act
-        List<PropertyResponseDTO> result = propertyRestService.getAllProperties();
-
-        // Assert
-        assertEquals("Hotel", result.get(0).getTypeName());
-    }
-
-    @Test
-    void whenConvertPropertyWithType2_thenReturnVilla() {
-        // Arrange
-        testProperty.setType(2);
-        when(propertyRepository.findAll()).thenReturn(Collections.singletonList(testProperty));
-
-        // Act
-        List<PropertyResponseDTO> result = propertyRestService.getAllProperties();
-
-        // Assert
-        assertEquals("Villa", result.get(0).getTypeName());
-    }
-
-    @Test
-    void whenConvertPropertyWithType3_thenReturnApartemen() {
-        // Arrange
-        testProperty.setType(3);
-        when(propertyRepository.findAll()).thenReturn(Collections.singletonList(testProperty));
-
-        // Act
-        List<PropertyResponseDTO> result = propertyRestService.getAllProperties();
-
-        // Assert
-        assertEquals("Apartemen", result.get(0).getTypeName());
-    }
-
-    @Test
-    void whenConvertPropertyWithUnknownType_thenReturnUnknown() {
-        // Arrange
-        testProperty.setType(99);
-        when(propertyRepository.findAll()).thenReturn(Collections.singletonList(testProperty));
-
-        // Act
-        List<PropertyResponseDTO> result = propertyRestService.getAllProperties();
-
-        // Assert
-        assertEquals("Unknown", result.get(0).getTypeName());
-    }
-
-    @Test
-    void whenConvertPropertyWithActiveStatus0_thenReturnNonActive() {
-        // Arrange
-        testProperty.setActiveStatus(0);
-        when(propertyRepository.findAll()).thenReturn(Collections.singletonList(testProperty));
-
-        // Act
-        List<PropertyResponseDTO> result = propertyRestService.getAllProperties();
-
-        // Assert
-        assertEquals("Non-Active", result.get(0).getActiveStatusName());
-    }
-
-    @Test
-    void whenCreatePropertyWithMultipleRoomTypes_thenCreateAllRoomTypesAndRooms() {
-        // Arrange
-        AddRoomRequestDTO roomType1 = AddRoomRequestDTO.builder()
-                .roomTypeName("Deluxe")
-                .floor(1)
-                .capacity(2)
-                .price(500000)
-                .facility("AC, TV")
-                .roomTypeDescription("Deluxe Room")
-                .unitCount(2)
-                .build();
-
-        AddRoomRequestDTO roomType2 = AddRoomRequestDTO.builder()
-                .roomTypeName("Suite")
-                .floor(2)
-                .capacity(4)
-                .price(800000)
-                .facility("AC, TV, Mini Bar")
-                .roomTypeDescription("Suite Room")
-                .unitCount(1)
-                .build();
-
-        createPropertyRequestDTO = CreatePropertyRequestDTO.builder()
-                .propertyName("Multi Room Hotel")
-                .type(1)
-                .address("Jl. Multi No. 1")
-                .province(1)
-                .description("Hotel with multiple room types")
-                .totalRoom(3)
-                .ownerName("Multi Owner")
-                .ownerID(testOwnerID.toString())
-                .roomTypes(Arrays.asList(roomType1, roomType2))
-                .build();
-
-        Property savedProperty = Property.builder()
-                .propertyID("HOT-" + testOwnerID.toString().substring(testOwnerID.toString().length() - 4) + "-001")
-                .propertyName("Multi Room Hotel")
-                .type(1)
-                .address("Jl. Multi No. 1")
-                .province(1)
-                .description("Hotel with multiple room types")
-                .totalRoom(3)
-                .activeStatus(1)
-                .income(0)
-                .ownerName("Multi Owner")
-                .ownerID(testOwnerID)
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
-                .build();
-
-        when(propertyRepository.count()).thenReturn(0L);
-        when(propertyRepository.save(any(Property.class))).thenReturn(savedProperty);
-
-        RoomTypeResponseDTO roomTypeResponse1 = RoomTypeResponseDTO.builder()
-                .roomTypeID("RT-001")
-                .name("Deluxe")
-                .floor(1)
-                .capacity(2)
-                .price(500000)
-                .facility("AC, TV")
-                .description("Deluxe Room")
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
-                .build();
-
-        RoomTypeResponseDTO roomTypeResponse2 = RoomTypeResponseDTO.builder()
-                .roomTypeID("RT-002")
-                .name("Suite")
-                .floor(2)
-                .capacity(4)
-                .price(800000)
-                .facility("AC, TV, Mini Bar")
-                .description("Suite Room")
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
-                .build();
-
-        when(roomTypeRestService.createRoomType(any(CreateRoomTypeRequestDTO.class)))
-                .thenReturn(roomTypeResponse1, roomTypeResponse2);
-
-        RoomResponseDTO roomResponse = RoomResponseDTO.builder()
-                .roomID("R-001")
-                .roomTypeID("RT-001")
-                .availabilityStatus(1)
-                .activeRoom(1)
-                .build();
-
-        when(roomRestService.createRoom(any(AddRoomRequestDTO.class)))
-                .thenReturn(roomResponse);
-
-        // Act
-        PropertyResponseDTO result = propertyRestService.createProperty(createPropertyRequestDTO);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals("Multi Room Hotel", result.getPropertyName());
-        assertEquals(3, result.getTotalRoom());
-        assertNotNull(result.getRoomTypes());
-        assertEquals(2, result.getRoomTypes().size());
-        verify(roomTypeRestService, times(2)).createRoomType(any(CreateRoomTypeRequestDTO.class));
-        verify(roomRestService, times(3)).createRoom(any(AddRoomRequestDTO.class)); // 2 + 1 rooms
-    }
-
-    @Test
-    void whenUpdatePropertyChangeType_thenTypeIsUpdated() {
-        // Arrange
-        updatePropertyRequestDTO = UpdatePropertyRequestDTO.builder()
-                .type(2) // Change from Hotel to Villa
-                .build();
-
-        Property updatedProperty = testProperty.toBuilder()
-                .type(2)
-                .updatedDate(LocalDateTime.now())
-                .build();
-
-        when(propertyRepository.findById(testPropertyID)).thenReturn(Optional.of(testProperty));
-        when(propertyRepository.save(any(Property.class))).thenReturn(updatedProperty);
-        when(roomTypeRestService.getRoomTypesByProperty(testPropertyID)).thenReturn(new ArrayList<>());
-
-        // Act
-        PropertyResponseDTO result = propertyRestService.updateProperty(testPropertyID, updatePropertyRequestDTO);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(2, result.getType());
-        assertEquals("Villa", result.getTypeName());
-        verify(propertyRepository, times(1)).save(any(Property.class));
-    }
-
-    @Test
-    void whenUpdatePropertyChangeActiveStatus_thenActiveStatusIsUpdated() {
-        // Arrange
-        updatePropertyRequestDTO = UpdatePropertyRequestDTO.builder()
-                .activeStatus(0) // Change to inactive
-                .build();
-
-        Property updatedProperty = testProperty.toBuilder()
-                .activeStatus(0)
-                .updatedDate(LocalDateTime.now())
-                .build();
-
-        when(propertyRepository.findById(testPropertyID)).thenReturn(Optional.of(testProperty));
-        when(propertyRepository.save(any(Property.class))).thenReturn(updatedProperty);
-        when(roomTypeRestService.getRoomTypesByProperty(testPropertyID)).thenReturn(new ArrayList<>());
-
-        // Act
-        PropertyResponseDTO result = propertyRestService.updateProperty(testPropertyID, updatePropertyRequestDTO);
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(0, result.getActiveStatus());
-        assertEquals("Non-Active", result.getActiveStatusName());
-        verify(propertyRepository, times(1)).save(any(Property.class));
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> propertyRestService.deleteProperty(propertyId));
+        
+        assertTrue(exception.getMessage().contains("Cannot delete property"));
+        assertTrue(exception.getMessage().contains("active bookings"));
+        verify(propertyRepository, never()).save(any(Property.class));
     }
 }

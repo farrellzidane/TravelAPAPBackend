@@ -2,14 +2,27 @@ package apap.ti._5.accommodation_2306275600_be.external;
 
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -19,7 +32,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import apap.ti._5.accommodation_2306275600_be.exceptions.AccessDeniedException;
 import apap.ti._5.accommodation_2306275600_be.restdto.auth.CustomerProfileDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.auth.UserProfileDTO;
+import apap.ti._5.accommodation_2306275600_be.restdto.response.BaseResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Mock implementation of AuthService for development.
@@ -28,15 +43,21 @@ import jakarta.servlet.http.HttpServletRequest;
  */
 @Service
 @Profile("dev")
+@RequiredArgsConstructor
 public class MockAuthServiceImpl implements AuthService {
 
     private static final Logger logger = LoggerFactory.getLogger(MockAuthServiceImpl.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final RestTemplate restTemplate;
+    
+    @Value("${auth.service.url:https://travel-apap-mock-server.vercel.app}")
+    private String authServiceUrl;
     
     private static final String SUPERADMIN = "Superadmin";
     private static final String ACCOMMODATION_OWNER = "Accommodation Owner";
     private static final String ACCOMMODATION_OWNER_TYPO = "Accomodation Owner"; // Typo variant from SSO
     private static final String CUSTOMER = "Customer";
+    private static final Pattern ERROR_DETAILS_PATTERN = Pattern.compile(": .*");
 
     @Override
     public UserProfileDTO getAuthenticatedUser() throws AccessDeniedException {
@@ -96,6 +117,95 @@ public class MockAuthServiceImpl implements AuthService {
     public boolean isAccommodationOwner(UserProfileDTO userProfile) {
         return ACCOMMODATION_OWNER.equals(userProfile.role()) || 
                ACCOMMODATION_OWNER_TYPO.equals(userProfile.role());
+    }
+
+    @Override
+    public List<UserProfileDTO> getAllAccommodationOwner() {
+        String url = authServiceUrl + "/api/profile/all?role=Accommodation Owner";
+
+        List<UserProfileDTO> accommodationOwners;
+        try {
+            accommodationOwners = fetchAndExtractSpecificData(
+                    url,
+                    "All Accommodation Owners",
+                    new ParameterizedTypeReference<BaseResponseDTO<List<UserProfileDTO>>>() {
+                    });
+            return accommodationOwners;
+        } catch (HttpStatusCodeException e) {
+            String errMsg = handleHttpException(e);
+            throw new AccessDeniedException(errMsg);
+        } catch (ResourceAccessException e) {
+            throw new AccessDeniedException("Connection to auth server failed or timed out.");
+        } catch (NullPointerException e) {
+            throw new NoSuchElementException("Accommodation Owner not found");
+        } catch (Exception e) {
+            throw new AccessDeniedException("An unexpected error occurred: " + e.getMessage());
+        }
+    }
+
+    private String handleHttpException(HttpStatusCodeException e) {
+        JsonNode jsonErrorBody = e.getResponseBodyAs(JsonNode.class);
+
+        if (e instanceof HttpClientErrorException.NotFound) {
+            return "" + ERROR_DETAILS_PATTERN.matcher(e.getMessage()).replaceAll("");
+        }  else if (!Objects.isNull(jsonErrorBody) && jsonErrorBody.has("message")) {
+            return "" + jsonErrorBody.get("message").asText();
+        } else {
+            return "Unhandled Exception was thrown" + "HTTP Error " + e.getStatusCode() + ": " + e.getStatusText();
+        }
+    }
+    
+    private <T> T fetchAndExtractSpecificData(
+            String url,
+            String logContext,
+            ParameterizedTypeReference<BaseResponseDTO<T>> responseType)
+            throws NullPointerException, HttpClientErrorException,
+            HttpServerErrorException, ResourceAccessException {
+
+        HttpHeaders extractedHeader = getRequestAuthHeader();
+        Objects.requireNonNull(extractedHeader);
+        HttpEntity<?> entity = new HttpEntity<>(extractedHeader);
+
+        Objects.requireNonNull(url);
+        HttpMethod requestMethod = HttpMethod.GET;
+        Objects.requireNonNull(requestMethod);
+        Objects.requireNonNull(responseType);
+        ResponseEntity<BaseResponseDTO<T>> response = restTemplate.exchange(
+                url,
+                requestMethod,
+                entity,
+                responseType);
+
+        BaseResponseDTO<T> body = response.getBody();
+
+        if (Objects.isNull(body)) {
+            logger.warn("{} response body is null", logContext);
+            throw new NullPointerException(logContext + " response body is null");
+        }
+        Objects.requireNonNull(body);
+
+        if (Objects.isNull(body.getData())) {
+            logger.warn("{} response data is null", logContext);
+            throw new NullPointerException(logContext + " response data is null");
+        }
+
+        return body.getData();
+
+    }
+
+    private HttpHeaders getRequestAuthHeader() {
+        HttpHeaders headers = new HttpHeaders();
+
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (!Objects.isNull(attributes)) {
+            HttpServletRequest request = attributes.getRequest();
+            String authHeader = request.getHeader("Authorization");
+            if (!Objects.isNull(authHeader) && authHeader.startsWith("Bearer ")) {
+                headers.set("Authorization", authHeader);
+            }
+        }
+
+        return headers;
     }
 
     @Override
@@ -161,10 +271,6 @@ public class MockAuthServiceImpl implements AuthService {
         }
 
         HttpServletRequest request = attributes.getRequest();
-        if (Objects.isNull(request)) {
-            return null;
-        }
-        
         String authHeader = request.getHeader("Authorization");
         
         if (Objects.isNull(authHeader) || !authHeader.startsWith("Bearer ")) {

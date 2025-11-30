@@ -1,6 +1,5 @@
 package apap.ti._5.accommodation_2306275600_be.restcontroller;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -10,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import apap.ti._5.accommodation_2306275600_be.external.AuthServiceMock;
+import apap.ti._5.accommodation_2306275600_be.external.AuthService;
 import apap.ti._5.accommodation_2306275600_be.restdto.auth.UserProfileDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.BaseResponseDTO;
 import lombok.AllArgsConstructor;
@@ -20,17 +19,13 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class UserRestController {
 
-    private final AuthServiceMock authServiceMock;
+    private final AuthService authService;
 
     @GetMapping("/accommodation-owners")
     public ResponseEntity<BaseResponseDTO<List<UserProfileDTO>>> getAccommodationOwners() {
         try {
-            // For now, return the single mock accommodation owner
-            // In production, this would call SSO service to get all accommodation owners
-            UserProfileDTO accommodationOwner = authServiceMock.getAccommodationOwnerUser();
-            
-            List<UserProfileDTO> owners = new ArrayList<>();
-            owners.add(accommodationOwner);
+            // Call external API through AuthService to get all accommodation owners
+            List<UserProfileDTO> owners = authService.getAllAccommodationOwner();
             
             var response = new BaseResponseDTO<List<UserProfileDTO>>();
             response.setStatus(HttpStatus.OK.value());

@@ -2,346 +2,291 @@ package apap.ti._5.accommodation_2306275600_be.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 class PropertyTest {
 
     private Property property;
-    private UUID ownerId;
+    private UUID testPropertyId;
+    private UUID testOwnerId;
 
     @BeforeEach
     void setUp() {
-        ownerId = UUID.randomUUID();
+        testPropertyId = UUID.randomUUID();
+        testOwnerId = UUID.randomUUID();
+        
         property = Property.builder()
-                .propertyID("PROP-001")
-                .propertyName("Grand Hotel")
+                .propertyID(testPropertyId)
+                .propertyName("Test Hotel")
                 .type(1)
-                .address("Jl. Sudirman No. 123, Jakarta")
-                .province(31) // DKI Jakarta
-                .description("A luxurious 5-star hotel in the heart of Jakarta")
-                .totalRoom(100)
+                .address("Jl. Test No. 123")
+                .province(31)
+                .description("A test hotel property")
+                .totalRoom(50)
                 .activeStatus(1)
-                .income(5000000)
+                .income(10000000)
                 .ownerName("John Doe")
-                .ownerID(ownerId)
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
-                .listRoomType(new ArrayList<>())
+                .ownerID(testOwnerId)
                 .build();
-    }
-
-    @Test
-    void testPropertyCreation() {
-        assertNotNull(property);
-        assertEquals("PROP-001", property.getPropertyID());
-        assertEquals("Grand Hotel", property.getPropertyName());
-        assertEquals(1, property.getType());
-        assertEquals("Jl. Sudirman No. 123, Jakarta", property.getAddress());
-        assertEquals(31, property.getProvince());
-        assertEquals("A luxurious 5-star hotel in the heart of Jakarta", property.getDescription());
-        assertEquals(100, property.getTotalRoom());
-        assertEquals(1, property.getActiveStatus());
-        assertEquals(5000000, property.getIncome());
-        assertEquals("John Doe", property.getOwnerName());
-        assertEquals(ownerId, property.getOwnerID());
-        assertNotNull(property.getListRoomType());
     }
 
     @Test
     void testPropertyBuilder() {
-        UUID newOwnerId = UUID.randomUUID();
-        LocalDateTime created = LocalDateTime.of(2025, 1, 1, 10, 0);
-        LocalDateTime updated = LocalDateTime.of(2025, 1, 2, 10, 0);
-
-        Property newProperty = Property.builder()
-                .propertyID("PROP-002")
-                .propertyName("Beach Resort")
-                .type(2)
-                .address("Jl. Pantai Kuta, Bali")
-                .province(51) // Bali
-                .description("Beautiful beachfront resort")
-                .totalRoom(50)
-                .activeStatus(1)
-                .income(3000000)
-                .ownerName("Jane Smith")
-                .ownerID(newOwnerId)
-                .createdDate(created)
-                .updatedDate(updated)
-                .build();
-
-        assertEquals("PROP-002", newProperty.getPropertyID());
-        assertEquals("Beach Resort", newProperty.getPropertyName());
-        assertEquals(2, newProperty.getType());
-        assertEquals("Jl. Pantai Kuta, Bali", newProperty.getAddress());
-        assertEquals(51, newProperty.getProvince());
-        assertEquals("Beautiful beachfront resort", newProperty.getDescription());
-        assertEquals(50, newProperty.getTotalRoom());
-        assertEquals(1, newProperty.getActiveStatus());
-        assertEquals(3000000, newProperty.getIncome());
-        assertEquals("Jane Smith", newProperty.getOwnerName());
-        assertEquals(newOwnerId, newProperty.getOwnerID());
-        assertEquals(created, newProperty.getCreatedDate());
-        assertEquals(updated, newProperty.getUpdatedDate());
-    }
-
-    @Test
-    void testPropertySettersAndGetters() {
-        property.setPropertyID("PROP-UPDATE");
-        assertEquals("PROP-UPDATE", property.getPropertyID());
-
-        property.setPropertyName("Updated Hotel");
-        assertEquals("Updated Hotel", property.getPropertyName());
-
-        property.setType(3);
-        assertEquals(3, property.getType());
-
-        property.setAddress("New Address");
-        assertEquals("New Address", property.getAddress());
-
-        property.setProvince(32);
-        assertEquals(32, property.getProvince());
-
-        property.setDescription("Updated description");
-        assertEquals("Updated description", property.getDescription());
-
-        property.setTotalRoom(150);
-        assertEquals(150, property.getTotalRoom());
-
-        property.setActiveStatus(0);
-        assertEquals(0, property.getActiveStatus());
-
-        property.setIncome(10000000);
+        assertNotNull(property);
+        assertEquals(testPropertyId, property.getPropertyID());
+        assertEquals("Test Hotel", property.getPropertyName());
+        assertEquals(1, property.getType());
+        assertEquals("Jl. Test No. 123", property.getAddress());
+        assertEquals(31, property.getProvince());
+        assertEquals("A test hotel property", property.getDescription());
+        assertEquals(50, property.getTotalRoom());
+        assertEquals(1, property.getActiveStatus());
         assertEquals(10000000, property.getIncome());
-
-        property.setOwnerName("New Owner");
-        assertEquals("New Owner", property.getOwnerName());
-
-        UUID newOwnerId = UUID.randomUUID();
-        property.setOwnerID(newOwnerId);
-        assertEquals(newOwnerId, property.getOwnerID());
-
-        LocalDateTime newCreated = LocalDateTime.now().minusDays(1);
-        property.setCreatedDate(newCreated);
-        assertEquals(newCreated, property.getCreatedDate());
-
-        LocalDateTime newUpdated = LocalDateTime.now();
-        property.setUpdatedDate(newUpdated);
-        assertEquals(newUpdated, property.getUpdatedDate());
+        assertEquals("John Doe", property.getOwnerName());
+        assertEquals(testOwnerId, property.getOwnerID());
     }
 
     @Test
-    void testPropertyNoArgsConstructor() {
+    void testNoArgsConstructor() {
         Property emptyProperty = new Property();
         assertNotNull(emptyProperty);
         assertNull(emptyProperty.getPropertyID());
         assertNull(emptyProperty.getPropertyName());
-        assertEquals(0, emptyProperty.getIncome());
     }
 
     @Test
-    void testPropertyAllArgsConstructor() {
-        UUID newOwnerId = UUID.randomUUID();
-        LocalDateTime created = LocalDateTime.now();
-        LocalDateTime updated = LocalDateTime.now();
+    void testAllArgsConstructor() {
+        LocalDateTime now = LocalDateTime.now();
         List<RoomType> roomTypes = new ArrayList<>();
-
-        Property newProperty = new Property(
-            "PROP-003",
-            "Test Property",
-            1,
-            "Test Address",
-            31,
-            "Test Description",
-            75,
-            1,
-            2000000,
-            roomTypes,
-            "Test Owner",
-            newOwnerId,
-            created,
-            updated
+        
+        Property fullProperty = new Property(
+                testPropertyId,
+                "Full Hotel",
+                2,
+                "Jl. Full No. 456",
+                32,
+                "Full description",
+                100,
+                1,
+                20000000,
+                roomTypes,
+                "Jane Doe",
+                testOwnerId,
+                now,
+                now
         );
-
-        assertEquals("PROP-003", newProperty.getPropertyID());
-        assertEquals("Test Property", newProperty.getPropertyName());
-        assertEquals(1, newProperty.getType());
-        assertEquals("Test Address", newProperty.getAddress());
-        assertEquals(31, newProperty.getProvince());
-        assertEquals("Test Description", newProperty.getDescription());
-        assertEquals(75, newProperty.getTotalRoom());
-        assertEquals(1, newProperty.getActiveStatus());
-        assertEquals(2000000, newProperty.getIncome());
-        assertEquals(roomTypes, newProperty.getListRoomType());
-        assertEquals("Test Owner", newProperty.getOwnerName());
-        assertEquals(newOwnerId, newProperty.getOwnerID());
-        assertEquals(created, newProperty.getCreatedDate());
-        assertEquals(updated, newProperty.getUpdatedDate());
+        
+        assertEquals(testPropertyId, fullProperty.getPropertyID());
+        assertEquals("Full Hotel", fullProperty.getPropertyName());
+        assertEquals(2, fullProperty.getType());
+        assertEquals("Jl. Full No. 456", fullProperty.getAddress());
+        assertEquals(32, fullProperty.getProvince());
+        assertEquals("Full description", fullProperty.getDescription());
+        assertEquals(100, fullProperty.getTotalRoom());
+        assertEquals(1, fullProperty.getActiveStatus());
+        assertEquals(20000000, fullProperty.getIncome());
+        assertEquals("Jane Doe", fullProperty.getOwnerName());
+        assertEquals(testOwnerId, fullProperty.getOwnerID());
+        assertEquals(now, fullProperty.getCreatedDate());
+        assertEquals(now, fullProperty.getUpdatedDate());
     }
 
     @Test
-    void testPropertyRoomTypeRelationship() {
-        RoomType roomType1 = RoomType.builder()
-                .roomTypeID("RT-001")
-                .name("Deluxe Room")
-                .property(property)
-                .build();
-
-        RoomType roomType2 = RoomType.builder()
-                .roomTypeID("RT-002")
-                .name("Suite")
-                .property(property)
-                .build();
-
-        List<RoomType> roomTypes = new ArrayList<>();
-        roomTypes.add(roomType1);
-        roomTypes.add(roomType2);
-
-        property.setListRoomType(roomTypes);
-
-        assertEquals(2, property.getListRoomType().size());
-        assertEquals("Deluxe Room", property.getListRoomType().get(0).getName());
-        assertEquals("Suite", property.getListRoomType().get(1).getName());
-    }
-
-    @Test
-    void testPropertyActiveStatus() {
-        // Active
-        property.setActiveStatus(1);
-        assertEquals(1, property.getActiveStatus());
-
-        // Inactive
+    void testSettersAndGetters() {
+        property.setPropertyName("Updated Hotel");
+        assertEquals("Updated Hotel", property.getPropertyName());
+        
+        property.setType(3);
+        assertEquals(3, property.getType());
+        
+        property.setAddress("New Address");
+        assertEquals("New Address", property.getAddress());
+        
+        property.setProvince(33);
+        assertEquals(33, property.getProvince());
+        
+        property.setDescription("Updated description");
+        assertEquals("Updated description", property.getDescription());
+        
+        property.setTotalRoom(75);
+        assertEquals(75, property.getTotalRoom());
+        
         property.setActiveStatus(0);
         assertEquals(0, property.getActiveStatus());
+        
+        property.setIncome(15000000);
+        assertEquals(15000000, property.getIncome());
+        
+        property.setOwnerName("New Owner");
+        assertEquals("New Owner", property.getOwnerName());
+        
+        UUID newOwnerId = UUID.randomUUID();
+        property.setOwnerID(newOwnerId);
+        assertEquals(newOwnerId, property.getOwnerID());
     }
 
     @Test
-    void testPropertyIncomeManagement() {
-        assertEquals(5000000, property.getIncome());
-
-        // Add income
-        property.setIncome(property.getIncome() + 1000000);
-        assertEquals(6000000, property.getIncome());
-
-        // Subtract income (refund)
-        property.setIncome(property.getIncome() - 500000);
-        assertEquals(5500000, property.getIncome());
-    }
-
-    @Test
-    void testPropertyTypes() {
-        // Test different property types
-        property.setType(1); // Hotel
-        assertEquals(1, property.getType());
-
-        property.setType(2); // Apartment
-        assertEquals(2, property.getType());
-
-        property.setType(3); // Villa
-        assertEquals(3, property.getType());
-    }
-
-    @Test
-    void testPropertyToBuilder() {
-        Property modifiedProperty = property.toBuilder()
-                .propertyName("Modified Hotel")
-                .income(7000000)
+    void testRoomTypeRelationship() {
+        List<RoomType> roomTypes = new ArrayList<>();
+        RoomType roomType = RoomType.builder()
+                .roomTypeID(UUID.randomUUID())
+                .name("Deluxe Room")
+                .price(500000)
                 .build();
-
-        assertEquals("Modified Hotel", modifiedProperty.getPropertyName());
-        assertEquals(7000000, modifiedProperty.getIncome());
-        assertEquals(property.getPropertyID(), modifiedProperty.getPropertyID());
-        assertEquals(property.getType(), modifiedProperty.getType());
+        roomTypes.add(roomType);
+        
+        property.setListRoomType(roomTypes);
+        
+        assertNotNull(property.getListRoomType());
+        assertEquals(1, property.getListRoomType().size());
+        assertEquals("Deluxe Room", property.getListRoomType().get(0).getName());
     }
 
     @Test
-    void testPropertyEqualsAndHashCode() {
-        Property property1 = Property.builder()
-                .propertyID("PROP-SAME")
-                .propertyName("Same Hotel")
-                .build();
+    void testOnCreate() {
+        Property newProperty = new Property();
+        assertNull(newProperty.getPropertyID());
+        assertNull(newProperty.getCreatedDate());
+        assertNull(newProperty.getUpdatedDate());
+        
+        // Simulate @PrePersist
+        newProperty.onCreate();
+        
+        assertNotNull(newProperty.getPropertyID());
+        assertNotNull(newProperty.getCreatedDate());
+        assertNotNull(newProperty.getUpdatedDate());
+        assertEquals(newProperty.getCreatedDate(), newProperty.getUpdatedDate());
+    }
 
-        Property property2 = Property.builder()
-                .propertyID("PROP-SAME")
-                .propertyName("Same Hotel")
-                .build();
+    @Test
+    void testOnCreateWithExistingId() {
+        Property newProperty = new Property();
+        UUID existingId = UUID.randomUUID();
+        newProperty.setPropertyID(existingId);
+        
+        newProperty.onCreate();
+        
+        // Should not change existing ID
+        assertEquals(existingId, newProperty.getPropertyID());
+        assertNotNull(newProperty.getCreatedDate());
+    }
 
-        Property property3 = Property.builder()
-                .propertyID("PROP-DIFFERENT")
+    @Test
+    void testOnUpdate() {
+        property.onCreate();
+        LocalDateTime originalCreatedDate = property.getCreatedDate();
+        LocalDateTime originalUpdatedDate = property.getUpdatedDate();
+        
+        try {
+            Thread.sleep(10); // Small delay to ensure different timestamp
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        
+        property.onUpdate();
+        
+        assertEquals(originalCreatedDate, property.getCreatedDate());
+        assertNotEquals(originalUpdatedDate, property.getUpdatedDate());
+        assertTrue(property.getUpdatedDate().isAfter(originalUpdatedDate));
+    }
+
+    @Test
+    void testToBuilder() {
+        Property clonedProperty = property.toBuilder()
+                .propertyName("Cloned Hotel")
+                .build();
+        
+        assertEquals(testPropertyId, clonedProperty.getPropertyID());
+        assertEquals("Cloned Hotel", clonedProperty.getPropertyName());
+        assertEquals(property.getType(), clonedProperty.getType());
+        assertEquals(property.getAddress(), clonedProperty.getAddress());
+    }
+
+    @Test
+    void testEqualsAndHashCode() {
+        Property sameProperty = Property.builder()
+                .propertyID(testPropertyId)
+                .propertyName("Test Hotel")
+                .type(1)
+                .address("Jl. Test No. 123")
+                .province(31)
+                .description("A test hotel property")
+                .totalRoom(50)
+                .activeStatus(1)
+                .income(10000000)
+                .ownerName("John Doe")
+                .ownerID(testOwnerId)
+                .build();
+        
+        assertEquals(property, sameProperty);
+        assertEquals(property.hashCode(), sameProperty.hashCode());
+    }
+
+    @Test
+    void testNotEquals() {
+        Property differentProperty = Property.builder()
+                .propertyID(UUID.randomUUID())
                 .propertyName("Different Hotel")
                 .build();
-
-        assertEquals(property1, property2);
-        assertNotEquals(property1, property3);
-        assertEquals(property1.hashCode(), property2.hashCode());
+        
+        assertNotEquals(property, differentProperty);
     }
 
     @Test
-    void testPropertyToString() {
+    void testToString() {
         String propertyString = property.toString();
         assertNotNull(propertyString);
-        assertTrue(propertyString.contains("PROP-001"));
-        assertTrue(propertyString.contains("Grand Hotel"));
+        assertTrue(propertyString.contains("Test Hotel"));
+        assertTrue(propertyString.contains(testPropertyId.toString()));
     }
 
     @Test
-    void testPropertyWithEmptyRoomTypeList() {
+    void testNullValues() {
+        Property nullProperty = Property.builder().build();
+        
+        assertNull(nullProperty.getPropertyID());
+        assertNull(nullProperty.getPropertyName());
+        assertNull(nullProperty.getAddress());
+        assertNull(nullProperty.getDescription());
+        assertNull(nullProperty.getOwnerName());
+        assertNull(nullProperty.getOwnerID());
+    }
+
+    @Test
+    void testDateTimeFields() {
+        LocalDateTime createdDate = LocalDateTime.now().minusDays(1);
+        LocalDateTime updatedDate = LocalDateTime.now();
+        
+        property.setCreatedDate(createdDate);
+        property.setUpdatedDate(updatedDate);
+        
+        assertEquals(createdDate, property.getCreatedDate());
+        assertEquals(updatedDate, property.getUpdatedDate());
+        assertTrue(property.getUpdatedDate().isAfter(property.getCreatedDate()));
+    }
+
+    @Test
+    void testEmptyRoomTypeList() {
         property.setListRoomType(new ArrayList<>());
         assertNotNull(property.getListRoomType());
-        assertEquals(0, property.getListRoomType().size());
+        assertTrue(property.getListRoomType().isEmpty());
     }
 
     @Test
-    void testPropertyWithNullRoomTypeList() {
-        property.setListRoomType(null);
-        assertNull(property.getListRoomType());
-    }
-
-    @Test
-    void testPropertyTotalRoomUpdate() {
-        property.setTotalRoom(100);
-        assertEquals(100, property.getTotalRoom());
-
-        // Increase total rooms
-        property.setTotalRoom(120);
-        assertEquals(120, property.getTotalRoom());
-
-        // Decrease total rooms
-        property.setTotalRoom(80);
-        assertEquals(80, property.getTotalRoom());
-    }
-
-    @Test
-    void testPropertyDescriptionUpdate() {
-        String longDescription = "This is a very long description that contains multiple lines " +
-                "and provides detailed information about the property, its amenities, " +
-                "location, and services offered to guests.";
+    void testMultipleRoomTypes() {
+        List<RoomType> roomTypes = new ArrayList<>();
+        roomTypes.add(RoomType.builder().name("Standard").price(300000).build());
+        roomTypes.add(RoomType.builder().name("Deluxe").price(500000).build());
+        roomTypes.add(RoomType.builder().name("Suite").price(1000000).build());
         
-        property.setDescription(longDescription);
-        assertEquals(longDescription, property.getDescription());
-    }
-
-    @Test
-    void testPropertyAddressUpdate() {
-        String newAddress = "Jl. Gatot Subroto No. 456, Jakarta Selatan, DKI Jakarta 12930";
-        property.setAddress(newAddress);
-        assertEquals(newAddress, property.getAddress());
-    }
-
-    @Test
-    void testPropertyProvinceCode() {
-        // Test various province codes
-        property.setProvince(11); // Aceh
-        assertEquals(11, property.getProvince());
-
-        property.setProvince(31); // DKI Jakarta
-        assertEquals(31, property.getProvince());
-
-        property.setProvince(51); // Bali
-        assertEquals(51, property.getProvince());
+        property.setListRoomType(roomTypes);
+        
+        assertEquals(3, property.getListRoomType().size());
     }
 }

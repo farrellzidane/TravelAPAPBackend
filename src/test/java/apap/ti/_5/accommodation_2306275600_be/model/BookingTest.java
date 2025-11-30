@@ -2,251 +2,190 @@ package apap.ti._5.accommodation_2306275600_be.model;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 class BookingTest {
 
     private Booking booking;
-    private Room room;
-    private RoomType roomType;
-    private Property property;
+    private UUID testBookingId;
+    private UUID testCustomerId;
+    private Room testRoom;
 
     @BeforeEach
     void setUp() {
-        // Setup Property
-        property = Property.builder()
-                .propertyID("PROP-001")
-                .propertyName("Test Hotel")
-                .type(1)
-                .address("Test Address")
-                .province(1)
-                .description("Test Description")
-                .totalRoom(10)
-                .activeStatus(1)
-                .income(0)
-                .ownerName("Test Owner")
-                .ownerID(UUID.randomUUID())
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
-                .build();
-
-        // Setup RoomType
-        roomType = RoomType.builder()
-                .roomTypeID("RT-001")
-                .name("Deluxe Room")
-                .price(500000)
-                .description("Deluxe room with ocean view")
-                .capacity(2)
-                .facility("AC, TV, WiFi")
-                .floor(2)
-                .property(property)
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
-                .build();
-
-        // Setup Room
-        room = Room.builder()
-                .roomID("ROOM-001")
+        testBookingId = UUID.randomUUID();
+        testCustomerId = UUID.randomUUID();
+        
+        testRoom = Room.builder()
+                .roomID(UUID.randomUUID())
                 .name("Room 101")
                 .availabilityStatus(1)
                 .activeRoom(1)
-                .roomType(roomType)
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
                 .build();
-
-        // Setup Booking
+        
         booking = Booking.builder()
-                .bookingID("BOOK-001")
+                .bookingID(testBookingId)
                 .checkInDate(LocalDateTime.now().plusDays(1))
                 .checkOutDate(LocalDateTime.now().plusDays(3))
                 .totalDays(2)
                 .totalPrice(1000000)
                 .status(0)
-                .customerID(UUID.randomUUID())
-                .customerName("John Doe")
+                .customerID(testCustomerId)
+                .customerName("John Customer")
                 .customerEmail("john@example.com")
-                .customerPhone("081234567890")
+                .customerPhone("08123456789")
                 .isBreakfast(true)
-                .refund(0)
-                .extraPay(0)
                 .capacity(2)
-                .room(room)
-                .createdDate(LocalDateTime.now())
-                .updatedDate(LocalDateTime.now())
+                .room(testRoom)
                 .build();
-    }
-
-    @Test
-    void testBookingCreation() {
-        assertNotNull(booking);
-        assertEquals("BOOK-001", booking.getBookingID());
-        assertEquals("John Doe", booking.getCustomerName());
-        assertEquals("john@example.com", booking.getCustomerEmail());
-        assertEquals("081234567890", booking.getCustomerPhone());
-        assertEquals(2, booking.getTotalDays());
-        assertEquals(1000000, booking.getTotalPrice());
-        assertEquals(0, booking.getStatus());
-        assertTrue(booking.isBreakfast());
-        assertEquals(2, booking.getCapacity());
-        assertNotNull(booking.getRoom());
     }
 
     @Test
     void testBookingBuilder() {
-        UUID customerId = UUID.randomUUID();
-        LocalDateTime checkIn = LocalDateTime.of(2025, 11, 10, 14, 0);
-        LocalDateTime checkOut = LocalDateTime.of(2025, 11, 12, 12, 0);
-
-        Booking newBooking = Booking.builder()
-                .bookingID("BOOK-002")
-                .checkInDate(checkIn)
-                .checkOutDate(checkOut)
-                .totalDays(2)
-                .totalPrice(1500000)
-                .status(1)
-                .customerID(customerId)
-                .customerName("Jane Smith")
-                .customerEmail("jane@example.com")
-                .customerPhone("082345678901")
-                .isBreakfast(false)
-                .refund(0)
-                .extraPay(100000)
-                .capacity(3)
-                .room(room)
-                .build();
-
-        assertEquals("BOOK-002", newBooking.getBookingID());
-        assertEquals(checkIn, newBooking.getCheckInDate());
-        assertEquals(checkOut, newBooking.getCheckOutDate());
-        assertEquals(2, newBooking.getTotalDays());
-        assertEquals(1500000, newBooking.getTotalPrice());
-        assertEquals(1, newBooking.getStatus());
-        assertEquals(customerId, newBooking.getCustomerID());
-        assertEquals("Jane Smith", newBooking.getCustomerName());
-        assertEquals("jane@example.com", newBooking.getCustomerEmail());
-        assertEquals("082345678901", newBooking.getCustomerPhone());
-        assertFalse(newBooking.isBreakfast());
-        assertEquals(100000, newBooking.getExtraPay());
-        assertEquals(3, newBooking.getCapacity());
+        assertNotNull(booking);
+        assertEquals(testBookingId, booking.getBookingID());
+        assertNotNull(booking.getCheckInDate());
+        assertNotNull(booking.getCheckOutDate());
+        assertEquals(2, booking.getTotalDays());
+        assertEquals(1000000, booking.getTotalPrice());
+        assertEquals(0, booking.getStatus());
+        assertEquals(testCustomerId, booking.getCustomerID());
+        assertEquals("John Customer", booking.getCustomerName());
+        assertEquals("john@example.com", booking.getCustomerEmail());
+        assertEquals("08123456789", booking.getCustomerPhone());
+        assertTrue(booking.isBreakfast());
+        assertEquals(2, booking.getCapacity());
+        assertEquals(testRoom, booking.getRoom());
     }
 
     @Test
-    void testBookingSettersAndGetters() {
-        booking.setBookingID("BOOK-UPDATE");
-        assertEquals("BOOK-UPDATE", booking.getBookingID());
-
-        LocalDateTime newCheckIn = LocalDateTime.now().plusDays(5);
-        booking.setCheckInDate(newCheckIn);
-        assertEquals(newCheckIn, booking.getCheckInDate());
-
-        LocalDateTime newCheckOut = LocalDateTime.now().plusDays(7);
-        booking.setCheckOutDate(newCheckOut);
-        assertEquals(newCheckOut, booking.getCheckOutDate());
-
-        booking.setTotalDays(5);
-        assertEquals(5, booking.getTotalDays());
-
-        booking.setTotalPrice(2500000);
-        assertEquals(2500000, booking.getTotalPrice());
-
-        booking.setStatus(2);
-        assertEquals(2, booking.getStatus());
-
-        UUID newCustomerId = UUID.randomUUID();
-        booking.setCustomerID(newCustomerId);
-        assertEquals(newCustomerId, booking.getCustomerID());
-
-        booking.setCustomerName("Updated Name");
-        assertEquals("Updated Name", booking.getCustomerName());
-
-        booking.setCustomerEmail("updated@example.com");
-        assertEquals("updated@example.com", booking.getCustomerEmail());
-
-        booking.setCustomerPhone("083456789012");
-        assertEquals("083456789012", booking.getCustomerPhone());
-
-        booking.setBreakfast(false);
-        assertFalse(booking.isBreakfast());
-
-        booking.setRefund(500000);
-        assertEquals(500000, booking.getRefund());
-
-        booking.setExtraPay(200000);
-        assertEquals(200000, booking.getExtraPay());
-
-        booking.setCapacity(4);
-        assertEquals(4, booking.getCapacity());
-
-        Room newRoom = Room.builder().roomID("ROOM-002").build();
-        booking.setRoom(newRoom);
-        assertEquals("ROOM-002", booking.getRoom().getRoomID());
-    }
-
-    @Test
-    void testBookingNoArgsConstructor() {
+    void testNoArgsConstructor() {
         Booking emptyBooking = new Booking();
         assertNotNull(emptyBooking);
         assertNull(emptyBooking.getBookingID());
         assertNull(emptyBooking.getCustomerName());
-        assertEquals(0, emptyBooking.getTotalPrice());
     }
 
     @Test
-    void testBookingAllArgsConstructor() {
-        UUID customerId = UUID.randomUUID();
-        LocalDateTime checkIn = LocalDateTime.now();
-        LocalDateTime checkOut = LocalDateTime.now().plusDays(2);
+    void testAllArgsConstructor() {
+        LocalDateTime checkIn = LocalDateTime.now().plusDays(1);
+        LocalDateTime checkOut = LocalDateTime.now().plusDays(3);
         LocalDateTime created = LocalDateTime.now();
         LocalDateTime updated = LocalDateTime.now();
-
-        Booking newBooking = new Booking(
-            "BOOK-003",
-            checkIn,
-            checkOut,
-            2,
-            1000000,
-            1,
-            customerId,
-            "Test Customer",
-            "test@example.com",
-            "081111111111",
-            true,
-            0,
-            0,
-            2,
-            created,
-            updated,
-            room
+        
+        Booking fullBooking = new Booking(
+                testBookingId,
+                checkIn,
+                checkOut,
+                2,
+                1500000,
+                1,
+                testCustomerId,
+                "Jane Customer",
+                "jane@example.com",
+                "08987654321",
+                false,
+                3,
+                created,
+                updated,
+                testRoom,
+                null
         );
-
-        assertEquals("BOOK-003", newBooking.getBookingID());
-        assertEquals(checkIn, newBooking.getCheckInDate());
-        assertEquals(checkOut, newBooking.getCheckOutDate());
-        assertEquals(2, newBooking.getTotalDays());
-        assertEquals(1000000, newBooking.getTotalPrice());
-        assertEquals(1, newBooking.getStatus());
-        assertEquals(customerId, newBooking.getCustomerID());
-        assertEquals("Test Customer", newBooking.getCustomerName());
-        assertEquals("test@example.com", newBooking.getCustomerEmail());
-        assertEquals("081111111111", newBooking.getCustomerPhone());
-        assertTrue(newBooking.isBreakfast());
-        assertEquals(0, newBooking.getRefund());
-        assertEquals(0, newBooking.getExtraPay());
-        assertEquals(2, newBooking.getCapacity());
-        assertEquals(created, newBooking.getCreatedDate());
-        assertEquals(updated, newBooking.getUpdatedDate());
-        assertEquals(room, newBooking.getRoom());
+        
+        assertEquals(testBookingId, fullBooking.getBookingID());
+        assertEquals(checkIn, fullBooking.getCheckInDate());
+        assertEquals(checkOut, fullBooking.getCheckOutDate());
+        assertEquals(2, fullBooking.getTotalDays());
+        assertEquals(1500000, fullBooking.getTotalPrice());
+        assertEquals(1, fullBooking.getStatus());
+        assertEquals(testCustomerId, fullBooking.getCustomerID());
+        assertEquals("Jane Customer", fullBooking.getCustomerName());
+        assertEquals("jane@example.com", fullBooking.getCustomerEmail());
+        assertEquals("08987654321", fullBooking.getCustomerPhone());
+        assertFalse(fullBooking.isBreakfast());
+        assertEquals(3, fullBooking.getCapacity());
+        assertEquals(testRoom, fullBooking.getRoom());
     }
 
     @Test
-    void testBookingPrePersist() {
-        Booking newBooking = new Booking();
-        newBooking.onCreate();
+    void testSettersAndGetters() {
+        LocalDateTime newCheckIn = LocalDateTime.now().plusDays(5);
+        LocalDateTime newCheckOut = LocalDateTime.now().plusDays(7);
+        UUID newCustomerId = UUID.randomUUID();
+        
+        booking.setCheckInDate(newCheckIn);
+        assertEquals(newCheckIn, booking.getCheckInDate());
+        
+        booking.setCheckOutDate(newCheckOut);
+        assertEquals(newCheckOut, booking.getCheckOutDate());
+        
+        booking.setTotalDays(3);
+        assertEquals(3, booking.getTotalDays());
+        
+        booking.setTotalPrice(1500000);
+        assertEquals(1500000, booking.getTotalPrice());
+        
+        booking.setStatus(2);
+        assertEquals(2, booking.getStatus());
+        
+        booking.setCustomerID(newCustomerId);
+        assertEquals(newCustomerId, booking.getCustomerID());
+        
+        booking.setCustomerName("Updated Name");
+        assertEquals("Updated Name", booking.getCustomerName());
+        
+        booking.setCustomerEmail("updated@example.com");
+        assertEquals("updated@example.com", booking.getCustomerEmail());
+        
+        booking.setCustomerPhone("08111111111");
+        assertEquals("08111111111", booking.getCustomerPhone());
+        
+        booking.setBreakfast(false);
+        assertFalse(booking.isBreakfast());
+        
+        booking.setCapacity(4);
+        assertEquals(4, booking.getCapacity());
+    }
 
+    @Test
+    void testRoomRelationship() {
+        Room newRoom = Room.builder()
+                .roomID(UUID.randomUUID())
+                .name("Room 202")
+                .build();
+        
+        booking.setRoom(newRoom);
+        
+        assertNotNull(booking.getRoom());
+        assertEquals("Room 202", booking.getRoom().getName());
+    }
+
+    @Test
+    void testReviewRelationship() {
+        AccommodationReview review = new AccommodationReview();
+        review.setReviewID(UUID.randomUUID());
+        review.setOverallRating(4.5);
+        
+        booking.setReview(review);
+        
+        assertNotNull(booking.getReview());
+        assertEquals(4.5, booking.getReview().getOverallRating());
+    }
+
+    @Test
+    void testOnCreate() {
+        Booking newBooking = new Booking();
+        assertNull(newBooking.getBookingID());
+        assertNull(newBooking.getCreatedDate());
+        assertNull(newBooking.getUpdatedDate());
+        
+        // Simulate @PrePersist
+        newBooking.onCreate();
+        
         assertNotNull(newBooking.getBookingID());
         assertNotNull(newBooking.getCreatedDate());
         assertNotNull(newBooking.getUpdatedDate());
@@ -254,132 +193,160 @@ class BookingTest {
     }
 
     @Test
-    void testBookingPrePersistWithExistingId() {
+    void testOnCreateWithExistingId() {
         Booking newBooking = new Booking();
-        newBooking.setBookingID("EXISTING-ID");
+        UUID existingId = UUID.randomUUID();
+        newBooking.setBookingID(existingId);
+        
         newBooking.onCreate();
-
-        assertEquals("EXISTING-ID", newBooking.getBookingID());
+        
+        // Should not change existing ID
+        assertEquals(existingId, newBooking.getBookingID());
         assertNotNull(newBooking.getCreatedDate());
-        assertNotNull(newBooking.getUpdatedDate());
     }
 
     @Test
-    void testBookingPreUpdate() throws InterruptedException {
-        LocalDateTime originalUpdated = booking.getUpdatedDate();
-        Thread.sleep(10); // Wait a bit to ensure time difference
+    void testOnUpdate() {
+        booking.onCreate();
+        LocalDateTime originalCreatedDate = booking.getCreatedDate();
+        LocalDateTime originalUpdatedDate = booking.getUpdatedDate();
+        
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
         
         booking.onUpdate();
         
-        assertNotNull(booking.getUpdatedDate());
-        assertTrue(booking.getUpdatedDate().isAfter(originalUpdated) || 
-                   booking.getUpdatedDate().isEqual(originalUpdated));
+        assertEquals(originalCreatedDate, booking.getCreatedDate());
+        assertNotEquals(originalUpdatedDate, booking.getUpdatedDate());
+        assertTrue(booking.getUpdatedDate().isAfter(originalUpdatedDate));
     }
 
     @Test
-    void testBookingStatusTransitions() {
-        // Test all status transitions (0-4)
-        booking.setStatus(0); // Pending
-        assertEquals(0, booking.getStatus());
-
-        booking.setStatus(1); // Payment Confirmed
-        assertEquals(1, booking.getStatus());
-
-        booking.setStatus(2); // Checked-In
-        assertEquals(2, booking.getStatus());
-
-        booking.setStatus(3); // Cancelled
-        assertEquals(3, booking.getStatus());
-
-        booking.setStatus(4); // Completed
-        assertEquals(4, booking.getStatus());
+    void testBookingStatuses() {
+        // Test different booking statuses (0-4 per specification)
+        for (int status = 0; status <= 4; status++) {
+            booking.setStatus(status);
+            assertEquals(status, booking.getStatus());
+        }
     }
 
     @Test
-    void testBookingWithRefund() {
-        booking.setStatus(3); // Cancelled
-        booking.setRefund(750000);
-
-        assertEquals(3, booking.getStatus());
-        assertEquals(750000, booking.getRefund());
-    }
-
-    @Test
-    void testBookingWithExtraPay() {
-        booking.setExtraPay(150000);
-        assertEquals(150000, booking.getExtraPay());
+    void testEqualsAndHashCode() {
+        Booking sameBooking = Booking.builder()
+                .bookingID(testBookingId)
+                .checkInDate(booking.getCheckInDate())
+                .checkOutDate(booking.getCheckOutDate())
+                .totalDays(2)
+                .totalPrice(1000000)
+                .status(0)
+                .customerID(testCustomerId)
+                .customerName("John Customer")
+                .customerEmail("john@example.com")
+                .customerPhone("08123456789")
+                .isBreakfast(true)
+                .capacity(2)
+                .room(testRoom)
+                .build();
         
-        int totalWithExtra = booking.getTotalPrice() + booking.getExtraPay();
-        assertEquals(1150000, totalWithExtra);
+        assertEquals(booking, sameBooking);
+        assertEquals(booking.hashCode(), sameBooking.hashCode());
     }
 
     @Test
-    void testBookingEqualsAndHashCode() {
-        Booking booking1 = Booking.builder()
-                .bookingID("BOOK-SAME")
-                .customerName("Customer 1")
+    void testNotEquals() {
+        Booking differentBooking = Booking.builder()
+                .bookingID(UUID.randomUUID())
+                .customerName("Different Customer")
                 .build();
-
-        Booking booking2 = Booking.builder()
-                .bookingID("BOOK-SAME")
-                .customerName("Customer 1")
-                .build();
-
-        Booking booking3 = Booking.builder()
-                .bookingID("BOOK-DIFFERENT")
-                .customerName("Customer 2")
-                .build();
-
-        assertEquals(booking1, booking2);
-        assertNotEquals(booking1, booking3);
-        assertEquals(booking1.hashCode(), booking2.hashCode());
+        
+        assertNotEquals(booking, differentBooking);
     }
 
     @Test
-    void testBookingToString() {
+    void testToString() {
         String bookingString = booking.toString();
         assertNotNull(bookingString);
-        assertTrue(bookingString.contains("BOOK-001"));
-        assertTrue(bookingString.contains("John Doe"));
+        assertTrue(bookingString.contains("John Customer"));
+        assertTrue(bookingString.contains(testBookingId.toString()));
     }
 
     @Test
-    void testBookingRoomRelationship() {
-        assertNotNull(booking.getRoom());
-        assertEquals("ROOM-001", booking.getRoom().getRoomID());
-        assertEquals("Room 101", booking.getRoom().getName());
-        assertNotNull(booking.getRoom().getRoomType());
-        assertEquals("Deluxe Room", booking.getRoom().getRoomType().getName());
+    void testNullValues() {
+        Booking nullBooking = Booking.builder().build();
+        
+        assertNull(nullBooking.getBookingID());
+        assertNull(nullBooking.getCheckInDate());
+        assertNull(nullBooking.getCheckOutDate());
+        assertNull(nullBooking.getCustomerName());
+        assertNull(nullBooking.getCustomerEmail());
+        assertNull(nullBooking.getCustomerPhone());
+        assertNull(nullBooking.getRoom());
     }
 
     @Test
-    void testBookingDatesValidation() {
-        LocalDateTime checkIn = LocalDateTime.of(2025, 11, 10, 14, 0);
-        LocalDateTime checkOut = LocalDateTime.of(2025, 11, 12, 12, 0);
-
+    void testDateTimeValidation() {
+        LocalDateTime checkIn = LocalDateTime.now().plusDays(1);
+        LocalDateTime checkOut = LocalDateTime.now().plusDays(3);
+        
         booking.setCheckInDate(checkIn);
         booking.setCheckOutDate(checkOut);
-
+        
         assertTrue(booking.getCheckOutDate().isAfter(booking.getCheckInDate()));
     }
 
     @Test
-    void testBookingNullBookingId() {
-        Booking newBooking = new Booking();
-        newBooking.setBookingID(null);
-        newBooking.onCreate();
+    void testBreakfastFlag() {
+        booking.setBreakfast(true);
+        assertTrue(booking.isBreakfast());
         
-        assertNotNull(newBooking.getBookingID());
-        assertFalse(newBooking.getBookingID().isBlank());
+        booking.setBreakfast(false);
+        assertFalse(booking.isBreakfast());
     }
 
     @Test
-    void testBookingBlankBookingId() {
-        Booking newBooking = new Booking();
-        newBooking.setBookingID("");
-        newBooking.onCreate();
+    void testCapacityRange() {
+        // Test various capacity values
+        int[] capacities = {1, 2, 4, 6, 8};
+        for (int capacity : capacities) {
+            booking.setCapacity(capacity);
+            assertEquals(capacity, booking.getCapacity());
+        }
+    }
+
+    @Test
+    void testTotalPriceCalculation() {
+        booking.setTotalDays(3);
+        int pricePerNight = 500000;
+        int expectedTotal = 3 * pricePerNight;
         
-        assertNotNull(newBooking.getBookingID());
-        assertFalse(newBooking.getBookingID().isBlank());
+        booking.setTotalPrice(expectedTotal);
+        assertEquals(expectedTotal, booking.getTotalPrice());
+    }
+
+    @Test
+    void testDateTimeFields() {
+        LocalDateTime createdDate = LocalDateTime.now().minusDays(1);
+        LocalDateTime updatedDate = LocalDateTime.now();
+        
+        booking.setCreatedDate(createdDate);
+        booking.setUpdatedDate(updatedDate);
+        
+        assertEquals(createdDate, booking.getCreatedDate());
+        assertEquals(updatedDate, booking.getUpdatedDate());
+        assertTrue(booking.getUpdatedDate().isAfter(booking.getCreatedDate()));
+    }
+
+    @Test
+    void testCustomerInformation() {
+        booking.setCustomerName("Alice Customer");
+        booking.setCustomerEmail("alice@example.com");
+        booking.setCustomerPhone("08555555555");
+        
+        assertEquals("Alice Customer", booking.getCustomerName());
+        assertEquals("alice@example.com", booking.getCustomerEmail());
+        assertEquals("08555555555", booking.getCustomerPhone());
     }
 }

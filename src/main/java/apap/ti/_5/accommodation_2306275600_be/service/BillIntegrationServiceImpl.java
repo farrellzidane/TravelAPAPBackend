@@ -17,7 +17,7 @@ public class BillIntegrationServiceImpl implements BillIntegrationService {
 
     private final RestTemplate restTemplate;
 
-    @Value("${bill.service.url:http://localhost:8081}")
+    @Value("${bill.service.url:http://2306275380-be.hafizmuh.site}")
     private String billServiceUrl;
 
     @Value("${bill.service.api-key:ACCOMMODATION_API_KEY}")
