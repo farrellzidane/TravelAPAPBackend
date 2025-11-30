@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 
 import apap.ti._5.accommodation_2306275600_be.model.Room;
 import apap.ti._5.accommodation_2306275600_be.model.RoomType;
+import apap.ti._5.accommodation_2306275600_be.repository.BookingRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.RoomRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.RoomTypeRepository;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.room.AddRoomRequestDTO;
@@ -29,6 +30,7 @@ public class RoomRestServiceImpl implements RoomRestService{
     
     protected final RoomRepository roomRepository;
     protected final RoomTypeRepository roomTypeRepository;
+    protected final BookingRepository bookingRepository;
 
 
     @Override
@@ -175,8 +177,16 @@ public class RoomRestServiceImpl implements RoomRestService{
             throw new RuntimeException("Tanggal mulai tidak boleh sebelum hari ini");
         }
         
-        // Check apakah ada booking yang conflict
-        // TODO: Implementasi check booking conflict jika sudah ada BookingService
+        // Check apakah ada booking yang conflict dengan maintenance period
+        boolean hasBookingConflict = bookingRepository.existsBookingsDuringPeriod(
+            room.getRoomID(),
+            dto.getMaintenanceStart(),
+            dto.getMaintenanceEnd()
+        );
+        
+        if (hasBookingConflict) {
+            throw new RuntimeException("Cannot schedule maintenance: There are active bookings during this period. Please choose a different time or wait until bookings are completed.");
+        }
         
         // Set maintenance schedule (REPLACE existing)
         room.setMaintenanceStart(dto.getMaintenanceStart());
@@ -252,4 +262,5 @@ public class RoomRestServiceImpl implements RoomRestService{
                 .updatedDate(room.getUpdatedDate())
                 .build();
     }
+
 }

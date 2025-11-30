@@ -94,4 +94,41 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
         @Param("month") int month,
         @Param("year") int year
     );
+    
+    /**
+     * Check if property has any active bookings (not cancelled or completed)
+     * Used to prevent property deletion if there are active bookings
+     */
+    @Query("SELECT COUNT(b) > 0 FROM Booking b " +
+           "WHERE b.room.roomType.property.propertyID = :propertyID " +
+           "AND b.status NOT IN (3, 4) ") // Exclude cancelled (3) and completed (4)
+    boolean existsActiveBookingsByPropertyID(@Param("propertyID") UUID propertyID);
+    
+    /**
+     * Check if room has any bookings during specific period
+     * Used to prevent maintenance scheduling if there are bookings
+     */
+    @Query("SELECT COUNT(b) > 0 FROM Booking b " +
+           "WHERE b.room.roomID = :roomID " +
+           "AND b.status NOT IN (3, 4) " + // Exclude cancelled and completed
+           "AND ((b.checkInDate < :endDate AND b.checkOutDate > :startDate))")
+    boolean existsBookingsDuringPeriod(
+        @Param("roomID") UUID roomID,
+        @Param("startDate") LocalDateTime startDate,
+        @Param("endDate") LocalDateTime endDate
+    );
+    
+    /**
+     * Get list of room IDs that have bookings during specific period for a property
+     * Used to filter out booked rooms in detail property view
+     */
+    @Query("SELECT DISTINCT b.room.roomID FROM Booking b " +
+           "WHERE b.room.roomType.property.propertyID = :propertyID " +
+           "AND b.status NOT IN (3, 4) " + // Exclude cancelled and completed
+           "AND ((b.checkInDate < :endDate AND b.checkOutDate > :startDate))")
+    List<UUID> findBookedRoomIDsByPropertyAndPeriod(
+        @Param("propertyID") UUID propertyID,
+        @Param("startDate") LocalDateTime startDate,
+        @Param("endDate") LocalDateTime endDate
+    );
 }

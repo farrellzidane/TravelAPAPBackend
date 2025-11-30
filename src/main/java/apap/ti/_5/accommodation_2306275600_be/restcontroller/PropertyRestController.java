@@ -22,6 +22,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 import java.util.HashSet;
@@ -149,13 +150,22 @@ public class PropertyRestController {
     @GetMapping(VIEW_PROPERTY)
     public ResponseEntity<BaseResponseDTO<PropertyResponseDTO>> getProperty(
             @PathVariable UUID id,
-            @RequestParam(required = false) String startDate,
-            @RequestParam(required = false) String endDate) {
+            @RequestParam(required = false) String checkIn,
+            @RequestParam(required = false) String checkOut) {
         
         var baseResponseDTO = new BaseResponseDTO<PropertyResponseDTO>();
         
         try {
-            PropertyResponseDTO property = propertyRestService.getPropertyById(id);
+            PropertyResponseDTO property;
+            
+            // If date filters provided, filter out booked rooms
+            if (checkIn != null && checkOut != null) {
+                LocalDateTime checkInDate = LocalDateTime.parse(checkIn);
+                LocalDateTime checkOutDate = LocalDateTime.parse(checkOut);
+                property = propertyRestService.getPropertyById(id, checkInDate, checkOutDate);
+            } else {
+                property = propertyRestService.getPropertyById(id);
+            }
             
             if (property == null) {
                 baseResponseDTO.setStatus(HttpStatus.NOT_FOUND.value());

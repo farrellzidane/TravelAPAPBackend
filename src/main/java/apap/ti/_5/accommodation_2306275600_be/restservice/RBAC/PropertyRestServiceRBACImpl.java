@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import apap.ti._5.accommodation_2306275600_be.exceptions.AccessDeniedException;
 import apap.ti._5.accommodation_2306275600_be.external.AuthService;
 import apap.ti._5.accommodation_2306275600_be.model.Property;
+import apap.ti._5.accommodation_2306275600_be.repository.BookingRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.PropertyRepository;
 import apap.ti._5.accommodation_2306275600_be.restdto.auth.UserProfileDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.property.CreatePropertyRequestDTO;
@@ -21,6 +22,7 @@ import apap.ti._5.accommodation_2306275600_be.restservice.RoomTypeRestService;
 @Service
 public class PropertyRestServiceRBACImpl extends PropertyRestServiceImpl implements PropertyRestServiceRBAC {
 
+    private static BookingRepository bookingRepository;
     private final AuthService authService;
 
     public PropertyRestServiceRBACImpl(
@@ -29,7 +31,7 @@ public class PropertyRestServiceRBACImpl extends PropertyRestServiceImpl impleme
             RoomRestService roomRestService,
             AuthService authService
         ) {
-        super(propertyRepository, roomTypeRestService, roomRestService);
+        super(propertyRepository, roomTypeRestService, roomRestService, bookingRepository);
         this.authService = authService;
     }
 

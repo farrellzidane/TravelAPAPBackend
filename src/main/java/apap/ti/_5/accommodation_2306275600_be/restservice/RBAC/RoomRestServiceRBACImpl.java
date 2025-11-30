@@ -10,6 +10,7 @@ import apap.ti._5.accommodation_2306275600_be.external.AuthService;
 import apap.ti._5.accommodation_2306275600_be.model.Property;
 import apap.ti._5.accommodation_2306275600_be.model.Room;
 import apap.ti._5.accommodation_2306275600_be.model.RoomType;
+import apap.ti._5.accommodation_2306275600_be.repository.BookingRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.PropertyRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.RoomRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.RoomTypeRepository;
@@ -25,6 +26,7 @@ import apap.ti._5.accommodation_2306275600_be.restservice.RoomRestServiceImpl;
 @Service
 public class RoomRestServiceRBACImpl extends RoomRestServiceImpl implements RoomRestServiceRBAC {
 
+    private static BookingRepository bookingRepository;
     private final AuthService authService;
     private final RoomRepository roomRepository;
     private final RoomTypeRepository roomTypeRepository;
@@ -34,7 +36,7 @@ public class RoomRestServiceRBACImpl extends RoomRestServiceImpl implements Room
             RoomTypeRepository roomTypeRepository,
             AuthService authService
         ) {
-        super(roomRepository, roomTypeRepository);
+        super(roomRepository, roomTypeRepository, bookingRepository);
         this.authService = authService;
         this.roomRepository = roomRepository;
         this.roomTypeRepository = roomTypeRepository;

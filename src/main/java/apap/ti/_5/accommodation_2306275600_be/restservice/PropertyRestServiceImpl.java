@@ -1,6 +1,7 @@
 package apap.ti._5.accommodation_2306275600_be.restservice;
 
 import apap.ti._5.accommodation_2306275600_be.model.Property;
+import apap.ti._5.accommodation_2306275600_be.repository.BookingRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.PropertyRepository;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.property.CreatePropertyRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.property.UpdatePropertyRequestDTO;
@@ -27,14 +28,17 @@ public class PropertyRestServiceImpl implements PropertyRestService {
     protected final PropertyRepository propertyRepository;
     protected final RoomTypeRestService roomTypeRestService;
     protected final RoomRestService roomRestService;
+    protected final BookingRepository bookingRepository;
     
     @Autowired
     public PropertyRestServiceImpl(PropertyRepository propertyRepository, 
                                     RoomTypeRestService roomTypeRestService,
-                                    RoomRestService roomRestService) {
+                                    RoomRestService roomRestService,
+                                    BookingRepository bookingRepository) {
         this.propertyRepository = propertyRepository;
         this.roomTypeRestService = roomTypeRestService;
         this.roomRestService = roomRestService;
+        this.bookingRepository = bookingRepository;
     }
 
     @Override
@@ -98,6 +102,11 @@ public class PropertyRestServiceImpl implements PropertyRestService {
 
     @Override
     public PropertyResponseDTO getPropertyById(UUID id) {
+        return getPropertyById(id, null, null);
+    }
+    
+    @Override
+    public PropertyResponseDTO getPropertyById(UUID id, LocalDateTime checkIn, LocalDateTime checkOut) {
         Optional<Property> propertyOpt = propertyRepository.findById(id);
         if (propertyOpt.isEmpty()) {
             return null;
@@ -108,12 +117,26 @@ public class PropertyRestServiceImpl implements PropertyRestService {
         //  Fetch room types untuk property ini
         List<RoomTypeResponseDTO> roomTypes = roomTypeRestService.getRoomTypesByProperty(id);
         
+        //  Get booked room IDs if date filter is provided
+        List<UUID> bookedRoomIDs = new ArrayList<>();
+        if (checkIn != null && checkOut != null) {
+            bookedRoomIDs = bookingRepository.findBookedRoomIDsByPropertyAndPeriod(id, checkIn, checkOut);
+        }
+        
         //  Build room type info dengan FULL room objects (not just IDs)
         List<RoomTypeInfoDTO> roomTypeInfoList = new ArrayList<>();
         
         for (RoomTypeResponseDTO roomType : roomTypes) {
             //  Get FULL room objects untuk room type ini (with maintenance data)
             List<RoomResponseDTO> rooms = roomRestService.getRoomsByRoomType(UUID.fromString(roomType.getRoomTypeID()));
+            
+            //  Filter out booked rooms if date filter is provided
+            if (!bookedRoomIDs.isEmpty()) {
+                final List<UUID> finalBookedRoomIDs = bookedRoomIDs;
+                rooms = rooms.stream()
+                    .filter(room -> !finalBookedRoomIDs.contains(UUID.fromString(room.getRoomID())))
+                    .collect(Collectors.toList());
+            }
             
             //  Build room type info with FULL room objects
             RoomTypeInfoDTO roomTypeInfo = RoomTypeInfoDTO.builder()
@@ -304,6 +327,12 @@ public class PropertyRestServiceImpl implements PropertyRestService {
         
         if (propertyOpt.isEmpty()) {
             return null;
+        }
+        
+        // Check if property has any active bookings (not cancelled or completed)
+        boolean hasActiveBookings = bookingRepository.existsActiveBookingsByPropertyID(id);
+        if (hasActiveBookings) {
+            throw new RuntimeException("Cannot delete property: There are active bookings for this property. Please wait until all bookings are completed or cancelled.");
         }
         
         Property existingProperty = propertyOpt.get();
