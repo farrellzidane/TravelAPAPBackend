@@ -11,7 +11,9 @@ import java.util.UUID;
 
 @Repository
 public interface PropertyRepository extends JpaRepository<Property, UUID> {
-    List<Property> findByOwnerID(UUID ownerID);
+    @Query("SELECT p FROM Property p WHERE p.owner.id = :ownerId")
+    List<Property> findByOwnerID(@Param("ownerId") UUID ownerId);
+    
     List<Property> findByActiveStatus(int activeStatus);
     List<Property> findByType(int type);
     

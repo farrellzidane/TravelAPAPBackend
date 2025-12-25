@@ -8,7 +8,10 @@ import lombok.NoArgsConstructor;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -58,11 +61,12 @@ public class Property {
     @OneToMany(mappedBy = "property", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RoomType> listRoomType;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id", referencedColumnName = "enduser_id", nullable = false)
+    private AccommodationOwner owner;
+
     @Column(name = "owner_name")
     private String ownerName;
-
-    @Column(name = "owner_id", columnDefinition = "uuid")
-    private UUID ownerID;
 
     @Column(name = "created_date", updatable = false)
     private LocalDateTime createdDate;
@@ -82,5 +86,10 @@ public class Property {
     @PreUpdate
     protected void onUpdate() {
         updatedDate = LocalDateTime.now();
+    }
+    
+    // Helper method for backward compatibility
+    public UUID getOwnerID() {
+        return owner != null ? owner.getId() : null;
     }
 }

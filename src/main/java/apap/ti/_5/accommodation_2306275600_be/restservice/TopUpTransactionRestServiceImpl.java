@@ -2,8 +2,10 @@ package apap.ti._5.accommodation_2306275600_be.restservice;
 
 import apap.ti._5.accommodation_2306275600_be.model.PaymentMethod;
 import apap.ti._5.accommodation_2306275600_be.model.TopUpTransaction;
+import apap.ti._5.accommodation_2306275600_be.model.Customer;
 import apap.ti._5.accommodation_2306275600_be.repository.PaymentMethodRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.TopUpTransactionRepository;
+import apap.ti._5.accommodation_2306275600_be.repository.CustomerRepository;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.topup.CreateTopUpRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.topup.UpdateTopUpStatusRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.topup.TopUpTransactionResponseDTO;
@@ -27,6 +29,7 @@ public class TopUpTransactionRestServiceImpl implements TopUpTransactionRestServ
     
     private final TopUpTransactionRepository topUpTransactionRepository;
     private final PaymentMethodRepository paymentMethodRepository;
+    private final CustomerRepository customerRepository;
 
     @Override
     public TopUpTransactionResponseDTO createTopUpTransaction(CreateTopUpRequestDTO dto) {
@@ -46,10 +49,14 @@ public class TopUpTransactionRestServiceImpl implements TopUpTransactionRestServ
         // Generate UUID untuk transaction
         String transactionId = UUID.randomUUID().toString();
         
+        // Load Customer entity
+        Customer customer = customerRepository.findById(UUID.fromString(dto.getCustomerId()))
+            .orElseThrow(() -> new RuntimeException("Customer not found with ID: " + dto.getCustomerId()));
+        
         // Buat entity TopUpTransaction dengan status "Pending"
         TopUpTransaction transaction = TopUpTransaction.builder()
             .id(transactionId)
-            .endUserId(dto.getCustomerId())
+            .customer(customer)
             .amount(dto.getAmount())
             .paymentMethod(paymentMethod)
             .date(LocalDateTime.now())
@@ -74,7 +81,7 @@ public class TopUpTransactionRestServiceImpl implements TopUpTransactionRestServ
 
     @Override
     public List<TopUpTransactionResponseDTO> getTopUpTransactionsByCustomerId(String customerId) {
-        return topUpTransactionRepository.findByEndUserIdAndNotDeleted(customerId).stream()
+        return topUpTransactionRepository.findByEndUserIdAndNotDeleted(UUID.fromString(customerId)).stream()
             .map(this::convertToResponseDTO)
             .collect(Collectors.toList());
     }

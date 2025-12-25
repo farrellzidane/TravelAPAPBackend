@@ -21,12 +21,12 @@ public class CorsConfig {
 
                 registry
                     .addMapping("/**")
-                    // .allowedOrigins(origins)
-                    // .allowedOriginPatterns("*") // jangan lupa delete sebelum deploy ke production
-                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                    .allowedOrigins(origins)
+                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                     .allowedHeaders("*")
                     .allowCredentials(true) 
-                    .exposedHeaders("Authorization");
+                    .exposedHeaders("Authorization")
+                    .maxAge(3600); // Cache preflight response for 1 hour
             }
         };
     }

@@ -5,9 +5,11 @@ import java.util.UUID;
 import apap.ti._5.accommodation_2306275600_be.model.Booking;
 import apap.ti._5.accommodation_2306275600_be.model.Property;
 import apap.ti._5.accommodation_2306275600_be.model.Room;
+import apap.ti._5.accommodation_2306275600_be.model.Customer;
 import apap.ti._5.accommodation_2306275600_be.repository.BookingRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.PropertyRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.RoomRepository;
+import apap.ti._5.accommodation_2306275600_be.repository.CustomerRepository;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.booking.ChangeBookingStatusRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.booking.CreateBookingRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.booking.BookingResponseDTO;
@@ -44,6 +46,7 @@ public class BookingRestServiceImpl implements BookingRestService {
     protected final BookingRepository bookingRepository;
     protected final RoomRepository roomRepository;
     protected final PropertyRepository propertyRepository;
+    protected final CustomerRepository customerRepository;
     protected final BillIntegrationService billIntegrationService;
     
     private static final int BREAKFAST_PRICE = 50000;
@@ -107,7 +110,11 @@ public class BookingRestServiceImpl implements BookingRestService {
             totalPrice += BREAKFAST_PRICE * (int) totalDays;
         }
         
-        // 7. Create Booking entity with UUID
+        // 7. Load Customer entity
+        Customer customer = customerRepository.findById(dto.getCustomerID())
+            .orElseThrow(() -> new RuntimeException("Customer not found with ID: " + dto.getCustomerID()));
+        
+        // 8. Create Booking entity with UUID
         // Note: bookingID will be auto-generated as UUID in @PrePersist
         Booking booking = Booking.builder()
             .checkInDate(dto.getCheckInDate())
@@ -115,7 +122,7 @@ public class BookingRestServiceImpl implements BookingRestService {
             .totalDays((int) totalDays)
             .totalPrice(totalPrice)
             .status(0) // 0 = Waiting for Payment
-            .customerID(dto.getCustomerID())
+            .customer(customer)
             .customerName(dto.getCustomerName())
             .customerEmail(dto.getCustomerEmail())
             .customerPhone(dto.getCustomerPhone())

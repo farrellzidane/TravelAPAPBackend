@@ -21,7 +21,8 @@ public interface AccommodationReviewRepository extends JpaRepository<Accommodati
     List<AccommodationReview> findByPropertyID(@Param("propertyID") UUID propertyID);
     
     // Find all reviews by customer ID
-    List<AccommodationReview> findByCustomerIDOrderByCreatedDateDesc(UUID customerID);
+    @Query("SELECT ar FROM AccommodationReview ar WHERE ar.customer.id = :customerId ORDER BY ar.createdDate DESC")
+    List<AccommodationReview> findByCustomerIDOrderByCreatedDateDesc(@Param("customerId") UUID customerId);
     
     // Find review by ID
     Optional<AccommodationReview> findByReviewID(UUID reviewID);

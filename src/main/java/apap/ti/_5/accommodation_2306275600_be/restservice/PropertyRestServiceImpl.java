@@ -1,8 +1,10 @@
 package apap.ti._5.accommodation_2306275600_be.restservice;
 
 import apap.ti._5.accommodation_2306275600_be.model.Property;
+import apap.ti._5.accommodation_2306275600_be.model.AccommodationOwner;
 import apap.ti._5.accommodation_2306275600_be.repository.BookingRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.PropertyRepository;
+import apap.ti._5.accommodation_2306275600_be.repository.AccommodationOwnerRepository;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.property.CreatePropertyRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.property.UpdatePropertyRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.room.AddRoomRequestDTO;
@@ -29,16 +31,19 @@ public class PropertyRestServiceImpl implements PropertyRestService {
     protected final RoomTypeRestService roomTypeRestService;
     protected final RoomRestService roomRestService;
     protected final BookingRepository bookingRepository;
+    protected final AccommodationOwnerRepository accommodationOwnerRepository;
     
     @Autowired
     public PropertyRestServiceImpl(PropertyRepository propertyRepository, 
                                     RoomTypeRestService roomTypeRestService,
                                     RoomRestService roomRestService,
-                                    BookingRepository bookingRepository) {
+                                    BookingRepository bookingRepository,
+                                    AccommodationOwnerRepository accommodationOwnerRepository) {
         this.propertyRepository = propertyRepository;
         this.roomTypeRestService = roomTypeRestService;
         this.roomRestService = roomRestService;
         this.bookingRepository = bookingRepository;
+        this.accommodationOwnerRepository = accommodationOwnerRepository;
     }
 
     @Override
@@ -198,7 +203,8 @@ public class PropertyRestServiceImpl implements PropertyRestService {
                 .activeStatus(1) // Default active
                 .income(0) // Default 0
                 .ownerName(createPropertyRequestDTO.getOwnerName())
-                .ownerID(UUID.fromString(createPropertyRequestDTO.getOwnerID()))
+                .owner(accommodationOwnerRepository.findById(UUID.fromString(createPropertyRequestDTO.getOwnerID()))
+                    .orElseThrow(() -> new RuntimeException("Owner not found with ID: " + createPropertyRequestDTO.getOwnerID())))
                 // createdDate and updatedDate will be set by @PrePersist
                 .build();
         

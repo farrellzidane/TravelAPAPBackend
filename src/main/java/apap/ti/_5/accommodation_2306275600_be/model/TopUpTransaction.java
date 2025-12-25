@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -26,8 +27,13 @@ public class TopUpTransaction {
     @Column(name = "id", nullable = false, length = 36)
     private String id;
 
-    @Column(name = "end_user_id", nullable = false, length = 36)
-    private String endUserId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", referencedColumnName = "enduser_id")
+    private Customer customer;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "superadmin_id", referencedColumnName = "enduser_id")
+    private Superadmin superadmin;
 
     @Column(name = "amount", nullable = false)
     private Long amount;
@@ -50,4 +56,14 @@ public class TopUpTransaction {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt; // For soft delete
+    
+    // Helper method for backward compatibility
+    public String getEndUserId() {
+        if (customer != null) {
+            return customer.getId().toString();
+        } else if (superadmin != null) {
+            return superadmin.getId().toString();
+        }
+        return null;
+    }
 }

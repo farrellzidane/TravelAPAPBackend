@@ -37,7 +37,7 @@ import apap.ti._5.accommodation_2306275600_be.restdto.response.BaseResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 
 @ExtendWith(MockitoExtension.class)
-class MockAuthServiceImplTest {
+class AuthServiceImplTest {
 
     @Mock
     private RestTemplate restTemplate;
@@ -49,7 +49,7 @@ class MockAuthServiceImplTest {
     private ServletRequestAttributes servletRequestAttributes;
 
     @InjectMocks
-    private MockAuthServiceImpl mockAuthService;
+    private AuthServiceImpl authService;
 
     private UserProfileDTO mockUser;
     private CustomerProfileDTO mockCustomer;
@@ -58,7 +58,7 @@ class MockAuthServiceImplTest {
     @BeforeEach
     void setUp() {
         authServiceUrl = "https://travel-apap-mock-server.vercel.app";
-        ReflectionTestUtils.setField(mockAuthService, "authServiceUrl", authServiceUrl);
+        ReflectionTestUtils.setField(authService, "authServiceUrl", authServiceUrl);
 
         UUID userId = UUID.randomUUID();
         mockUser = new UserProfileDTO(
@@ -97,7 +97,7 @@ class MockAuthServiceImplTest {
         RequestContextHolder.setRequestAttributes(servletRequestAttributes);
 
         // Act
-        UserProfileDTO result = mockAuthService.getAuthenticatedUser();
+        UserProfileDTO result = authService.getAuthenticatedUser();
 
         // Assert
         assertNotNull(result);
@@ -118,7 +118,7 @@ class MockAuthServiceImplTest {
         // Act & Assert
         AccessDeniedException exception = assertThrows(
             AccessDeniedException.class,
-            () -> mockAuthService.getAuthenticatedUser()
+            () -> authService.getAuthenticatedUser()
         );
         assertTrue(exception.getMessage().contains("No authorization token found"));
         
@@ -138,7 +138,7 @@ class MockAuthServiceImplTest {
         // Act & Assert
         AccessDeniedException exception = assertThrows(
             AccessDeniedException.class,
-            () -> mockAuthService.getAuthenticatedUser()
+            () -> authService.getAuthenticatedUser()
         );
         assertTrue(exception.getMessage().contains("Invalid JWT token format"));
         
@@ -156,7 +156,7 @@ class MockAuthServiceImplTest {
         RequestContextHolder.setRequestAttributes(servletRequestAttributes);
 
         // Act
-        UserProfileDTO result = mockAuthService.getAuthenticatedUser();
+        UserProfileDTO result = authService.getAuthenticatedUser();
 
         // Assert
         assertNotNull(result);
@@ -177,7 +177,7 @@ class MockAuthServiceImplTest {
         RequestContextHolder.setRequestAttributes(servletRequestAttributes);
 
         // Act
-        UserProfileDTO result = mockAuthService.getAuthenticatedUser();
+        UserProfileDTO result = authService.getAuthenticatedUser();
 
         // Assert
         assertNotNull(result);
@@ -196,7 +196,7 @@ class MockAuthServiceImplTest {
         // Act & Assert
         AccessDeniedException exception = assertThrows(
             AccessDeniedException.class,
-            () -> mockAuthService.getAuthenticatedUser()
+            () -> authService.getAuthenticatedUser()
         );
         assertTrue(exception.getMessage().contains("No authorization token found"));
     }
@@ -213,7 +213,7 @@ class MockAuthServiceImplTest {
         // Act & Assert
         AccessDeniedException exception = assertThrows(
             AccessDeniedException.class,
-            () -> mockAuthService.getAuthenticatedUser()
+            () -> authService.getAuthenticatedUser()
         );
         assertTrue(exception.getMessage().contains("Failed to decode JWT token"));
         
@@ -237,8 +237,8 @@ class MockAuthServiceImplTest {
         );
 
         // Act & Assert
-        assertTrue(mockAuthService.isSuperAdmin(superAdmin));
-        assertFalse(mockAuthService.isSuperAdmin(mockUser));
+        assertTrue(authService.isSuperAdmin(superAdmin));
+        assertFalse(authService.isSuperAdmin(mockUser));
     }
 
     @Test
@@ -257,8 +257,8 @@ class MockAuthServiceImplTest {
         );
 
         // Act & Assert
-        assertTrue(mockAuthService.isAccommodationOwner(owner));
-        assertFalse(mockAuthService.isAccommodationOwner(mockUser));
+        assertTrue(authService.isAccommodationOwner(owner));
+        assertFalse(authService.isAccommodationOwner(mockUser));
     }
 
     @Test
@@ -277,19 +277,19 @@ class MockAuthServiceImplTest {
         );
 
         // Act & Assert
-        assertTrue(mockAuthService.isAccommodationOwner(ownerTypo));
+        assertTrue(authService.isAccommodationOwner(ownerTypo));
     }
 
     @Test
     void testIsCustomer_UserProfile() {
         // Act & Assert
-        assertTrue(mockAuthService.isCustomer(mockUser));
+        assertTrue(authService.isCustomer(mockUser));
     }
 
     @Test
     void testIsCustomer_CustomerProfile() {
         // Act & Assert
-        assertTrue(mockAuthService.isCustomer(mockCustomer));
+        assertTrue(authService.isCustomer(mockCustomer));
     }
 
     @Test
@@ -303,7 +303,7 @@ class MockAuthServiceImplTest {
         RequestContextHolder.setRequestAttributes(servletRequestAttributes);
 
         // Act
-        boolean result = mockAuthService.isSuperAdmin(userId);
+        boolean result = authService.isSuperAdmin(userId);
 
         // Assert
         assertTrue(result);
@@ -323,7 +323,7 @@ class MockAuthServiceImplTest {
         RequestContextHolder.setRequestAttributes(servletRequestAttributes);
 
         // Act
-        boolean result = mockAuthService.isSuperAdmin(wrongUserId);
+        boolean result = authService.isSuperAdmin(wrongUserId);
 
         // Assert
         assertFalse(result);
@@ -339,7 +339,7 @@ class MockAuthServiceImplTest {
         RequestContextHolder.resetRequestAttributes();
 
         // Act
-        boolean result = mockAuthService.isSuperAdmin(userId);
+        boolean result = authService.isSuperAdmin(userId);
 
         // Assert
         assertFalse(result);
@@ -356,7 +356,7 @@ class MockAuthServiceImplTest {
         RequestContextHolder.setRequestAttributes(servletRequestAttributes);
 
         // Act
-        boolean result = mockAuthService.isAccommodationOwner(userId);
+        boolean result = authService.isAccommodationOwner(userId);
 
         // Assert
         assertTrue(result);
@@ -372,7 +372,7 @@ class MockAuthServiceImplTest {
         RequestContextHolder.resetRequestAttributes();
 
         // Act
-        boolean result = mockAuthService.isAccommodationOwner(userId);
+        boolean result = authService.isAccommodationOwner(userId);
 
         // Assert
         assertFalse(result);
@@ -389,7 +389,7 @@ class MockAuthServiceImplTest {
         RequestContextHolder.setRequestAttributes(servletRequestAttributes);
 
         // Act
-        boolean result = mockAuthService.isCustomer(userId);
+        boolean result = authService.isCustomer(userId);
 
         // Assert
         assertTrue(result);
@@ -405,7 +405,7 @@ class MockAuthServiceImplTest {
         RequestContextHolder.resetRequestAttributes();
 
         // Act
-        boolean result = mockAuthService.isCustomer(userId);
+        boolean result = authService.isCustomer(userId);
 
         // Assert
         assertFalse(result);
@@ -417,7 +417,7 @@ class MockAuthServiceImplTest {
         UUID customerId = UUID.randomUUID();
 
         // Act
-        CustomerProfileDTO result = mockAuthService.getCustomerProfile(customerId);
+        CustomerProfileDTO result = authService.getCustomerProfile(customerId);
 
         // Assert
         assertNotNull(result);
@@ -475,7 +475,7 @@ class MockAuthServiceImplTest {
         )).thenReturn(responseEntity);
 
         // Act
-        List<UserProfileDTO> result = mockAuthService.getAllAccommodationOwner();
+        List<UserProfileDTO> result = authService.getAllAccommodationOwner();
 
         // Assert
         assertNotNull(result);
@@ -501,7 +501,7 @@ class MockAuthServiceImplTest {
         )).thenThrow(new RuntimeException("No owners found"));
 
         // Act & Assert
-        assertThrows(AccessDeniedException.class, () -> mockAuthService.getAllAccommodationOwner());
+        assertThrows(AccessDeniedException.class, () -> authService.getAllAccommodationOwner());
         
         // Cleanup
         RequestContextHolder.resetRequestAttributes();
@@ -524,7 +524,7 @@ class MockAuthServiceImplTest {
         // Act & Assert
         AccessDeniedException exception = assertThrows(
             AccessDeniedException.class,
-            () -> mockAuthService.getAllAccommodationOwner()
+            () -> authService.getAllAccommodationOwner()
         );
         assertTrue(exception.getMessage().contains("Connection to auth server failed or timed out"));
         
@@ -549,7 +549,7 @@ class MockAuthServiceImplTest {
         )).thenReturn(responseEntity);
 
         // Act & Assert
-        assertThrows(NoSuchElementException.class, () -> mockAuthService.getAllAccommodationOwner());
+        assertThrows(NoSuchElementException.class, () -> authService.getAllAccommodationOwner());
         
         // Cleanup
         RequestContextHolder.resetRequestAttributes();
@@ -572,7 +572,7 @@ class MockAuthServiceImplTest {
         // Act & Assert
         AccessDeniedException exception = assertThrows(
             AccessDeniedException.class,
-            () -> mockAuthService.getAllAccommodationOwner()
+            () -> authService.getAllAccommodationOwner()
         );
         assertTrue(exception.getMessage().contains("An unexpected error occurred"));
         
@@ -590,7 +590,7 @@ class MockAuthServiceImplTest {
         // Act & Assert
         AccessDeniedException exception = assertThrows(
             AccessDeniedException.class,
-            () -> mockAuthService.getAuthenticatedUser()
+            () -> authService.getAuthenticatedUser()
         );
         assertTrue(exception.getMessage().contains("No authorization token found"));
         

@@ -4,6 +4,7 @@ import apap.ti._5.accommodation_2306275600_be.exceptions.AccessDeniedException;
 import apap.ti._5.accommodation_2306275600_be.external.AuthService;
 import apap.ti._5.accommodation_2306275600_be.repository.PaymentMethodRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.TopUpTransactionRepository;
+import apap.ti._5.accommodation_2306275600_be.repository.CustomerRepository;
 import apap.ti._5.accommodation_2306275600_be.restdto.auth.UserProfileDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.topup.CreateTopUpRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.topup.UpdateTopUpStatusRequestDTO;
@@ -22,9 +23,10 @@ public class TopUpTransactionRestServiceRBACImpl extends TopUpTransactionRestSer
     public TopUpTransactionRestServiceRBACImpl(
             TopUpTransactionRepository topUpTransactionRepository,
             PaymentMethodRepository paymentMethodRepository,
+            CustomerRepository customerRepository,
             AuthService authService
         ) {
-        super(topUpTransactionRepository, paymentMethodRepository);
+        super(topUpTransactionRepository, paymentMethodRepository, customerRepository);
         this.authService = authService;
     }
 

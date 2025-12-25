@@ -12,6 +12,7 @@ import apap.ti._5.accommodation_2306275600_be.external.AuthService;
 import apap.ti._5.accommodation_2306275600_be.model.Property;
 import apap.ti._5.accommodation_2306275600_be.repository.BookingRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.PropertyRepository;
+import apap.ti._5.accommodation_2306275600_be.repository.AccommodationOwnerRepository;
 import apap.ti._5.accommodation_2306275600_be.restdto.auth.UserProfileDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.property.CreatePropertyRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.property.UpdatePropertyRequestDTO;
@@ -30,9 +31,11 @@ public class PropertyRestServiceRBACImpl extends PropertyRestServiceImpl impleme
             PropertyRepository propertyRepository, 
             RoomTypeRestService roomTypeRestService,
             RoomRestService roomRestService,
+            BookingRepository bookingRepository,
+            AccommodationOwnerRepository accommodationOwnerRepository,
             AuthService authService
         ) {
-        super(propertyRepository, roomTypeRestService, roomRestService, bookingRepository);
+        super(propertyRepository, roomTypeRestService, roomRestService, bookingRepository, accommodationOwnerRepository);
         this.authService = authService;
     }
 

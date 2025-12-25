@@ -45,8 +45,9 @@ public class Booking {
     @Column(name = "status")
     private int status; // 0..4 per spesifikasi
 
-    @Column(name = "customer_id", columnDefinition = "uuid")
-    private UUID customerID;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", referencedColumnName = "enduser_id", nullable = false)
+    private Customer customer;
 
     @Column(name = "customer_name")
     private String customerName;
@@ -95,5 +96,14 @@ public class Booking {
     @PreUpdate
     protected void onUpdate() {
         updatedDate = LocalDateTime.now();
+    }
+    
+    // Helper methods for backward compatibility
+    public UUID getCustomerID() {
+        return customer != null ? customer.getId() : null;
+    }
+    
+    public void setCustomerID(UUID customerId) {
+        // Helper for backward compatibility - actual customer entity should be set separately
     }
 }

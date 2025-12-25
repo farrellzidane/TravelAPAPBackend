@@ -37,8 +37,10 @@ public class AccommodationReview {
                 foreignKey = @ForeignKey(name = "fk_review_property"))
     private Property property;
 
-    @Column(name = "customer_id", nullable = false)
-    private UUID customerID;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "customer_id", referencedColumnName = "enduser_id", nullable = false,
+                foreignKey = @ForeignKey(name = "fk_review_customer"))
+    private Customer customer;
 
     @NotNull(message = "Overall rating is required")
     @Min(value = 1, message = "Overall rating must be at least 1")
@@ -93,5 +95,14 @@ public class AccommodationReview {
             this.overallRating = (this.cleanlinessRating + this.facilityRating + 
                                  this.serviceRating + this.valueRating) / 4.0;
         }
+    }
+    
+    // Helper methods for backward compatibility
+    public UUID getCustomerID() {
+        return customer != null ? customer.getId() : null;
+    }
+    
+    public void setCustomerID(UUID customerId) {
+        // Helper for backward compatibility - actual customer entity should be set separately
     }
 }
