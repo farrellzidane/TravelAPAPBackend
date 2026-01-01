@@ -10,6 +10,8 @@ import apap.ti._5.accommodation_2306275600_be.restdto.request.topup.CreateTopUpR
 import apap.ti._5.accommodation_2306275600_be.restdto.request.topup.UpdateTopUpStatusRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.topup.TopUpTransactionResponseDTO;
 import apap.ti._5.accommodation_2306275600_be.restservice.TopUpTransactionRestServiceImpl;
+import apap.ti._5.accommodation_2306275600_be.service.TopUpBillIntegrationService;
+import apap.ti._5.accommodation_2306275600_be.external.ProfileService;
 
 import java.util.List;
 
@@ -24,9 +26,11 @@ public class TopUpTransactionRestServiceRBACImpl extends TopUpTransactionRestSer
             TopUpTransactionRepository topUpTransactionRepository,
             PaymentMethodRepository paymentMethodRepository,
             CustomerRepository customerRepository,
+            TopUpBillIntegrationService topUpBillIntegrationService,
+            ProfileService profileService,
             AuthService authService
         ) {
-        super(topUpTransactionRepository, paymentMethodRepository, customerRepository);
+        super(topUpTransactionRepository, paymentMethodRepository, customerRepository, topUpBillIntegrationService, profileService);
         this.authService = authService;
     }
 

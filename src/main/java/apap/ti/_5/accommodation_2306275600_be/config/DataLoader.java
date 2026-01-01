@@ -41,7 +41,7 @@ public class DataLoader {
         // Create default superadmin
         Superadmin superadmin = new Superadmin();
         superadmin.setUsername(defaultUsername);
-        superadmin.setName("Super Administrator");
+        superadmin.setName("Superadmin");
         superadmin.setEmail(defaultEmail);
         superadmin.setPassword(passwordEncoder.encode("Admin123!"));
         superadmin.setRole("SUPERADMIN");

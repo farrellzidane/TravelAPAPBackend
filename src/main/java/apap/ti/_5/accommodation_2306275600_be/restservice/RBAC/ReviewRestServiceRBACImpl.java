@@ -137,7 +137,7 @@ public class ReviewRestServiceRBACImpl extends ReviewRestServiceImpl implements 
         var booking = bookingRepository.findById(bookingID)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
         
-        if (!booking.getCustomerID().equals(user.userId())) {
+        if (!booking.getCustomer().getId().equals(user.userId())) {
             throw new AccessDeniedException("Anda hanya dapat membuat review untuk booking Anda sendiri");
         }
         

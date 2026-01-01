@@ -20,9 +20,12 @@ import apap.ti._5.accommodation_2306275600_be.model.PaymentMethod;
 import apap.ti._5.accommodation_2306275600_be.model.TopUpTransaction;
 import apap.ti._5.accommodation_2306275600_be.repository.PaymentMethodRepository;
 import apap.ti._5.accommodation_2306275600_be.repository.TopUpTransactionRepository;
+import apap.ti._5.accommodation_2306275600_be.repository.CustomerRepository;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.topup.CreateTopUpRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.topup.UpdateTopUpStatusRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.topup.TopUpTransactionResponseDTO;
+import apap.ti._5.accommodation_2306275600_be.external.ProfileService;
+import apap.ti._5.accommodation_2306275600_be.service.TopUpBillIntegrationService;
 
 @ExtendWith(MockitoExtension.class)
 class TopUpTransactionRestServiceImplTest {
@@ -32,6 +35,15 @@ class TopUpTransactionRestServiceImplTest {
 
     @Mock
     private PaymentMethodRepository paymentMethodRepository;
+
+    @Mock
+    private CustomerRepository customerRepository;
+
+    @Mock
+    private TopUpBillIntegrationService topUpBillIntegrationService;
+
+    @Mock
+    private ProfileService profileService;
 
     @InjectMocks
     private TopUpTransactionRestServiceImpl topUpTransactionRestService;
@@ -354,6 +366,7 @@ class TopUpTransactionRestServiceImplTest {
         assertEquals("Success", result.getStatus());
         verify(topUpTransactionRepository).findByIdAndNotDeleted(transactionId);
         verify(topUpTransactionRepository).save(any(TopUpTransaction.class));
+        verify(profileService).addBalance(customerId, 100000L);
     }
 
     @Test
@@ -382,6 +395,7 @@ class TopUpTransactionRestServiceImplTest {
         assertNotNull(result);
         assertEquals("Failed", result.getStatus());
         verify(topUpTransactionRepository).save(any(TopUpTransaction.class));
+        verify(profileService, never()).addBalance(anyString(), anyLong());
     }
 
     @Test

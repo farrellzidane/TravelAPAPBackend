@@ -31,6 +31,9 @@ public class Customer extends EndUser {
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<TopUpTransaction> listTopUpTransaction = new ArrayList<>();
     
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Bill> listBill = new ArrayList<>();
+    
     // Constructor for easier object creation
     public Customer(String username, String name, String email, String password, String gender, BigDecimal saldo) {
         this.setUsername(username);

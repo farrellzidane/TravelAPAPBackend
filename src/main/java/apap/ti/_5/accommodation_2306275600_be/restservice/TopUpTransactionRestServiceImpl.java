@@ -9,6 +9,8 @@ import apap.ti._5.accommodation_2306275600_be.repository.CustomerRepository;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.topup.CreateTopUpRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.request.topup.UpdateTopUpStatusRequestDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.response.topup.TopUpTransactionResponseDTO;
+import apap.ti._5.accommodation_2306275600_be.service.TopUpBillIntegrationService;
+import apap.ti._5.accommodation_2306275600_be.external.ProfileService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +32,8 @@ public class TopUpTransactionRestServiceImpl implements TopUpTransactionRestServ
     private final TopUpTransactionRepository topUpTransactionRepository;
     private final PaymentMethodRepository paymentMethodRepository;
     private final CustomerRepository customerRepository;
+    protected final TopUpBillIntegrationService topUpBillIntegrationService;
+    private final ProfileService profileService;
 
     @Override
     public TopUpTransactionResponseDTO createTopUpTransaction(CreateTopUpRequestDTO dto) {
@@ -67,6 +71,13 @@ public class TopUpTransactionRestServiceImpl implements TopUpTransactionRestServ
         
         // Simpan ke database
         TopUpTransaction savedTransaction = topUpTransactionRepository.save(transaction);
+        
+        // Create bill for this top-up transaction
+        try {
+            topUpBillIntegrationService.createBillForTopUp(savedTransaction);
+        } catch (Exception e) {
+            System.err.println("⚠️ Failed to create bill for TopUp, but TopUp creation continues: " + e.getMessage());
+        }
         
         // Convert ke Response DTO
         return convertToResponseDTO(savedTransaction);
@@ -114,14 +125,9 @@ public class TopUpTransactionRestServiceImpl implements TopUpTransactionRestServ
         transaction.setStatus(dto.getStatus());
         transaction.setUpdatedAt(LocalDateTime.now());
         
-        // Jika status Success, maka:
-        // TODO: Tambahkan saldo ke Profile Service (integrasi dengan service eksternal)
-        // Untuk sementara hanya update status
+        // Jika status Success, tambahkan saldo ke Profile Service
         if (dto.getStatus().equals("Success")) {
-            // Logic untuk menambah saldo di Profile Service
-            // Contoh: profileService.addBalance(transaction.getEndUserId(), transaction.getAmount());
-            System.out.println("Status Success: Menambahkan saldo Rp" + transaction.getAmount() + 
-                " ke user " + transaction.getEndUserId());
+            profileService.addBalance(transaction.getEndUserId(), transaction.getAmount());
         }
         
         // Simpan perubahan

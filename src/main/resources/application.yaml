@@ -22,8 +22,9 @@ auth:
 # Bill Service Configuration
 bill:
   service:
-    url: ${BILL_SERVICE_URL:http://2306275380-be.hafizmuh.site}
-    api-key: ${BILL_SERVICE_API_KEY:lalaleen}
+    url: ${BILL_SERVICE_URL:http://localhost:8080}
+    api-key: ${BILL_SERVICE_API_KEY:ACCOMMODATION_API_KEY}
+    topup-api-key: ${TOPUP_API_KEY:TOPUP_API_KEY}
 
 # JWT Configuration
 jwt:

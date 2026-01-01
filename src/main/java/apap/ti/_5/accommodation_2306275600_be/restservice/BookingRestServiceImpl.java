@@ -137,13 +137,8 @@ public class BookingRestServiceImpl implements BookingRestService {
         // 8. Save booking
         Booking savedBooking = bookingRepository.save(booking);
         
-        // 9. Call Bill service to create bill (fire and forget)
-        try {
-            billIntegrationService.createBillForBooking(savedBooking);
-        } catch (Exception e) {
-            // Log error but don't fail the booking creation
-            System.err.println("⚠️ Non-critical: Failed to create bill, but booking was saved: " + e.getMessage());
-        }
+        // 9. Create bill in local database - this is critical for booking flow
+        billIntegrationService.createBillForBooking(savedBooking);
         
         // 10. Log success
         System.out.println("✅ Booking Created Successfully:");
