@@ -43,9 +43,6 @@ public class BillRestServiceImpl implements BillRestService {
     @Value("${bill.service.topup-api-key:TOPUP_API_KEY}")
     private String topUpApiKey;
 
-    @Value("${auth.service.url:https://travel-apap-mock-server.vercel.app}")
-    private String authServiceUrl;
-
     private static final Set<String> VALID_SERVICE_NAMES = Set.of(
         "Accommodation", "TopUp", "Flight", "Insurance", "VehicleRental", "TourPackage"
     );

@@ -1,12 +1,9 @@
 package apap.ti._5.accommodation_2306275600_be.external;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -16,31 +13,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import apap.ti._5.accommodation_2306275600_be.exceptions.AccessDeniedException;
 import apap.ti._5.accommodation_2306275600_be.restdto.auth.CustomerProfileDTO;
 import apap.ti._5.accommodation_2306275600_be.restdto.auth.UserProfileDTO;
-import apap.ti._5.accommodation_2306275600_be.restdto.response.BaseResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceImplTest {
-
-    @Mock
-    private RestTemplate restTemplate;
 
     @Mock
     private HttpServletRequest httpServletRequest;
@@ -53,13 +35,9 @@ class AuthServiceImplTest {
 
     private UserProfileDTO mockUser;
     private CustomerProfileDTO mockCustomer;
-    private String authServiceUrl;
 
     @BeforeEach
     void setUp() {
-        authServiceUrl = "https://travel-apap-mock-server.vercel.app";
-        ReflectionTestUtils.setField(authService, "authServiceUrl", authServiceUrl);
-
         UUID userId = UUID.randomUUID();
         mockUser = new UserProfileDTO(
             userId,
@@ -425,159 +403,6 @@ class AuthServiceImplTest {
         assertEquals("Customer", result.role());
         assertEquals("Mock Customer", result.name());
         assertEquals(0L, result.saldo());
-    }
-
-    @Test
-    void testGetAllAccommodationOwner_Success() {
-        // Arrange
-        UserProfileDTO owner1 = new UserProfileDTO(
-            UUID.randomUUID(),
-            "owner1",
-            "Owner 1",
-            "owner1@example.com",
-            "M",
-            "Accommodation Owner",
-            LocalDateTime.now(),
-            LocalDateTime.now(),
-            false
-        );
-        
-        UserProfileDTO owner2 = new UserProfileDTO(
-            UUID.randomUUID(),
-            "owner2",
-            "Owner 2",
-            "owner2@example.com",
-            "F",
-            "Accommodation Owner",
-            LocalDateTime.now(),
-            LocalDateTime.now(),
-            false
-        );
-
-        List<UserProfileDTO> owners = Arrays.asList(owner1, owner2);
-        
-        BaseResponseDTO<List<UserProfileDTO>> responseDTO = new BaseResponseDTO<>();
-        responseDTO.setStatus(200);
-        responseDTO.setMessage("Success");
-        responseDTO.setData(owners);
-        
-        ResponseEntity<BaseResponseDTO<List<UserProfileDTO>>> responseEntity = ResponseEntity.ok(responseDTO);
-
-        when(servletRequestAttributes.getRequest()).thenReturn(httpServletRequest);
-        when(httpServletRequest.getHeader("Authorization")).thenReturn("Bearer token");
-        RequestContextHolder.setRequestAttributes(servletRequestAttributes);
-
-        when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            any(HttpEntity.class),
-            any(ParameterizedTypeReference.class)
-        )).thenReturn(responseEntity);
-
-        // Act
-        List<UserProfileDTO> result = authService.getAllAccommodationOwner();
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals("Accommodation Owner", result.get(0).role());
-        
-        // Cleanup
-        RequestContextHolder.resetRequestAttributes();
-    }
-
-    @Test
-    void testGetAllAccommodationOwner_Exception() {
-        // Arrange
-        when(servletRequestAttributes.getRequest()).thenReturn(httpServletRequest);
-        when(httpServletRequest.getHeader("Authorization")).thenReturn("Bearer token");
-        RequestContextHolder.setRequestAttributes(servletRequestAttributes);
-
-        when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            any(HttpEntity.class),
-            any(ParameterizedTypeReference.class)
-        )).thenThrow(new RuntimeException("No owners found"));
-
-        // Act & Assert
-        assertThrows(AccessDeniedException.class, () -> authService.getAllAccommodationOwner());
-        
-        // Cleanup
-        RequestContextHolder.resetRequestAttributes();
-    }
-
-    @Test
-    void testGetAllAccommodationOwner_ResourceAccessException() {
-        // Arrange
-        when(servletRequestAttributes.getRequest()).thenReturn(httpServletRequest);
-        when(httpServletRequest.getHeader("Authorization")).thenReturn("Bearer token");
-        RequestContextHolder.setRequestAttributes(servletRequestAttributes);
-
-        when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            any(HttpEntity.class),
-            any(ParameterizedTypeReference.class)
-        )).thenThrow(new ResourceAccessException("Timeout"));
-
-        // Act & Assert
-        AccessDeniedException exception = assertThrows(
-            AccessDeniedException.class,
-            () -> authService.getAllAccommodationOwner()
-        );
-        assertTrue(exception.getMessage().contains("Connection to auth server failed or timed out"));
-        
-        // Cleanup
-        RequestContextHolder.resetRequestAttributes();
-    }
-
-    @Test
-    void testGetAllAccommodationOwner_NullPointerException() {
-        // Arrange
-        when(servletRequestAttributes.getRequest()).thenReturn(httpServletRequest);
-        when(httpServletRequest.getHeader("Authorization")).thenReturn("Bearer token");
-        RequestContextHolder.setRequestAttributes(servletRequestAttributes);
-
-        ResponseEntity<BaseResponseDTO<List<UserProfileDTO>>> responseEntity = ResponseEntity.ok(null);
-
-        when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            any(HttpEntity.class),
-            any(ParameterizedTypeReference.class)
-        )).thenReturn(responseEntity);
-
-        // Act & Assert
-        assertThrows(NoSuchElementException.class, () -> authService.getAllAccommodationOwner());
-        
-        // Cleanup
-        RequestContextHolder.resetRequestAttributes();
-    }
-
-    @Test
-    void testGetAllAccommodationOwner_GenericException() {
-        // Arrange
-        when(servletRequestAttributes.getRequest()).thenReturn(httpServletRequest);
-        when(httpServletRequest.getHeader("Authorization")).thenReturn("Bearer token");
-        RequestContextHolder.setRequestAttributes(servletRequestAttributes);
-
-        when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            any(HttpEntity.class),
-            any(ParameterizedTypeReference.class)
-        )).thenThrow(new RuntimeException("Unexpected error"));
-
-        // Act & Assert
-        AccessDeniedException exception = assertThrows(
-            AccessDeniedException.class,
-            () -> authService.getAllAccommodationOwner()
-        );
-        assertTrue(exception.getMessage().contains("An unexpected error occurred"));
-        
-        // Cleanup
-        RequestContextHolder.resetRequestAttributes();
     }
 
     @Test

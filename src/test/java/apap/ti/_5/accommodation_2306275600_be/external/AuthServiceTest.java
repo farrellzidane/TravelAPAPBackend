@@ -3,8 +3,6 @@ package apap.ti._5.accommodation_2306275600_be.external;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -113,23 +111,6 @@ class AuthServiceTest {
                 LocalDateTime.now(),
                 false,
                 100000L
-            );
-        }
-
-        @Override
-        public List<UserProfileDTO> getAllAccommodationOwner() {
-            return Arrays.asList(
-                new UserProfileDTO(
-                    UUID.randomUUID(),
-                    "owner1",
-                    "Owner 1",
-                    "owner1@example.com",
-                    "M",
-                    "Accommodation Owner",
-                    LocalDateTime.now(),
-                    LocalDateTime.now(),
-                    false
-                )
             );
         }
     }
@@ -417,20 +398,6 @@ class AuthServiceTest {
 
         // Act & Assert
         assertThrows(NoSuchElementException.class, () -> authService.getCustomerProfile(null));
-    }
-
-    @Test
-    void testGetAllAccommodationOwner() {
-        // Arrange
-        TestAuthServiceImpl authService = new TestAuthServiceImpl();
-
-        // Act
-        List<UserProfileDTO> result = authService.getAllAccommodationOwner();
-
-        // Assert
-        assertNotNull(result);
-        assertFalse(result.isEmpty());
-        assertEquals("Accommodation Owner", result.get(0).role());
     }
 
     @Test
