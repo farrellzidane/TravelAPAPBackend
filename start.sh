@@ -1,14 +1,18 @@
 #!/bin/sh
 
-# Convert Render's postgres:// URL to JDBC format if needed
+# Convert Render's postgres:// or postgresql:// URL to JDBC format if needed
 if [ -n "$DATABASE_URL" ]; then
-  # Check if DATABASE_URL starts with postgres://
+  # Check if DATABASE_URL starts with postgres:// or postgresql://
   if echo "$DATABASE_URL" | grep -q "^postgres://"; then
     # Convert postgres:// to jdbc:postgresql://
     export JDBC_DATABASE_URL=$(echo "$DATABASE_URL" | sed 's/^postgres:/jdbc:postgresql:/')
-    echo "Converted DATABASE_URL to JDBC format"
+    echo "Converted postgres:// to JDBC format"
+  elif echo "$DATABASE_URL" | grep -q "^postgresql://"; then
+    # Convert postgresql:// to jdbc:postgresql://
+    export JDBC_DATABASE_URL=$(echo "$DATABASE_URL" | sed 's/^postgresql:/jdbc:postgresql:/')
+    echo "Converted postgresql:// to JDBC format"
   else
-    # If already in correct format or different format, use as is
+    # If already in correct format, use as is
     export JDBC_DATABASE_URL="$DATABASE_URL"
   fi
 fi
