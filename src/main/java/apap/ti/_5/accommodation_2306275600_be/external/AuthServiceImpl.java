@@ -29,7 +29,7 @@ import apap.ti._5.accommodation_2306275600_be.restdto.auth.UserProfileDTO;
  * Active only when spring profile is "dev".
  */
 @Service
-@Profile("dev")
+@Profile({"dev", "prod"})
 public class AuthServiceImpl implements AuthService {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
