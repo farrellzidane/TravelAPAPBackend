@@ -22,6 +22,9 @@ FROM eclipse-temurin:21-jre
 WORKDIR /app
 
 COPY --from=build /app/app.jar app.jar
+COPY start.sh /app/start.sh
+
+RUN chmod +x /app/start.sh
 
 EXPOSE 10000
-CMD ["sh","-c","java -jar app.jar --server.port=${PORT:-10000}"]
+CMD ["/app/start.sh"]
