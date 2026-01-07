@@ -10,7 +10,7 @@ RUN chmod +x gradlew && ./gradlew --no-daemon dependencies || true
 
 COPY . .
 
-RUN ./gradlew --no-daemon clean bootJar -x test
+RUN chmod +x gradlew && ./gradlew --no-daemon clean bootJar -x test
 
 RUN JAR_FILE=$(ls build/libs/*.jar | grep -v plain | head -n 1) \
   && echo "Using jar: $JAR_FILE" \
