@@ -187,10 +187,13 @@ public class AuthRestController {
             // Clear the JWT cookie
             Cookie cookie = new Cookie("jwt", null);
             cookie.setHttpOnly(true);
-            cookie.setSecure(false); // Set to true in production
+            cookie.setSecure(true); // Required for HTTPS in production
             cookie.setPath("/");
             cookie.setMaxAge(0); // Delete cookie
-            response.addCookie(cookie);
+            
+            // Add SameSite=None for cross-domain cookie deletion
+            String cookieHeader = "jwt=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=None";
+            response.setHeader("Set-Cookie", cookieHeader);
             
             Map<String, Object> responseBody = new HashMap<>();
             responseBody.put("status", "success");

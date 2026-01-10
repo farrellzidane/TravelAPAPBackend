@@ -251,13 +251,14 @@ public class AuthRestServiceImpl implements AuthRestService {
                 // Create JWT cookie
                 Cookie cookie = new Cookie("jwt", token);
                 cookie.setHttpOnly(true);
-                cookie.setSecure(false); // Set to true in production with HTTPS
+                cookie.setSecure(true); // Required for HTTPS in production
                 cookie.setPath("/");
                 cookie.setMaxAge((int) (jwtExpiration / 1000)); // Convert ms to seconds
                 
                 // Add SameSite attribute manually via Set-Cookie header
+                // SameSite=None is required for cross-domain cookies with Secure flag
                 String cookieHeader = String.format(
-                    "jwt=%s; Path=/; Max-Age=%d; HttpOnly; SameSite=Lax",
+                    "jwt=%s; Path=/; Max-Age=%d; HttpOnly; Secure; SameSite=None",
                     token,
                     (int) (jwtExpiration / 1000)
                 );
