@@ -22,8 +22,10 @@ auth:
     url: ${AUTH_SERVICE_URL:https://travel-apap-mock-server.vercel.app}
 
 # Bill Service Configuration
+# NOTE: BILL_SERVICE_URL must be set in Render environment variables
+# Example: https://your-bill-service.onrender.com
 bill:
   service:
-    url: ${BILL_SERVICE_URL}
-    api-key: ${BILL_SERVICE_API_KEY}
-    topup-api-key: ${TOPUP_API_KEY}
+    url: ${BILL_SERVICE_URL:}
+    api-key: ${BILL_SERVICE_API_KEY:ACCOMMODATION_API_KEY}
+    topup-api-key: ${TOPUP_API_KEY:TOPUP_API_KEY}
